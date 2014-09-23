@@ -8,20 +8,22 @@ use Getopt::Long;
 
 my ($glob_target) = @ARGV;
 
-my $test = 1;
+my $test = 0;
 my $verbose = 0;
+my $setup_sensu = 0;
 my $glob_base = "";
 my $glob_target = "target-*";
 my $sensu_worker = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_worker.sh";
 my $sensu_master = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_master.sh";
 
-if (scalar(@ARGV) < 1 || scalar(@ARGV) > 6) {
- die "USAGE: perl $0 [--test] [--verbose] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>]\n";
+if (scalar(@ARGV) < 1 || scalar(@ARGV) > 7) {
+ die "USAGE: perl $0 [--test] [--verbose] [--setup-sensu] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>]\n";
 }
 
 GetOptions(
   "test" => \$test,
   "verbose" => \$verbose,
+  "setup-sensu" => \$setup_sensu,
   "glob-base=s" => \$glob_base,
   "glob-target=s" => \$glob_target, 
 );
@@ -37,6 +39,7 @@ if ($glob_base ne "") { $glob_path = "$glob_base/$glob_target"; }
 foreach my $target (glob($glob_path)) {
   if (-d $target) {
     my $master_ip;
+    my $cluster_name;
     #next if (defined($glob_target) && $glob_target ne '' && $glob_target ne $target );
     print "\n";
     print "##############################\n";
@@ -49,12 +52,16 @@ foreach my $target (glob($glob_path)) {
         if ($hostname eq 'master') {
             $master_ip = `cd $host && vagrant ssh-config | grep HostName | awk '{print \$2}' 2> /dev/null`;
             chomp $master_ip;
+            print "MASTER IP: $master_ip\n";
+            $target =~ /([^\/]+)$/;
+            $cluster_name = $1;
         }
         print "\n##############################\n";
         print "#       HOST: $hostname      #\n";
         print "##############################\n\n";
 
-        my $r = system("cd $host && vagrant ssh -c hostname 2> /dev/null");
+        my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
+        #print "  cd $host && vagrant ssh -c 'hostname' 2> /dev/null\n";
         #print "  CMD STATUS: $r\n";
         # need to restart, ssh doesn't work!
         if ($r != 0) {
@@ -69,9 +76,11 @@ foreach my $target (glob($glob_path)) {
             reboot_host($nova_id);
           }
         } else {
+
           # now check the hostname
-          my $remote_name = `cd $host && vagrant ssh -c hostname 2> /dev/null`;
-          #print "  REMOTE NAME: $remote_name\n";
+          my $remote_name = `cd $host && vagrant ssh -c 'hostname' 2> /dev/null`;
+          #print "cd $host && vagrant ssh -c 'hostname' 2> /dev/null\n";
+          print "  REMOTE NAME: $remote_name\n";
           chomp $remote_name;
           $remote_name =~ /(\S+)/;
           $remote_name = $1;
@@ -80,6 +89,15 @@ foreach my $target (glob($glob_path)) {
             reset_host($host, $hostname, $master_ip);
           } else {
             print "  HOST OK\n";
+          }
+          # install sensu if specified
+          if ($setup_sensu && !$test) {
+            my $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_worker $cluster_name $hostname' 2> /dev/null";
+            if ($hostname eq 'master') {
+              $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_master $cluster_name $hostname' 2> /dev/null";
+            }
+            my $r = system($cmd);
+            if ($r) { print "  SENSU INSTALL FAILED\n"; }
           }
         }
       }

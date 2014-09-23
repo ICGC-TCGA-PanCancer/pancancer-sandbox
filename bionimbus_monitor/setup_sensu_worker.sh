@@ -16,7 +16,7 @@ sudo bash -c 'echo '"'"'{
     "password": "sensupass"
   },
   "client": {
-    "name": "chicago-'"$1"'-'"$HOSTNAME"'",
+    "name": "chicago-'"$1"'-'"$2"'",
     "address": "172.16.0.22",
     "subscriptions": [
       "tests", "chicago-tests", "worker-tests"
