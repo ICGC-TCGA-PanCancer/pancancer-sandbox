@@ -17,7 +17,7 @@ sudo bash -c 'echo '"'"'{
   },
   "client": {
     "name": "chicago-'"$1"'-'"$2"'",
-    "address": "172.16.0.22",
+    "address": "'"$3"'",
     "subscriptions": [
       "tests", "chicago-tests", "master-tests"
     ]

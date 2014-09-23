@@ -49,9 +49,10 @@ foreach my $target (glob($glob_path)) {
       if (-d $host) {
         $host =~ /$target\/(\S+)/;
         my $hostname = $1;
+        my $curr_ip = `cd $host && vagrant ssh-config | grep HostName | awk '{print \$2}' 2> /dev/null`;
+        chomp $curr_ip;
         if ($hostname eq 'master') {
-            $master_ip = `cd $host && vagrant ssh-config | grep HostName | awk '{print \$2}' 2> /dev/null`;
-            chomp $master_ip;
+            $master_ip = $curr_ip;
             print "MASTER IP: $master_ip\n";
             $target =~ /([^\/]+)$/;
             $cluster_name = $1;
@@ -92,9 +93,9 @@ foreach my $target (glob($glob_path)) {
           }
           # install sensu if specified
           if ($setup_sensu && !$test) {
-            my $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_worker $cluster_name $hostname' 2> /dev/null";
+            my $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_worker $cluster_name $hostname $curr_ip' 2> /dev/null";
             if ($hostname eq 'master') {
-              $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_master $cluster_name $hostname' 2> /dev/null";
+              $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_master $cluster_name $hostname $curr_ip' 2> /dev/null";
             }
             my $r = system($cmd);
             if ($r) { print "  SENSU INSTALL FAILED\n"; }
