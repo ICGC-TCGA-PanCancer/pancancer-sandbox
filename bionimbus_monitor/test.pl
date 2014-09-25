@@ -1,5 +1,8 @@
 use strict;
 use Getopt::Long;
+use Config;
+$Config{useithreads} or die('Recompile Perl with threads to run this program.');
+use threads;
 
 # TODO: 
 # * need to include multiple run check
@@ -68,7 +71,20 @@ foreach my $target (glob($glob_path)) {
         print "#       HOST: $hostname      #\n";
         print "##############################\n\n";
 
-        my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
+        my $r = 0;
+        my $thr = threads->create(\&launch_ssh, "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip");
+        sleep 30;
+        if (scalar(threads->list(threads::running))) {
+          print "Still running so force exit\n";
+          $r = 1;
+          threads->exit();
+        }
+        if(defined($thr->error())) {
+          $r=1;
+        }
+        #my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
+
+
         #print "  cd $host && vagrant ssh -c 'hostname' 2> /dev/null\n";
         #print "  CMD STATUS: $r\n";
         # need to restart, ssh doesn't work!
@@ -137,5 +153,11 @@ sub reboot_host {
     my $r = system($cmd);
     if ($r != 0) { print "PROBLEMS REBOOTING HOST\n"; }
   }
+}
+
+sub launch_ssh {
+  my $ssh = $_[0];
+  system("$ssh");
+  print "DONE WITH SSH\n";
 }
 
