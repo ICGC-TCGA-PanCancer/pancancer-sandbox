@@ -49,8 +49,15 @@ foreach my $target (glob($glob_path)) {
       if (-d $host) {
         $host =~ /$target\/(\S+)/;
         my $hostname = $1;
-        my $curr_ip = `cd $host && vagrant ssh-config | grep HostName | awk '{print \$2}' 2> /dev/null`;
-        chomp $curr_ip;
+        my $ssh_config = `cd $host && vagrant ssh-config 2> /dev/null`;
+    
+        $ssh_config =~ /HostName\s+(\d+\.\d+\.\d+\.\d+)/;
+        my $curr_ip = $1;
+        $ssh_config =~ /User\s+(\S+)/;
+        my $curr_username = $1; 
+        $ssh_config =~ /IdentityFile\s+(\S+)/;
+        my $curr_pem = $1;
+
         if ($hostname eq 'master') {
             $master_ip = $curr_ip;
             print "MASTER IP: $master_ip\n";
