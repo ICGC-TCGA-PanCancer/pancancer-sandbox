@@ -73,6 +73,7 @@ foreach my $target (glob($glob_path)) {
 
         my $r = 0;
         my $thr = threads->create(\&launch_ssh, "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip");
+        print "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip\n";
         sleep 30;
         if (scalar(threads->list(threads::running))) {
           print "Still running so force exit\n";
