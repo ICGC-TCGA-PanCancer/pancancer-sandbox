@@ -53,7 +53,7 @@ foreach my $target (glob($glob_path)) {
         $host =~ /$target\/(\S+)/;
         my $hostname = $1;
         my $ssh_config = `cd $host && vagrant ssh-config 2> /dev/null`;
-        print "SSH CMD: cd $host && vagrant ssh-config 2> /dev/null"
+        print "SSH CMD: cd $host && vagrant ssh-config 2> /dev/null\n";
         print "SSH CONFIG: $ssh_config\n";
         $ssh_config =~ /HostName\s+(\d+\.\d+\.\d+\.\d+)/;
         my $curr_ip = $1;
