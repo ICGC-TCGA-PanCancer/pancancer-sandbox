@@ -18,6 +18,7 @@ my $glob_base = "";
 my $glob_target = "target-*";
 my $sensu_worker = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_worker.sh";
 my $sensu_master = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_master.sh";
+my $global_max_it = 6;
 
 if (scalar(@ARGV) < 1 || scalar(@ARGV) > 7) {
  die "USAGE: perl $0 [--test] [--verbose] [--setup-sensu] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>]\n";
@@ -53,8 +54,8 @@ foreach my $target (glob($glob_path)) {
         $host =~ /$target\/(\S+)/;
         my $hostname = $1;
         my $ssh_config = `cd $host && vagrant ssh-config 2> /dev/null`;
-        print "SSH CMD: cd $host && vagrant ssh-config 2> /dev/null\n";
-        print "SSH CONFIG: $ssh_config\n";
+        #print "SSH CMD: cd $host && vagrant ssh-config 2> /dev/null\n";
+        #print "SSH CONFIG: $ssh_config\n";
         $ssh_config =~ /HostName\s+(\d+\.\d+\.\d+\.\d+)/;
         my $curr_ip = $1;
         $ssh_config =~ /User\s+(\S+)/;
@@ -73,20 +74,27 @@ foreach my $target (glob($glob_path)) {
         print "##############################\n\n";
 
         my $r = 0;
-        my $thr = threads->create(\&launch_ssh, "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip");
-        print "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip\n";
-        sleep 30;
-        if (scalar(threads->list(threads::running))) {
-          print "Still running so force exit\n";
+        my $thr = threads->create(\&launch_ssh, "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip hostname");
+        #print "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip\n";
+        my $max_it = $global_max_it;
+        while($max_it > 0) {
+          sleep 5;
+          if ($thr->is_joinable()) {
+            # then we can exit now
+            print "SSH THREAD FINISHED EARLY, BREAKING\n";
+            break;
+          }
+          $max_it--;
+          #my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
+        }
+        if ($max_it <= 0 && ($thr->is_running() || defined($thr->error()))) {
+          print "SSH THREAD STILL RUNNING OR IN ERROR: ".$thr->is_running()." ".$thr->error()."\n";
           $r = 1;
           threads->exit();
+        } elsif ($thr->is_joinable()) {
+          $r = 0;
         }
-        if(defined($thr->error())) {
-          $r=1;
-        }
-        die "GOT TO THE END OF THE SSH THREAD, REASULT: $r\n";
-        #my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
-
+        die "RESULT: $r\n";
 
         #print "  cd $host && vagrant ssh -c 'hostname' 2> /dev/null\n";
         #print "  CMD STATUS: $r\n";
