@@ -4,7 +4,7 @@ use Config;
 $Config{useithreads} or die('Recompile Perl with threads to run this program.');
 use threads;
 
-# TODO: 
+# TODO:
 # * need to include multiple run check
 # * need to include setup of monitoring
 # * need to include restart of failed workflows
@@ -28,7 +28,7 @@ GetOptions(
   "verbose" => \$verbose,
   "setup-sensu" => \$setup_sensu,
   "glob-base=s" => \$glob_base,
-  "glob-target=s" => \$glob_target, 
+  "glob-target=s" => \$glob_target,
 );
 
 print "\n\n";
@@ -53,11 +53,11 @@ foreach my $target (glob($glob_path)) {
         $host =~ /$target\/(\S+)/;
         my $hostname = $1;
         my $ssh_config = `cd $host && vagrant ssh-config 2> /dev/null`;
-    
+
         $ssh_config =~ /HostName\s+(\d+\.\d+\.\d+\.\d+)/;
         my $curr_ip = $1;
         $ssh_config =~ /User\s+(\S+)/;
-        my $curr_username = $1; 
+        my $curr_username = $1;
         $ssh_config =~ /IdentityFile\s+(\S+)/;
         my $curr_pem = $1;
 
@@ -82,6 +82,7 @@ foreach my $target (glob($glob_path)) {
         if(defined($thr->error())) {
           $r=1;
         }
+        die "GOT TO THE END OF THE SSH THREAD, REASULT: $r\n";
         #my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
 
 
@@ -132,7 +133,7 @@ foreach my $target (glob($glob_path)) {
 sub reset_host {
   my ($dir, $host, $master_ip) = @_;
   #my $cmd = "cd $dir && vagrant ssh -c 'sudo hostname $host && sudo mount $master_ip:/home /home && sudo mount $master_ip:/mnt/home /mnt/home && sudo mount $master_ip:/mnt/datastore /mnt/datastore && sudo /etc/init.d/gridengine-exec restart; if [ -e /etc/init.d/gridengine-master ]; then sudo /etc/init.d/gridengine-master restart; fi;'";
-  # FIXME: for now this will just disable hosts in SGE 
+  # FIXME: for now this will just disable hosts in SGE
   my $cmd = "cd $dir && vagrant ssh -c 'sudo /etc/init.d/gridengine-exec stop; sudo hostname $host && sudo mount $master_ip:/home /home && sudo mount $master_ip:/mnt/home /mnt/home && sudo mount $master_ip:/mnt/datastore /mnt/datastore && sudo bash $sensu_worker' 2> /dev/null";
   if ($host eq 'master') {
     # FIXME: need to restart the master for sure
@@ -160,4 +161,3 @@ sub launch_ssh {
   system("$ssh");
   print "DONE WITH SSH\n";
 }
-
