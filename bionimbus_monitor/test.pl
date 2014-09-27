@@ -78,6 +78,7 @@ foreach my $target (glob($glob_path)) {
         #print "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip\n";
         my $max_it = $global_max_it;
         while($max_it > 0) {
+          print "SSH WAIT LOOP: $max_it\n";
           sleep 5;
           if ($thr->is_joinable()) {
             # then we can exit now
@@ -92,6 +93,7 @@ foreach my $target (glob($glob_path)) {
           $r = 1;
           threads->exit();
         } elsif ($thr->is_joinable()) {
+          $thr->join();
           $r = 0;
         }
         die "RESULT: $r\n";
