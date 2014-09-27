@@ -2,7 +2,8 @@ use strict;
 use Getopt::Long;
 use Config;
 $Config{useithreads} or die('Recompile Perl with threads to run this program.');
-use threads;
+use threads 'exit' => 'threads_only';
+#use threads;
 
 # TODO:
 # * need to include multiple run check
@@ -91,7 +92,9 @@ foreach my $target (glob($glob_path)) {
         if ($max_it <= 0 && ($thr->is_running() || defined($thr->error()))) {
           print "SSH THREAD STILL RUNNING OR IN ERROR: ".$thr->is_running()." ".$thr->error()."\n";
           $r = 1;
-          threads->exit();
+          # TODO: need to send the interrupt signal here
+          $thr->kill('KILL')->detach();
+          #threads->exit();
         } elsif ($thr->is_joinable()) {
           $thr->join();
           $r = 0;
@@ -169,6 +172,7 @@ sub reboot_host {
 }
 
 sub launch_ssh {
+  $SIG{'KILL'} = sub { threads->exit(); };
   my $ssh = $_[0];
   system("$ssh");
   print "DONE WITH SSH\n";
