@@ -96,7 +96,7 @@ foreach my $target (glob($glob_path)) {
           $thr->join();
           $r = 0;
         }
-        die "RESULT: $r\n";
+        print "SSH RESULT: $r\n";
 
         #print "  cd $host && vagrant ssh -c 'hostname' 2> /dev/null\n";
         #print "  CMD STATUS: $r\n";
