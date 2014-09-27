@@ -82,7 +82,7 @@ foreach my $target (glob($glob_path)) {
           if ($thr->is_joinable()) {
             # then we can exit now
             print "SSH THREAD FINISHED EARLY, BREAKING\n";
-            break;
+            $max_it = 0;
           }
           $max_it--;
           #my $r = system("cd $host && vagrant ssh -c 'hostname' 2> /dev/null");
