@@ -19,7 +19,10 @@ my $glob_base = "";
 my $glob_target = "target-*";
 my $sensu_worker = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_worker.sh";
 my $sensu_master = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_master.sh";
-my $global_max_it = 6;
+my $global_max_it = 30;
+my $global_wait_time = 2;
+
+check_if_running();
 
 if (scalar(@ARGV) < 1 || scalar(@ARGV) > 7) {
  die "USAGE: perl $0 [--test] [--verbose] [--setup-sensu] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>]\n";
@@ -80,7 +83,7 @@ foreach my $target (glob($glob_path)) {
         my $max_it = $global_max_it;
         while($max_it > 0) {
           print "SSH WAIT LOOP: $max_it\n";
-          sleep 5;
+          sleep $global_wait_time;
           if ($thr->is_joinable()) {
             # then we can exit now
             print "SSH THREAD FINISHED EARLY, BREAKING\n";
@@ -176,4 +179,10 @@ sub launch_ssh {
   my $ssh = $_[0];
   system("$ssh");
   print "DONE WITH SSH\n";
+}
+
+sub check_if_running {
+  my $r = `ps aux | grep perl | grep $0 | wc -l`;
+  chomp $r;
+  if ($r >1) { die "EXIT: more than one $0 is running!\n"; }
 }

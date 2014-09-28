@@ -1,11 +1,16 @@
 #!/bin/bash
 
-sudo wget -q http://repos.sensuapp.org/apt/pubkey.gpg -O- | sudo apt-key add -
+# TODO: pass in the master host IP address as argument
 
-sudo bash -c 'echo "deb     http://repos.sensuapp.org/apt sensu main" > /etc/apt/sources.list.d/sensu.list'
+if [ ! -f /etc/init.d/sensu-client ]; then
 
-sudo apt-get update; sudo apt-get install -y sensu
+  sudo wget -q http://repos.sensuapp.org/apt/pubkey.gpg -O- | sudo apt-key add -
 
+  sudo bash -c 'echo "deb     http://repos.sensuapp.org/apt sensu main" > /etc/apt/sources.list.d/sensu.list'
+
+  sudo apt-get update; sudo apt-get install -y sensu
+
+fi
 
 sudo bash -c 'echo '"'"'{
   "rabbitmq": {
