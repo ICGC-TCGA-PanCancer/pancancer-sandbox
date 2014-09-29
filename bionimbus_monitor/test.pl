@@ -216,10 +216,10 @@ sub reset_host {
   my ($dir, $host, $master_ip) = @_;
   #my $cmd = "cd $dir && vagrant ssh -c 'sudo hostname $host && sudo mount $master_ip:/home /home && sudo mount $master_ip:/mnt/home /mnt/home && sudo mount $master_ip:/mnt/datastore /mnt/datastore && sudo /etc/init.d/gridengine-exec restart; if [ -e /etc/init.d/gridengine-master ]; then sudo /etc/init.d/gridengine-master restart; fi;'";
   # FIXME: for now this will just disable hosts in SGE
-  my $cmd = "cd $dir && vagrant ssh -c 'sudo /etc/init.d/gridengine-exec stop; sudo hostname $host && sudo mount $master_ip:/home /home && sudo mount $master_ip:/mnt/home /mnt/home && sudo mount $master_ip:/mnt/datastore /mnt/datastore && sudo bash $sensu_worker' 2> /dev/null";
+  my $cmd = "cd $dir && vagrant ssh -c 'sudo /etc/init.d/gridengine-exec stop; sudo hostname $host && sudo mount $master_ip:/home /home && sudo mount $master_ip:/mnt/home /mnt/home && sudo mount $master_ip:/mnt/datastore /mnt/datastore && sudo /etc/init.d/hadoop-hdfs-datanode restart && sudo /etc/init.d/hadoop-0.20-mapreduce-tasktracker restart && sudo bash $sensu_worker' 2> /dev/null";
   if ($host eq 'master') {
     # FIXME: need to restart the master for sure
-    $cmd = "cd $dir && vagrant ssh -c 'sudo /etc/init.d/gridengine-exec stop && sudo /etc/init.d/gridengine-master stop && sudo hostname $host && sudo /etc/init.d/gridengine-master start && sudo bash $sensu_master' 2> /dev/null";
+    $cmd = "cd $dir && vagrant ssh -c 'sudo /etc/init.d/gridengine-exec stop && sudo /etc/init.d/gridengine-master stop && sudo hostname $host && sudo /etc/init.d/gridengine-master start && sudo /etc/init.d/hadoop-hdfs-namenode restart && sudo /etc/init.d/hadoop-0.20-mapreduce-jobtracker restart && sudo /etc/init.d/hadoop-0.20-mapreduce-tasktracker restart && sudo /etc/init.d/hadoop-hdfs-datanode restart && sudo bash $sensu_master' 2> /dev/null";
   }
   if ($verbose) { print "    RESETTING CMD: $cmd\n"; }
   if (!$test) {
