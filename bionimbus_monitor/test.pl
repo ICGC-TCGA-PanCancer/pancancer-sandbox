@@ -185,6 +185,7 @@ foreach my $target (glob($glob_path)) {
 
           # checks to restart failed workflows
           if ($restart_workflows && $hostname eq 'master') {
+            print "RESTART WORKFLOWS: cd $host && vagrant ssh -c 'seqware workflow report --accession $workflow_accession'\n";
             my $clean = `cd $host && vagrant ssh -c 'seqware workflow report --accession $workflow_accession'`;
             my @lines = split /\n/, $clean;
             my $accession;
