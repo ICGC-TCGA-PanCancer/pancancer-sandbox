@@ -161,12 +161,14 @@ foreach my $target (glob($glob_path)) {
                 $failed_nodes->{$line} = 1;
               }
             }
+            print Dumper($failed_nodes);
             # kill those jobs
             my $kill_list = "";
             $clean = `cd $host && vagrant ssh -c 'qstat'`;
             @lines = split /\n/, $clean;
             foreach my $line (@lines) {
               $line =~ /main.q\@(\S+)/;
+              print "EXAMINED HOST: $1\n";
               if ($failed_nodes->{$1}) {
                 $line =~ /^\s+(\d+)\s+/;
                 $kill_list .= " $1";
@@ -174,7 +176,7 @@ foreach my $target (glob($glob_path)) {
             }
             my $cmd = "cd $host && vagrant ssh -c 'sudo qdel -f $kill_list'";
             print "KILL STUCK SGE JOBS: $cmd\n";
-            if (!$test) {
+            if (!$test && length($kill_list) > 0) {
               my $r = system($cmd);
               if ($r) { print "PROBLEMS KILLING SGE JOBS!\n"; }
             }
