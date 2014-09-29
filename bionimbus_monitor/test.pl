@@ -246,7 +246,7 @@ sub launch_ssh {
 }
 
 sub check_if_running {
-  my $r = `ps aux | grep perl | grep $0 | wc -l`;
+  my $r = `ps aux | grep perl | grep $0 | grep -v grep | wc -l`;
   chomp $r;
   if ($r >1) { die "EXIT: more than one $0 is running!\n"; }
 }
