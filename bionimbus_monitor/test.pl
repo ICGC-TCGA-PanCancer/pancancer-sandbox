@@ -159,7 +159,7 @@ foreach my $target (glob($glob_path)) {
             foreach my $line (@lines) {
               if ($line =~ /\s+au\s+/) {
                 $line =~ /main.q\@(\S+)/;
-                $failed_nodes->{$line} = 1;
+                $failed_nodes->{$1} = 1;
               }
             }
             print Dumper($failed_nodes);
