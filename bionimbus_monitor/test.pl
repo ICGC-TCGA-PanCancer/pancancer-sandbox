@@ -4,6 +4,7 @@ use Config;
 $Config{useithreads} or die('Recompile Perl with threads to run this program.');
 use threads 'exit' => 'threads_only';
 #use threads;
+use Data::Dumper;
 
 # TODO:
 # * need to include multiple run check
