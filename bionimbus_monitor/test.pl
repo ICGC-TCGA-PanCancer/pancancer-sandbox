@@ -9,6 +9,8 @@ use threads 'exit' => 'threads_only';
 # * need to include multiple run check
 # * need to include setup of monitoring
 # * need to include restart of failed workflows
+# * code to restart HDFS daemons
+# * params below that are hardcoded need to be arguments
 
 my ($glob_target) = @ARGV;
 
@@ -21,6 +23,10 @@ my $sensu_worker = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/
 my $sensu_master = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_master.sh";
 my $global_max_it = 30;
 my $global_wait_time = 2;
+my $cleanup_jobs = 1;
+my $restart_workflows = 0;
+my $workflow_accession = 2;
+my $seqware_oozie_retry = '/glusterfs/netapp/homes1/BOCONNOR/gitroot/seqware-sandbox/seqware-oozie-restart/seqware-oozie-retry.pl';
 
 check_if_running();
 
@@ -36,7 +42,7 @@ GetOptions(
   "glob-target=s" => \$glob_target,
 );
 
-print "\n\n";
+print "\n\n\n\n";
 print "##############################\n";
 print "# RUN DATE: ".`date`;
 print "##############################\n";
@@ -133,6 +139,7 @@ foreach my $target (glob($glob_path)) {
           } else {
             print "  HOST OK\n";
           }
+
           # install sensu if specified
           if ($setup_sensu && !$test) {
             my $cmd = "cd $host && vagrant ssh -c 'sudo bash $sensu_worker $cluster_name $hostname $curr_ip' 2> /dev/null";
@@ -142,6 +149,63 @@ foreach my $target (glob($glob_path)) {
             my $r = system($cmd);
             if ($r) { print "  SENSU INSTALL FAILED\n"; }
           }
+
+          # checks to cleanup any SGE jobs on dead hosts
+          if ($cleanup_jobs && $hostname eq 'master') {
+            my $failed_nodes = {};
+            my $clean = `cd $host && vagrant ssh -c 'qstat -f'`;
+            my @lines = split /\n/, $clean;
+            foreach my $line (@lines) {
+              if ($line =~ /\s+au\s+/) {
+                $line =~ /main.q\@(\S+)/;
+                $failed_nodes->{$line} = 1;
+              }
+            }
+            # kill those jobs
+            my $kill_list = "";
+            $clean = `cd $host && vagrant ssh -c 'qstat'`;
+            @lines = split /\n/, $clean;
+            foreach my $line (@lines) {
+              $line =~ /main.q\@(\S+)/;
+              if ($failed_nodes->{$1}) {
+                $line =~ /^\s+(\d+)\s+/;
+                $kill_list .= " $1";
+              }
+            }
+            my $cmd = "cd $host && vagrant ssh -c 'sudo qdel -f $kill_list'";
+            print "KILL STUCK SGE JOBS: $cmd\n";
+            if (!$test) {
+              my $r = system($cmd);
+              if ($r) { print "PROBLEMS KILLING SGE JOBS!\n"; }
+            }
+          }
+
+          # checks to restart failed workflows
+          if ($restart_workflows && $hostname eq 'master') {
+            my $clean = `cd $host && vagrant ssh -c 'seqware workflow report --accession $workflow_accession'`;
+            my @lines = split /\n/, $clean;
+            my $accession;
+            my $status;
+            my $working_dir;
+            my $eid;
+            foreach my $line (@lines) {
+              if ($line =~ /Workflow Run SWID\s+|\s+(\d+)/) { $accession = $1; }
+              elsif ($line =~ /Workflow Run Status\s+|\s+(\S+)/) { $status = $1; }
+              elsif ($line =~ /Workflow Run Working Dir\s+|\s+(\S+)/) { $working_dir = $1; }
+              elsif ($line =~ /Workflow Run Engine ID\s+|\s+(\S+)/) { $eid = $1; }
+              elsif ($line =~ /Library Sample Names/ && $status eq 'failed') {
+                my $cmd = "cd $host && vagrant ssh -c '$seqware_oozie_retry $working_dir $eid $accession'";
+                print "RESTARTING SEQWARE WORKFLOWS: $cmd\n";
+                if (!$test) {
+                  my $r = system($cmd);
+                  if ($r) {
+                    print "PROBLEMS RESTARTING WORKFLOW! '$seqware_oozie_retry $working_dir $eid $accession'\n";
+                  }
+                }
+              }
+            }
+          }
+
         }
       }
     }
