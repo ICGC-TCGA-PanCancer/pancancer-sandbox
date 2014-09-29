@@ -193,10 +193,10 @@ foreach my $target (glob($glob_path)) {
             my $working_dir;
             my $eid;
             foreach my $line (@lines) {
-              if ($line =~ /Workflow Run SWID\s+|\s+(\d+)/) { $accession = $1; }
-              elsif ($line =~ /Workflow Run Status\s+|\s+(\S+)/) { $status = $1; }
-              elsif ($line =~ /Workflow Run Working Dir\s+|\s+(\S+)/) { $working_dir = $1; }
-              elsif ($line =~ /Workflow Run Engine ID\s+|\s+(\S+)/) { $eid = $1; }
+              if ($line =~ /Workflow Run SWID\s+\|\s+(\d+)/) { $accession = $1; }
+              elsif ($line =~ /Workflow Run Status\s+\|\s+(\S+)/) { $status = $1; }
+              elsif ($line =~ /Workflow Run Working Dir\s+\|\s+(\S+)/) { $working_dir = $1; }
+              elsif ($line =~ /Workflow Run Engine ID\s+\|\s+(\S+)/) { $eid = $1; }
               elsif ($line =~ /Library Sample Names/ && $status eq 'failed') {
                 my $cmd = "cd $host && vagrant ssh -c '$seqware_oozie_retry $working_dir $eid $accession'";
                 print "RESTARTING SEQWARE WORKFLOWS: $cmd\n";
