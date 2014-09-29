@@ -24,20 +24,23 @@ my $sensu_worker = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/
 my $sensu_master = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/bionimbus_monitor/setup_sensu_master.sh";
 my $global_max_it = 30;
 my $global_wait_time = 2;
-my $cleanup_jobs = 1;
-my $restart_workflows = 1;
+my $cleanup_jobs = 0;
+my $restart_workflows = 0;
 my $workflow_accession = 2;
 my $seqware_oozie_retry = '/glusterfs/netapp/homes1/BOCONNOR/gitroot/seqware-sandbox/seqware-oozie-restart/seqware-oozie-retry.pl';
 
 check_if_running();
 
-if (scalar(@ARGV) < 1 || scalar(@ARGV) > 7) {
- die "USAGE: perl $0 [--test] [--verbose] [--setup-sensu] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>]\n";
+if (scalar(@ARGV) < 1 || scalar(@ARGV) > 11) {
+ die "USAGE: perl $0 [--test] [--verbose] [--setup-sensu] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>] [--cleanup-sge] [--restart-failed] [--workflow-accession <accession>]\n";
 }
 
 GetOptions(
   "test" => \$test,
   "verbose" => \$verbose,
+  "restart-failed" => \$restart_workflows,
+  "cleanup-sge" => \$cleanup_jobs,
+  "workflow-accession=i" => \$workflow_accession,
   "setup-sensu" => \$setup_sensu,
   "glob-base=s" => \$glob_base,
   "glob-target=s" => \$glob_target,
