@@ -115,7 +115,7 @@ foreach my $target (glob($glob_path)) {
         #print "  CMD STATUS: $r\n";
         # need to restart, ssh doesn't work!
         if ($r != 0) {
-          print "  REBOOTING HOST\n";
+          print "  REBOOTING HOST: $hostname\n";
           my $ip = `cd $host && vagrant ssh-config | grep HostName | awk '{print \$2}' 2> /dev/null`;
           chomp $ip;
           if ($ip =~ /\d+\.\d+\.\d+\.\d+/) {
