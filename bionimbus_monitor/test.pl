@@ -177,6 +177,7 @@ foreach my $target (glob($glob_path)) {
             }
             my $cmd = "cd $host && vagrant ssh -c 'sudo qdel -f $kill_list'";
             print "KILL STUCK SGE JOBS: $cmd\n";
+
             if (!$test && length($kill_list) > 0) {
               my $r = system($cmd);
               if ($r) { print "PROBLEMS KILLING SGE JOBS!\n"; }
@@ -198,7 +199,7 @@ foreach my $target (glob($glob_path)) {
               elsif ($line =~ /Workflow Run Working Dir\s+\|\s+(\S+)/) { $working_dir = $1; }
               elsif ($line =~ /Workflow Run Engine ID\s+\|\s+(\S+)/) { $eid = $1; }
               elsif ($line =~ /Library Sample Names/ && $status eq 'failed') {
-                my $cmd = "cd $host && vagrant ssh -c '$seqware_oozie_retry $working_dir $eid $accession'";
+                my $cmd = "cd $host && vagrant ssh -c 'perl $seqware_oozie_retry $working_dir $eid $accession'";
                 print "RESTARTING SEQWARE WORKFLOWS: $cmd\n";
                 if (!$test) {
                   my $r = system($cmd);
