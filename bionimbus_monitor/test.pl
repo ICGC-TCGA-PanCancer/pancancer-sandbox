@@ -25,7 +25,7 @@ my $sensu_master = "/glusterfs/netapp/homes1/BOCONNOR/gitroot/pancancer-sandbox/
 my $global_max_it = 30;
 my $global_wait_time = 2;
 my $cleanup_jobs = 1;
-my $restart_workflows = 0;
+my $restart_workflows = 1;
 my $workflow_accession = 2;
 my $seqware_oozie_retry = '/glusterfs/netapp/homes1/BOCONNOR/gitroot/seqware-sandbox/seqware-oozie-restart/seqware-oozie-retry.pl';
 
