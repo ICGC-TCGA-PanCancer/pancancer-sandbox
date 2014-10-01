@@ -72,6 +72,8 @@ sub read_urls {
     open IN, "<$url_file" or die;
     while(<IN>) {
       chomp;
+      next if($_ eq '');
+      next if (/^\s*#/);
       if (m!^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?!) {
         $d->{$_} = 1;
       }
