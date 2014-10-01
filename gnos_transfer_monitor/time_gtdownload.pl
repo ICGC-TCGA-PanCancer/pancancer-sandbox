@@ -95,7 +95,7 @@ sub gtdownload {
   my $d = {};
   my $temp_dir = mktmpdir($tmp);
   my $start = time;
-  my $cmd = "gtdownload $url -c $pem -p $temp_dir";
+  my $cmd = "gtdownload -vv $url -c $pem -p $temp_dir";
   print "DOWNLOADING: $cmd\n";
   my $r = system($cmd);
   if ($r) { print " + Problems downloading!\n"; }
