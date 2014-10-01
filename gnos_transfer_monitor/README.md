@@ -29,15 +29,17 @@ The --output option outputs a summary statistic in JSON format.
     {
       "gtrep-ebi": {
         "GB": 129349101,
-        "time": 1921,
-        "GB/s": 5,
-        "seconds_since_epoc": 102020101
+        "duration": 1921,
+        "start": 1921,
+        "stop": 1921,
+        "GB/s": 5
        },
        "gtrepo-osdc-icgc": {
          "GB": 129349101,
-         "time": 1921,
-         "GB/s": 5,
-         "seconds_since_epoc": 100201012
+         "duration": 1921,
+         "start": 1921,
+         "stop": 1921,
+         "GB/s": 5
        }
     }
 

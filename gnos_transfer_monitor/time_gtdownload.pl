@@ -1,6 +1,7 @@
 use strict;
 use Data::Dumper;
 use Getopt::Long;
+use Data::UUID;
 use JSON;
 
 # NOTES
@@ -12,8 +13,8 @@ use JSON;
 #   USAGE   #
 #############
 
-if (scalar(@ARGV) < 6 || scalar(@ARGV) > 8) {
-  die "USAGE: perl $0 --url <gnos_download_url> --url-file <url-file> --output <output.json> --pem <key_file.pem>"
+if (scalar(@ARGV) < 6 || scalar(@ARGV) > 10) {
+  die "USAGE: perl $0 --url <gnos_download_url> --url-file <url-file> --output <output.json> --pem <key_file.pem> --temp <temp_dir>"
 }
 
 
@@ -25,12 +26,14 @@ my @urls;
 my $url_file;
 my $output = "output.json";
 my $pem;
+my $tmp = "/mnt/";
 
 GetOptions(
      "url=s" => \@urls,
      "url-file=s" => \$url_file,
      "output=s" => \$output,
      "pem=s" => \$pem,
+     "temp=s" => \$tmp,
   );
 
 
@@ -90,7 +93,33 @@ sub download_urls {
 sub gtdownload {
   my ($url) = @_;
   my $d = {};
-  my $r = system("gtdownload ");
+  my $temp_dir = mktmpdir($tmp);
+  my $start = time;
+  my $cmd = "gtdownload $url -c $pem -p $temp_dir";
+  print "DOWNLOADING: $cmd\n";
+  my $r = system($cmd);
+  if ($r) { print " + Problems downloading!\n"; }
+  my $stop = time;
+  my $duration = $stop - $start;
+  my $size = `du -s $temp_dir`;
+  chomp $size;
+  $size =~ /(\d+)/;
+  $size = $1 / 1024 / 1024 / 1024;
+  $d->{'GB'} = $size;
+  $d->{'GB/s'} = $size / $duration;
+  $d->{'start'} = $start;
+  $d->{'stop'} = $stop;
+  $d->{'duration'} = $duration;
+  die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
+  return($d);
+}
+
+sub mktmpdir {
+  my ($tmp) = @_;
+  my $ug = Data::UUID->new;
+  my $uuid = lc($ug->create_str());
+  die "Can't make temp dir $tmp/$uuid" if (system("mkdir -p $tmp/$uuid"));
+  return("$tmp/$uuid");
 }
 
 sub consolodate_runtimes {
