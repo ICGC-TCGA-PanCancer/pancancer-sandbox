@@ -97,7 +97,9 @@ sub gtdownload {
   my $d = {};
   my $temp_dir = mktmpdir($tmp);
   my $start = time;
-  my $cmd = "gtdownload -vv -c $pem -p $temp_dir $url --null-storage";
+  #my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
+  # LEFT OFF WITH: test the null storage option
+  my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
   print "DOWNLOADING: $cmd\n";
   my $r = system($cmd);
   if ($r) { print " + Problems downloading!\n"; }
