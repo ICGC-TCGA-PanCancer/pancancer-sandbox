@@ -101,22 +101,24 @@ sub gtdownload {
   my $start = time;
   #my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
   # LEFT OFF WITH: test the null storage option
-  my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
+  my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir";
   print "DOWNLOADING: $cmd\n";
   my $r = 0;
-  if (!$test) { system($cmd); }
-  if ($r) { print " + Problems downloading!\n"; }
-  my $stop = time;
-  my $duration = $stop - $start;
-  my $size = `du -s $temp_dir`;
-  chomp $size;
-  $size =~ /(\d+)/;
-  $size = $1 / 1024 / 1024 / 1024;
-  $d->{'GB'} = $size;
-  $d->{'GB/s'} = $size / $duration;
-  $d->{'start'} = $start;
-  $d->{'stop'} = $stop;
-  $d->{'duration'} = $duration;
+  if (!$test) {
+    system($cmd);
+    if ($r) { print " + Problems downloading!\n"; }
+    my $stop = time;
+    my $duration = $stop - $start;
+    my $size = `du -s $temp_dir`;
+    chomp $size;
+    $size =~ /(\d+)/;
+    $size = $1 / 1024 / 1024 / 1024;
+    $d->{'GB'} = $size;
+    $d->{'GB/s'} = $size / $duration;
+    $d->{'start'} = $start;
+    $d->{'stop'} = $stop;
+    $d->{'duration'} = $duration;
+  }
   die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
   return($d);
 }
