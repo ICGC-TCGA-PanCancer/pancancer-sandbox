@@ -104,7 +104,7 @@ sub gtdownload {
   #my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
   # LEFT OFF WITH: test the null storage option
   my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir";
-  if ($url =~ /cghub/) {
+  if ($url =~ /cghub\.ucsc\.edu/) {
     # need the public key
     $cmd = "gtdownload $url -vv -c cghub_public.key -p $temp_dir"
   }
