@@ -13,8 +13,8 @@ use JSON;
 #   USAGE   #
 #############
 
-if (scalar(@ARGV) < 6 || scalar(@ARGV) > 10) {
-  die "USAGE: perl $0 --url <gnos_download_url> --url-file <url-file> --output <output.json> --pem <key_file.pem> --temp <temp_dir>"
+if (scalar(@ARGV) < 6 || scalar(@ARGV) > 11) {
+  die "USAGE: perl $0 --url <gnos_download_url> --url-file <url-file> --output <output.json> --pem <key_file.pem> --temp <temp_dir> --test"
 }
 
 
@@ -27,6 +27,7 @@ my $url_file;
 my $output = "output.json";
 my $pem;
 my $tmp = "/mnt/";
+my $test = 0;
 
 GetOptions(
      "url=s" => \@urls,
@@ -34,6 +35,7 @@ GetOptions(
      "output=s" => \$output,
      "pem=s" => \$pem,
      "temp=s" => \$tmp,
+     "test" => \$test,
   );
 
 
@@ -101,7 +103,8 @@ sub gtdownload {
   # LEFT OFF WITH: test the null storage option
   my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
   print "DOWNLOADING: $cmd\n";
-  my $r = system($cmd);
+  my $r = 0;
+  if (!$test) { system($cmd); }
   if ($r) { print " + Problems downloading!\n"; }
   my $stop = time;
   my $duration = $stop - $start;
