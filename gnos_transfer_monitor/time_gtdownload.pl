@@ -162,7 +162,7 @@ sub print_report {
   foreach my $url (keys %{$d}) {
     my $mb = $d->{$url}{bytes} / 1024 / 1024;
     my $mbps = $mb / $d->{$url}{duration};
-    my $trans = 100000000 / ($mbps * 86400)
+    my $trans = 100000000 / ($mbps * 86400);
     print OUT "$url\t$mbps\t$trans\n";
   }
 
