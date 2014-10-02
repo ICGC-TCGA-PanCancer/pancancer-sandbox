@@ -1,0 +1,192 @@
+body {
+	font: 14px sans-serif;
+    color: #121401;
+    }
+
+.axis path,.axis line {
+	fill: none;
+    stroke: #121401;
+    stroke-width: 2px;
+    shape-rendering: crispEdges;
+}
+
+img{
+	display:block;
+	padding: 10px;
+}
+
+
+
+#fullcontain{
+	margin: 0px auto;
+}
+
+#center1{
+	width: 1294px;
+	margin: 0px auto;
+}
+
+#tablediv{
+	margin: 0px auto;
+}
+#chartdiv{
+	margin: 0px auto;
+}
+
+#charttop{
+
+
+font-size: 10px;
+
+height:460px;
+margin: 0px auto;
+
+}
+
+#chartbottom{
+
+
+font-size: 10px;
+
+height:485px;
+
+margin: 0px auto;
+}
+
+
+#table1{
+	padding: 10px;
+}
+	
+#center2{
+	width: 1400px;
+
+        max-height: 1200px;
+
+        margin-left: auto;
+
+        margin-right: auto;
+}
+#radio{
+	float: right;
+	font-size: 12px
+}
+#svg1 {
+    display: block;
+    margin: 0px auto;
+}
+#svg2 {
+    display: block;
+    margin: 0px auto;
+}
+/* ------------------
+ styling for the tables 
+   ------------------   */
+
+
+body
+{
+	line-height: 1.6em;
+}
+
+#rounded-corner
+{
+	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+	margin: 25px auto;
+	text-align: left;
+	border-collapse: collapse;
+}
+#rounded-corner thead th.rounded-company
+{
+	background: #b9c9fe url('table-images/left.png') left -1px no-repeat;
+}
+#rounded-corner thead th.rounded-q4
+{
+	background: #b9c9fe url('table-images/right.png') right -1px no-repeat;
+}
+#rounded-corner th
+{
+	padding: 8px;
+	font-weight: normal;
+	font-size: 13px;
+	color: #039;
+	background: #b9c9fe;
+}
+#rounded-corner td
+{
+	padding: 8px;
+	background: #e8edff;
+	border-top: 1px solid #fff;
+	color: #669;
+}
+#rounded-corner tfoot td.rounded-foot-left
+{
+	background: #e8edff url('table-images/botleft.png') left bottom no-repeat;
+}
+#rounded-corner tfoot td.rounded-foot-right
+{
+	background: #e8edff url('table-images/botright.png') right bottom no-repeat;
+}
+#rounded-corner tbody tr:hover td
+{
+	background: #d0dafd;
+}
+
+  /*----- Tabs -----*/
+    .tabs {
+    display:inline-block;
+    
+}
+ 
+    /*----- Tab Links -----*/
+    /* Clearfix */
+    .tab-links:after {
+        display:block;
+        clear:both;
+        content:'';
+        width:900px;
+    }
+ 
+    .tab-links li {
+        margin:0px 2px;
+        float:left;
+        list-style:none;
+    }
+ 
+        .tab-links a {
+            padding:9px 15px;
+            display:inline-block;
+            border-radius:3px 3px 0px 0px;
+            background:#7FB5DA;
+            font-size:16px;
+            font-weight:600;
+            color:#4c4c4c;
+            transition:all linear 0.15s;
+        }
+ 
+        .tab-links a:hover {
+            background:#a7cce5;
+            text-decoration:none;
+        }
+ 
+    li.active a, li.active a:hover {
+        background:#00EFFF;
+        color:#4c4c4c;
+    }
+ 
+    /*----- Content of Tabs -----*/
+    .tab-content {
+        padding:15px;
+        margin: 0px auto;
+        background:#fff;
+        width: 900px;
+    }
+ 
+        .tab {
+            display:none;
+        }
+ 
+        .tab.active {
+            display:block;
+        }
