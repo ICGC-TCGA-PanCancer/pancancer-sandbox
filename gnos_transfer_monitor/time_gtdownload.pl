@@ -50,8 +50,6 @@ my $urls_hash = read_urls($url_file, \@urls);
 # run the individual URLs and report individual results
 my $url_runtimes = download_urls($urls_hash);
 
-print Dumper($url_runtimes);
-
 # consolodate runtimes per site
 my $url_consol_runtimes = consolodate_runtimes($url_runtimes);
 
@@ -94,6 +92,7 @@ sub download_urls {
   foreach my $url (keys %{$urls}) {
     $d->{$url} = gtdownload($url);
   }
+  return($d);
 }
 
 sub gtdownload {
@@ -118,7 +117,7 @@ sub gtdownload {
     my $size = `du -s $temp_dir`;
     chomp $size;
     $size =~ /(\d+)/;
-    $size = $1 / 1024 / 1024 / 1024;
+    $size = $1 / 1024 / 1024;
     $d->{'GB'} = $size;
     $d->{'GB/s'} = $size / $duration;
     $d->{'start'} = $start;
@@ -126,6 +125,7 @@ sub gtdownload {
     $d->{'duration'} = $duration;
     die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
   }
+  print Dumper($d);
   return($d);
 }
 
