@@ -118,7 +118,7 @@ sub gtdownload {
     if ($r) { print " + Problems downloading!\n"; }
     my $stop = time;
     my $duration = $stop - $start;
-    my $size = `du -s $temp_dir`;
+    my $size = `du -sb $temp_dir`;
     chomp $size;
     $size =~ /(\d+)/;
     $size = $1 / 1024 / 1024;
@@ -133,7 +133,8 @@ sub gtdownload {
   print Dumper($d);
   return($d);
 }
-
+# ebi
+# /mnt/tmp/903f9d8e-e4e7-446d-83fd-93438d7df82f
 sub mktmpdir {
   my ($tmp) = @_;
   my $ug = Data::UUID->new;
