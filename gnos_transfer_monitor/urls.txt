@@ -11,4 +11,4 @@ https://gtrepo-etri.annailabs.com/cghub/data/analysis/download/2b1bd69a-7762-43e
 # Tokyo - RIKEN 771MB
 https://gtrepo-riken.annailabs.com/cghub/data/analysis/download/01c310cd-cbab-4d36-b66b-eff6fd359ff9
 # Santa Cruz - CGHub ~30GB
-https://cghub.ucsc.edu/cghub/data/analysis/download/eaa56631-c802-47ff-8118-3ed40d10302b
+#https://cghub.ucsc.edu/cghub/data/analysis/download/eaa56631-c802-47ff-8118-3ed40d10302b

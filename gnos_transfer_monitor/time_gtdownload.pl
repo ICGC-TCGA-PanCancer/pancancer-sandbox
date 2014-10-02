@@ -50,12 +50,15 @@ my $urls_hash = read_urls($url_file, \@urls);
 # run the individual URLs and report individual results
 my $url_runtimes = download_urls($urls_hash);
 
+print Dumper($url_runtimes);
+
 # consolodate runtimes per site
 my $url_consol_runtimes = consolodate_runtimes($url_runtimes);
 
 # print report
 print_report($url_consol_runtimes, $output);
 
+# TODO: write another tool that then plots one or more of these .json files
 
 
 ###############
@@ -118,12 +121,13 @@ sub gtdownload {
     chomp $size;
     $size =~ /(\d+)/;
     $size = $1 / 1024 / 1024;
-    $d->{'GB'} = $size;
-    $d->{'GB/s'} = $size / $duration;
+    $d->{'bytes'} = $1;
+    $d->{'MB'} = $size;
+    $d->{'MB/s'} = $size / $duration;
     $d->{'start'} = $start;
     $d->{'stop'} = $stop;
     $d->{'duration'} = $duration;
-    die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
+    #die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
   }
   print Dumper($d);
   return($d);
