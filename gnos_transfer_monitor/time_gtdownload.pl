@@ -161,16 +161,15 @@ sub print_report {
   my ($d, $out) = @_;
   open OUT, ">$out" or die;
   my $i=0;
-  if ($format eq "json") { print OUT "\n{\n"; }
+  if ($format eq "json") { print OUT "{\n"; }
   else { print OUT "URL\tMB/s\tDays_to_Transfer_100TB\n"; }
   foreach my $url (keys %{$d}) {
-    if ($i>0) { print OUT ","; }
-    print OUT "\n";
+    if ($i>0 && $format eq "json") { print OUT ",\n"; }
     $i++;
     my $mb = $d->{$url}{bytes} / 1024 / 1024;
     my $mbps = $mb / $d->{$url}{duration};
     my $trans = 100000000 / ($mbps * 86400);
-    if ($format eq "json") { print OUT q({ "$url": { "MB/s": $mbps, "days_for_100TB": $trans } }); }
+    if ($format eq "json") { print OUT qq(  { "$url": { "MB/s": $mbps, "days_for_100TB": $trans } }); }
     else { print OUT "$url\t$mbps\t$trans\n"; }
   }
   if ($format eq "json") { print OUT "\n}"; }
