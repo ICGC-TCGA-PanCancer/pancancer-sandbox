@@ -169,7 +169,7 @@ sub print_report {
     my $mb = $d->{$url}{bytes} / 1024 / 1024;
     my $mbps = $mb / $d->{$url}{duration};
     my $trans = 100000000 / ($mbps * 86400);
-    if ($format eq "json") { print OUT qq(  "$url": { "MB/s": $mbps, "days_for_100TB": $trans } }); }
+    if ($format eq "json") { print OUT qq(  "$url": { "MB/s": $mbps, "days_for_100TB": $trans }); }
     else { print OUT "$url\t$mbps\t$trans\n"; }
   }
   if ($format eq "json") { print OUT "\n}"; }
