@@ -159,13 +159,12 @@ sub consolodate_runtimes {
 sub print_report {
   my ($d, $out) = @_;
   open OUT, ">$out" or die;
-  print "URL\tMB/s\tDays_to_Transfer_100TB\n";
+  print OUT "URL\tMB/s\tDays_to_Transfer_100TB\n";
   foreach my $url (keys %{$d}) {
     my $mb = $d->{$url}{bytes} / 1024 / 1024;
     my $mbps = $mb / $d->{$url}{duration};
     my $trans = 100000000 / ($mbps * 86400);
     print OUT "$url\t$mbps\t$trans\n";
   }
-
   close OUT;
 }
