@@ -118,8 +118,8 @@ sub gtdownload {
     $d->{'start'} = $start;
     $d->{'stop'} = $stop;
     $d->{'duration'} = $duration;
+    die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
   }
-  die "Can't clean up temp dir! $temp_dir\n" if system("rm -rf $temp_dir");
   return($d);
 }
 
