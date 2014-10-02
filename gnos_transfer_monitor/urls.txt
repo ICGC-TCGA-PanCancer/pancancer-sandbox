@@ -1,9 +1,9 @@
 # Chicago - OSDC - ICGC 787MB
-https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/0127e2de-9937-431f-b741-2b854d542c17
+#https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/0127e2de-9937-431f-b741-2b854d542c17
 # London - EBI 610MB
 https://gtrepo-ebi.annailabs.com/cghub/data/analysis/download/0b8a5c30-c497-4700-bfbe-64beefd9f8a9
 # Barcelona - BSC 852MB
-https://gtrepo-bsc.annailabs.com/cghub/data/analysis/download/00ab406b-96f7-4432-b8be-2cbbcc75e633
+#https://gtrepo-bsc.annailabs.com/cghub/data/analysis/download/00ab406b-96f7-4432-b8be-2cbbcc75e633
 # Heidelberg - DKFZ 643MB
 https://gtrepo-dkfz.annailabs.com/cghub/data/analysis/download/09cd73f4-3eb2-463d-8c5e-f44f3d1795e8
 # Seoul - ETRI 559MB
