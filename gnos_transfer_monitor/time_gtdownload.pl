@@ -13,8 +13,8 @@ use JSON;
 #   USAGE   #
 #############
 
-if (scalar(@ARGV) < 6 || scalar(@ARGV) > 11) {
-  die "USAGE: perl $0 --url <gnos_download_url> --url-file <url-file> --output <output.json> --pem <key_file.pem> --temp <temp_dir> --test"
+if (scalar(@ARGV) < 6 || scalar(@ARGV) > 13) {
+  die "USAGE: perl $0 [--url <gnos_download_url>] [--url-file <url-file>] --output <output_file> [--output-format <tsv|json>] --pem <key_file.pem> --temp <temp_dir> [--test]\n";
 }
 
 
@@ -28,6 +28,7 @@ my $output = "output.json";
 my $pem;
 my $tmp = "/mnt/";
 my $test = 0;
+my $format = 'tsv';
 
 GetOptions(
      "url=s" => \@urls,
@@ -36,6 +37,7 @@ GetOptions(
      "pem=s" => \$pem,
      "temp=s" => \$tmp,
      "test" => \$test,
+     "output-format=s" => \$format,
   );
 
 
@@ -158,12 +160,19 @@ sub consolodate_runtimes {
 sub print_report {
   my ($d, $out) = @_;
   open OUT, ">$out" or die;
-  print OUT "URL\tMB/s\tDays_to_Transfer_100TB\n";
+  my $i=0;
+  if ($format eq "json") { print OUT "\n{\n"; }
+  else { print OUT "URL\tMB/s\tDays_to_Transfer_100TB\n"; }
   foreach my $url (keys %{$d}) {
+    if ($i>0) { print OUT ","; }
+    print OUT "\n";
+    $i++;
     my $mb = $d->{$url}{bytes} / 1024 / 1024;
     my $mbps = $mb / $d->{$url}{duration};
     my $trans = 100000000 / ($mbps * 86400);
-    print OUT "$url\t$mbps\t$trans\n";
+    if ($format eq "json") { print OUT q({ "$url": { "MB/s": $mbps, "days_for_100TB": $trans } }); }
+    else { print OUT "$url\t$mbps\t$trans\n"; }
   }
+  if ($format eq "json") { print OUT "\n}"; }
   close OUT;
 }
