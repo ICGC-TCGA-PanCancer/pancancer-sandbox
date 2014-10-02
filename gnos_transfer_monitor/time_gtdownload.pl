@@ -50,6 +50,8 @@ my $urls_hash = read_urls($url_file, \@urls);
 # run the individual URLs and report individual results
 my $url_runtimes = download_urls($urls_hash);
 
+print Dumper($url_runtimes);
+
 # consolodate runtimes per site
 my $url_consol_runtimes = consolodate_runtimes($url_runtimes);
 
