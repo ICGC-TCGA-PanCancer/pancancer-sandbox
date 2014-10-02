@@ -102,6 +102,10 @@ sub gtdownload {
   #my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
   # LEFT OFF WITH: test the null storage option
   my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir";
+  if ($url =~ /cghub/) {
+    # need the public key
+    $cmd = "gtdownload $url -vv -c -p $temp_dir"
+  }
   print "DOWNLOADING: $cmd\n";
   my $r = 0;
   if (!$test) {
