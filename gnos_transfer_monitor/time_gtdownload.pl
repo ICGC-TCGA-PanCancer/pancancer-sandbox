@@ -96,7 +96,6 @@ sub download_urls {
 
   foreach my $url (keys %{$urls}) {
     $d->{$url} = gtdownload($url);
-    last;
   }
   return($d);
 }
