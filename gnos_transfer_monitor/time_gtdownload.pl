@@ -104,7 +104,7 @@ sub gtdownload {
   my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir";
   if ($url =~ /cghub/) {
     # need the public key
-    $cmd = "gtdownload $url -vv -c -p $temp_dir"
+    $cmd = "gtdownload $url -vv -c cghub_public.key -p $temp_dir"
   }
   print "DOWNLOADING: $cmd\n";
   my $r = 0;
