@@ -108,10 +108,10 @@ sub gtdownload {
   my $temp_dir = mktmpdir($tmp);
   my $start = time;
   #my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
-  my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir";
+  my $cmd = "gtdownload $url -k 10 -vv -c $pem -p $temp_dir";
   if ($url =~ /cghub\.ucsc\.edu/) {
     # need the public key
-    $cmd = "gtdownload $url -vv -c cghub_public.key -p $temp_dir"
+    $cmd = "gtdownload $url -k 10 -vv -c cghub_public.key -p $temp_dir"
   }
   print "DOWNLOADING: $cmd\n";
   my $r = 0;
