@@ -14,7 +14,7 @@ use JSON;
 #############
 
 if (scalar(@ARGV) < 6 || scalar(@ARGV) > 13) {
-  die "USAGE: perl $0 [--url <gnos_download_url>] [--url-file <url-file>] --output <output_file> [--output-format <tsv|json>] --pem <key_file.pem> --temp <temp_dir> [--test]\n";
+  die "USAGE: perl $0 [--url <gnos_download_url>] [--url-file <url-file>] --output <output_file> [--output-format <tsv|json>] --pem <key_file.pem> --temp <temp_dir> [--test] [--use-s3] --test-region <AWS region>\n";
 }
 
 
@@ -29,6 +29,8 @@ my $pem;
 my $tmp = "/mnt/";
 my $test = 0;
 my $format = 'tsv';
+my $s3 = 0;
+my $test_region = "virginia";
 
 GetOptions(
      "url=s" => \@urls,
@@ -38,6 +40,8 @@ GetOptions(
      "temp=s" => \$tmp,
      "test" => \$test,
      "output-format=s" => \$format,
+     "test-region=s" => \$test_region,
+     "use-s3" => \$s
   );
 
 
@@ -61,6 +65,10 @@ my $url_consol_runtimes = consolodate_runtimes($url_runtimes);
 
 # print report
 print_report($url_consol_runtimes, $output);
+
+if($s3) {
+  merge_with_s3($url_consol_runtimes);
+}
 
 # TODO: write another tool that then plots one or more of these .json files
 
@@ -160,6 +168,17 @@ sub consolodate_runtimes {
   return($r);
 }
 
+sub merge_with_s3 {
+  my ($d) = @_;
+  ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+  my $date = $year.$mon.$mday.$hour.$min.$sec;
+  system("s3cmd get s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
+  my $old = read_json("old.transfer_timing.json");
+  merge_json($old, $d, "new.transfer_timing.json");
+  system("s3cmd put new.transfer_timing.json s3://pancancer-site-data/transfer_timing.json");
+  # LEFT OFF HERE: need to get the json merged and uploaded back
+}
+
 sub print_report {
   my ($d, $out) = @_;
   open OUT, ">$out" or die;
@@ -177,6 +196,11 @@ sub print_report {
     my $genomePerDay = $GBpday / 600;
     my $variantPerDay = $GBpday / 300;
     # genome per day (variant calling)
+
+    $d->{$url}{"MB/s"} = $mbps;
+    $d->{$url}{"days_for_100TB"} = $trans;
+    $d->{$url}{"Genome_Align_Per_Day"} = $genomePerDay;
+    $d->{$url}{"Genome_Variant_Call_Per_Day"} = $variantPerDay;
 
     if ($format eq "json") { print OUT qq(  "$url": { "MB/s": $mbps, "days_for_100TB": $trans, "Genome_Align_Per_Day": $genomePerDay, "Genome_Variant_Call_Per_Day": $variantPerDay }); }
     else { print OUT "$url\t$mbps\t$trans\t$genomePerDay\t$variantPerDay\n"; }
