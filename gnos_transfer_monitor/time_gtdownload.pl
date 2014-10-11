@@ -52,12 +52,12 @@ my $urls_hash = read_urls($url_file, \@urls);
 # run the individual URLs and report individual results
 my $url_runtimes = download_urls($urls_hash);
 
-print Dumper($url_runtimes);
+#print Dumper($url_runtimes);
 
 # consolodate runtimes per site
 my $url_consol_runtimes = consolodate_runtimes($url_runtimes);
 
-print Dumper($url_consol_runtimes);
+#print Dumper($url_consol_runtimes);
 
 # print report
 print_report($url_consol_runtimes, $output);
@@ -154,6 +154,9 @@ sub consolodate_runtimes {
     $r->{$server}{bytes} += $d->{$url}{bytes};
     $r->{$server}{duration} += $d->{$url}{duration};
   }
+
+  # now calculate the stats we care about
+
   return($r);
 }
 
@@ -162,15 +165,21 @@ sub print_report {
   open OUT, ">$out" or die;
   my $i=0;
   if ($format eq "json") { print OUT "{\n"; }
-  else { print OUT "URL\tMB/s\tDays_to_Transfer_100TB\n"; }
+  else { print OUT "URL\tMB/s\tDays_to_Transfer_100TB\tGenome_Align_Per_Day\tGenome_Variant_Call_Per_Day\n"; }
   foreach my $url (keys %{$d}) {
     if ($i>0 && $format eq "json") { print OUT ",\n"; }
     $i++;
     my $mb = $d->{$url}{bytes} / 1024 / 1024;
     my $mbps = $mb / $d->{$url}{duration};
     my $trans = 100000000 / ($mbps * 86400);
-    if ($format eq "json") { print OUT qq(  "$url": { "MB/s": $mbps, "days_for_100TB": $trans }); }
-    else { print OUT "$url\t$mbps\t$trans\n"; }
+    # calculate genomes per day (alignment)
+    my $GBpday = $mbps * (86400 / 1024);
+    my $genomePerDay = $GBpday / 600;
+    my $variantPerDay = $GBpday / 300;
+    # genome per day (variant calling)
+
+    if ($format eq "json") { print OUT qq(  "$url": { "MB/s": $mbps, "days_for_100TB": $trans, "Genome_Align_Per_Day": $genomePerDay, "Genome_Variant_Call_Per_Day": $variantPerDay }); }
+    else { print OUT "$url\t$mbps\t$trans\t$genomePerDay\t$variantPerDay\n"; }
   }
   if ($format eq "json") { print OUT "\n}"; }
   close OUT;
