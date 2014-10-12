@@ -54,7 +54,7 @@ fill_template($d, $template, $output);
 ###############
 
 sub download_url {
-  my $r = system("s3cmd get --force s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
+  my $r = system("s3cmd get --force s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json &> /dev/null");
   if ($r) { system("echo '{}' > old.transfer_timing.json"); }
   my $old = read_json("old.transfer_timing.json");
   return($old);
@@ -74,7 +74,7 @@ sub parse_json {
 
 sub fill_template {
   my ($d, $file, $output) = @_;
-  print Dumper($d);
+  #print Dumper($d);
   my $data = {};
   $data->{data} = $d;
   my $template = Template->new();
