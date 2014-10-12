@@ -103,7 +103,7 @@
        [% MBPS = data.$region.$date.$server.$MBPSSTR %]
        [% lat = 41.891519 %]
        [% long = -87.629159 %]
-       [% shortname = 'Chicago' %]
+       [% shortname = 'Unknown' %]
        [% color = 'gt100' %]
 
        [% IF MBPS <= 1 %]
@@ -115,17 +115,37 @@
        [% END %]
 
        [% IF server == 'gtrepo-dkfz.annailabs.com' %]
+         [% shortname = 'Heidelberg' %]
+         [% lat = 49.403159 %]
+         [% long = 8.676061 %]
 
        [% ELSIF server == 'gtrepo-bsc.annailabs.com' %]
+         [% shortname = 'Barcelona' %]
+         [% lat = 41.378691 %]
+         [% long = 2.175547 %]
 
        [% ELSIF server == 'gtrepo-riken.annailabs.com' %]
+          [% shortname = 'Tokyo' %]
+          [% lat = 35.684219 %]
+          [% long = 139.755020 %]
 
        [% ELSIF server == 'gtrepo-etri.annailabs.com' %]
+         [% shortname = 'Seoul' %]
+         [% lat = 37.553397 %]
+         [% long = 126.980624 %]
 
        [% ELSIF server == 'gtrepo-ebi.annailabs.com' %]
+        [% shortname = 'London' %]
+        [% lat = 51.507919 %]
+        [% long = -0.123571 %]
+
+       [% ELSIF server == 'gtrepo-osdc-icgc.annailabs.com' %]
+         [% shortname = 'Chicago' %]
 
        [% ELSIF server == 'cghub.ucsc.edu' %]
-
+        [% shortname = 'Santa Cruz' %]
+        [% lat = 36.971944 %]
+        [% long = -122.026389 %]
 
        [% END %]
 
