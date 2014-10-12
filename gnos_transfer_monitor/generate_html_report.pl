@@ -75,9 +75,10 @@ sub parse_json {
 sub fill_template {
   my ($d, $file, $output) = @_;
   print Dumper($d);
-
+  my $data = {};
+  $data->{data} = $d;
   my $template = Template->new();
-  $template->process($file, $d)
+  $template->process($file, $data)
       || die "Template process failed: ", $template->error(), "\n";
 }
 
