@@ -63,7 +63,7 @@ sub parse_json {
   my $n = {};
   foreach my $site (keys %{$d}) {
     foreach my $date (sort keys %{$d->{$site}}) {
-      $n->{$site} = $d->{$site}{$date};
+      $n->{$site}{$date} = $d->{$site}{$date};
       last;
     }
   }
