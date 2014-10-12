@@ -7,7 +7,8 @@ use JSON;
 # NOTES
 # http://stackoverflow.com/questions/15233535/perl-regex-substitution-for-a-url
 # https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/441f1192-16ad-45cb-aefa-f4c3322a73dc
-
+# TODO
+# * add "repeat" loop to get better stats
 
 #############
 #   USAGE   #
