@@ -104,7 +104,7 @@
          [% currkey %] value [% currkey.value%]
        [%END %]
        [% data.$region.$date.$server %]
-       [% data.$region.$date.$server.'MB/s' %]
+       [% data.$region.$date.$server.MB\/s %]
        [% END %]
 
        {name: "Barcelona", bandwidth: '??? MB/s', latitude: 41.378691, longitude: 2.175547, radius: 8, fillKey: 'gt90'},
