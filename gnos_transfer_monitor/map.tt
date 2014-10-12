@@ -97,9 +97,9 @@
        //bubbles, custom popup on hover template
      map2.bubbles([
 
-       [%  FOREACH server IN data.$region.$date %]
+       [% FOREACH server IN data.$region.$date %]
        [% MBPS = 'MB/s' %]
-       {name: "Chicago", bandwidth: '[% data.$region.$date.$server.$MBPS %]??? MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
+       {name: "Chicago", bandwidth: '[% data.$region.$date.$server.days_for_100TB %] MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
        [% END %]
 
        {name: "Barcelona", bandwidth: '??? MB/s', latitude: 41.378691, longitude: 2.175547, radius: 8, fillKey: 'gt90'},
