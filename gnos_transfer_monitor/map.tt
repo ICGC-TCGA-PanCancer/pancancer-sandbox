@@ -153,19 +153,7 @@
 
        [% END %]
 
-       {name: "Barcelona", bandwidth: '??? MB/s', latitude: 41.378691, longitude: 2.175547, radius: 8, fillKey: 'gt90'},
-
-       {name: "Tokyo", bandwidth: '45.7 MB/s', latitude: 35.684219, longitude: 139.755020, radius: 8, fillKey: 'gt100'},
-
-       {name: "Seoul", bandwidth: '53 MB/s', latitude: 37.553397, longitude: 126.980624, radius: 8, fillKey: 'gt100'},
-
-       {name: "Heidelberg", bandwidth: '45 MB/s', latitude: 49.403159, longitude: 8.676061, radius: 8, fillKey: 'gt100'},
-
-       {name: "London", bandwidth: '3 MB/s', latitude: 51.507919, longitude: -0.123571, radius: 8, fillKey: 'gt110'},
-
-       {name: "Santa Cruz", bandwidth: '53 MB/s', latitude: 36.971944, longitude: -122.026389, radius: 8, fillKey: 'gt100'},
-
-       {name: "Amazon Virginia", bandwidth: '', latitude: 37.538346, longitude: -77.461507, radius: 8, fillKey: 'gt80'},
+      {name: "Amazon Virginia", bandwidth: '', latitude: 37.538346, longitude: -77.461507, radius: 8, fillKey: 'gt80'}
 
      ]
 , {
@@ -288,6 +276,21 @@
 [%  END %]
 
 </center>
+
+<!--
+{name: "Barcelona", bandwidth: '??? MB/s', latitude: 41.378691, longitude: 2.175547, radius: 8, fillKey: 'gt90'},
+
+{name: "Tokyo", bandwidth: '45.7 MB/s', latitude: 35.684219, longitude: 139.755020, radius: 8, fillKey: 'gt100'},
+
+{name: "Seoul", bandwidth: '53 MB/s', latitude: 37.553397, longitude: 126.980624, radius: 8, fillKey: 'gt100'},
+
+{name: "Heidelberg", bandwidth: '45 MB/s', latitude: 49.403159, longitude: 8.676061, radius: 8, fillKey: 'gt100'},
+
+{name: "London", bandwidth: '3 MB/s', latitude: 51.507919, longitude: -0.123571, radius: 8, fillKey: 'gt110'},
+
+{name: "Santa Cruz", bandwidth: '53 MB/s', latitude: 36.971944, longitude: -122.026389, radius: 8, fillKey: 'gt100'},
+
+-->
 
 </body>
 </html>
