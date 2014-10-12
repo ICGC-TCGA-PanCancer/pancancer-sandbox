@@ -163,111 +163,75 @@
      });
 
  map2.arc([
-  {
-      // Chicago <-> AWS
-      origin: {
-          latitude: 41.891519,
-          longitude: -87.629159
-      },
-      destination: {
-          latitude: 37.538346,
-          longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: "#FF0000"
-      }
-  },
-  {
-      // Barcelona <-> AWS
-      origin: {
-          latitude: 41.378691,
-          longitude: 2.175547
-      },
-      destination: {
+
+ [% FOREACH server IN data.$region.$date.keys %]
+
+ [% MBPSSTR = 'MB/s' %]
+ [% MBPS = data.$region.$date.$server.$MBPSSTR %]
+ [% lat = 41.891519 %]
+ [% long = -87.629159 %]
+ [% shortname = 'Unknown' %]
+ [% color = 'gt100' %]
+
+ [% IF MBPS <= 1 %]
+   [% color = 'gt90' %]
+ [% ELSIF MBPS >1 && MBPS <=10 %]
+   [% color = 'gt110' %]
+ [% ELSE %]
+   [% color = 'gt100' %]
+ [% END %]
+
+ [% IF server == 'gtrepo-dkfz.annailabs.com' %]
+   [% shortname = 'Heidelberg' %]
+   [% lat = 49.403159 %]
+   [% long = 8.676061 %]
+
+ [% ELSIF server == 'gtrepo-bsc.annailabs.com' %]
+   [% shortname = 'Barcelona' %]
+   [% lat = 41.378691 %]
+   [% long = 2.175547 %]
+
+ [% ELSIF server == 'gtrepo-riken.annailabs.com' %]
+    [% shortname = 'Tokyo' %]
+    [% lat = 35.684219 %]
+    [% long = 139.755020 %]
+
+ [% ELSIF server == 'gtrepo-etri.annailabs.com' %]
+   [% shortname = 'Seoul' %]
+   [% lat = 37.553397 %]
+   [% long = 126.980624 %]
+
+ [% ELSIF server == 'gtrepo-ebi.annailabs.com' %]
+  [% shortname = 'London' %]
+  [% lat = 51.507919 %]
+  [% long = -0.123571 %]
+
+ [% ELSIF server == 'gtrepo-osdc-icgc.annailabs.com' %]
+   [% shortname = 'Chicago' %]
+
+ [% ELSIF server == 'cghub.ucsc.edu' %]
+  [% shortname = 'Santa Cruz' %]
+  [% lat = 36.971944 %]
+  [% long = -122.026389 %]
+
+ [% END %]
+{
+    // Chicago <-> AWS
+    origin: {
+        latitude: [% lat %],
+        longitude: [% long %]
+    },
+    destination: {
         latitude: 37.538346,
         longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: '#FF0000'
-      }
-  },
-  {
-      // Tokyo <-> AWS
-      origin: {
-          latitude: 35.684219,
-          longitude: 139.755020
-      },
-      destination: {
-        latitude: 37.538346,
-        longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: '#33CC33'
-      }
-  },
-  {
-      // Seoul <-> AWS
-      origin: {
-          latitude: 37.553397,
-          longitude: 126.980624
-      },
-      destination: {
-        latitude: 37.538346,
-        longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: '#33CC33'
-      }
-  },
-  {
-      // Heidelberg <-> AWS
-      origin: {
-          latitude: 49.403159,
-          longitude: 8.676061
-      },
-      destination: {
-        latitude: 37.538346,
-        longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: '#33CC33'
-      }
-  },
-  {
-      // London <-> AWS
-      origin: {
-          latitude: 51.507919,
-          longitude: -0.123571
-      },
-      destination: {
-        latitude: 37.538346,
-        longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: '#FFFF00'
-      }
-  },
-  {
-      // Santa Cruz <-> AWS
-      origin: {
-          latitude: 36.971944,
-          longitude: -122.026389
-      },
-      destination: {
-        latitude: 37.538346,
-        longitude: -77.461507
-      },
-      options: {
-        strokeWidth: 2,
-        strokeColor: '#33CC33'
-      }
-  }
+    },
+    options: {
+      strokeWidth: 2,
+      strokeColor: "#FF0000"
+    }
+},
+ [% END %]
+ 
 ],  {strokeWidth: 1, arcSharpness: 1.4});
 
 </script>
