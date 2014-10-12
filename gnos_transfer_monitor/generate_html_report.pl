@@ -11,7 +11,7 @@ use JSON;
 #   USAGE   #
 #############
 
-if (scalar(@ARGV) < 8 || scalar(@ARGV) > 16) {
+if (scalar(@ARGV) < 0 || scalar(@ARGV) > 16) {
   die "USAGE: perl $0 --template <template_toolkit_template> --output <output_html> [--s3-url <url_to_json_report_for_input>]\n";
 }
 
