@@ -54,7 +54,7 @@ fill_template($d, $template, $output);
 ###############
 
 sub download_url {
-  my $r = system("s3cmd get --force s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json &> /dev/null");
+  my $r = system("s3cmd get --force s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json > /dev/null");
   if ($r) { system("echo '{}' > old.transfer_timing.json"); }
   my $old = read_json("old.transfer_timing.json");
   return($old);
