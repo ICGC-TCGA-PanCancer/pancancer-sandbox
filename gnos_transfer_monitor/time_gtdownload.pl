@@ -172,7 +172,7 @@ sub consolodate_runtimes {
 sub merge_with_s3 {
   my ($d, $test_region) = @_;
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
-  my $date = $year.$mon.$mday.$hour.$min.$sec;
+  my $date = "$year$mon$mday.$hour:$min:$sec";
   my $r = system("s3cmd get s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
   if ($r) { system("echo '{}' > old.transfer_timing.json"); }
   my $old = read_json("old.transfer_timing.json");
