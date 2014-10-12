@@ -97,10 +97,10 @@
        //bubbles, custom popup on hover template
      map2.bubbles([
 
-       [% FOREACH server IN data.$region.$date %]
+       [% FOREACH server IN data.$region.$date.keys %]
        [% MBPS = 'MB/s' %]
        {name: "Chicago", bandwidth: '[% server %] MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
-       [% FOREACH currkey IN data.$region.$date.$server %]
+       [% FOREACH currkey IN data.$region.$date.$server.keys %]
          [% currkey %] value [% currkey.value%]
        [%END %]
        [% END %]
