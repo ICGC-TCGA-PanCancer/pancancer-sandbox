@@ -1,0 +1,5 @@
+<ul>
+[%  FOREACH region IN data %]
+     <li>[% region %]</li>
+[%  END %]
+</ul>
