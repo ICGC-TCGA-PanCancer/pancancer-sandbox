@@ -3,6 +3,8 @@ use Data::Dumper;
 use Getopt::Long;
 use Data::UUID;
 use JSON;
+use Template;
+
 
 # NOTES
 #
@@ -43,7 +45,7 @@ my $d = download_url($s3);
 $d = parse_json($d);
 
 # fill in the template
-fill_template($d, $output);
+fill_template($d, $template, $output);
 
 
 
@@ -71,8 +73,12 @@ sub parse_json {
 }
 
 sub fill_template {
-  my ($d) = @_;
+  my ($d, $file, $output) = @_;
   print Dumper($d);
+
+  my $template = Template->new();
+  $template->process($file, $d)
+      || die "Template process failed: ", $template->error(), "\n";
 }
 
 sub read_json {
