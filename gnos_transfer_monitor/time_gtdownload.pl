@@ -116,10 +116,10 @@ sub gtdownload {
   my $temp_dir = mktmpdir($tmp);
   my $start = time;
   #my $cmd = "gtdownload $url -vv -c $pem -p $temp_dir --null-storage";
-  my $cmd = "gtdownload $url -k 10 -vv -c $pem -p $temp_dir";
+  my $cmd = "gtdownload $url -k 15 -vv -c $pem -p $temp_dir";
   if ($url =~ /cghub\.ucsc\.edu/) {
     # need the public key
-    $cmd = "gtdownload $url -k 10 -vv -c cghub_public.key -p $temp_dir"
+    $cmd = "gtdownload $url -k 15 -vv -c cghub_public.key -p $temp_dir"
   }
   print "DOWNLOADING: $cmd\n";
   my $r = 0;
@@ -172,7 +172,8 @@ sub merge_with_s3 {
   my ($d, $test_region) = @_;
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
   my $date = $year.$mon.$mday.$hour.$min.$sec;
-  system("s3cmd get s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
+  my $r = system("s3cmd get s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
+  if ($r) { system("echo '{}' > old.transfer_timing.json"); }
   my $old = read_json("old.transfer_timing.json");
   merge_json($old, $d, $date, $test_region, "new.transfer_timing.json");
   system("s3cmd put new.transfer_timing.json s3://pancancer-site-data/transfer_timing.json");
