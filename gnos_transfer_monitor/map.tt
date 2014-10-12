@@ -57,9 +57,9 @@
 
   <h2>ICGC/TGCA PanCancer</h2>
 
-[%  FOREACH region IN data %]
+[%  FOREACH region IN data.keys %]
 
-[%  FOREACH date IN region %]
+[%  FOREACH date IN data.$region %]
 
 <h3>Data Transfer Speeds to [% region.key %] on [% date.key %]</h3>
 <p>This is a prototype indicating the transfer speeds seen in a single test between AWS Virginia and the various GNOS repositories.  <font color="red">Red</font> indicates that GNOS download is disabled in this location. <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s while <font color="green">Green</font> indicates &gt; 10 MB/s.  This was a one-time test but future versions will be run in 1) multiple AWS regions (e.g. Tokyo and Ireland too) and 2) on a regular cron jobs so we have at least nightly numbers.</p>
@@ -97,7 +97,7 @@
        //bubbles, custom popup on hover template
      map2.bubbles([
 
-       [%  FOREACH server IN date %]
+       [%  FOREACH server IN data.$region.$date %]
        {name: "Chicago", bandwidth: '[% server.value %]??? MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
        [% END %]
 
