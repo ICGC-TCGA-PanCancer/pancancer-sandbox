@@ -11,6 +11,8 @@ This code will eventaully help us to periodically launch EC2 instances in differ
 * gtdownload installed on worker image
 * a GNOS pem key
 * perl libs TBD
+* for map generation:
+    * "sudo apt-get install libtemplate-perl"
 
 ## Running
 

@@ -1,5 +1,5 @@
 <ul>
 [%  FOREACH region IN data %]
-     <li>[% region %]</li>
+     <li>[% region.key %]</li>
 [%  END %]
 </ul>
