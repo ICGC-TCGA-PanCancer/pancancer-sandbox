@@ -175,11 +175,11 @@ sub merge_with_s3 {
   $mon++;
   $year+=1900;
   my $date = "$year$mon$mday.$hour:$min:$sec";
-  my $r = system("s3cmd get s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
+  my $r = system("s3cmd get --force s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json");
   if ($r) { system("echo '{}' > old.transfer_timing.json"); }
   my $old = read_json("old.transfer_timing.json");
   merge_json($old, $d, $date, $test_region, "new.transfer_timing.json");
-  system("s3cmd put new.transfer_timing.json s3://pancancer-site-data/transfer_timing.json");
+  system("s3cmd put --force new.transfer_timing.json s3://pancancer-site-data/transfer_timing.json");
 }
 
 sub merge_json {
