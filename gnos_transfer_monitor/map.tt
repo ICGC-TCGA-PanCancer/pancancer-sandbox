@@ -96,7 +96,10 @@
 
        //bubbles, custom popup on hover template
      map2.bubbles([
-       {name: "Chicago", bandwidth: '[% date.value.'gtrepo-dkfz.annailabs.com'.'MB/s' %]??? MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
+
+       [%  FOREACH server IN date %]
+       {name: "Chicago", bandwidth: '[% server.'MB/s' %]??? MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
+       [% END %]
 
        {name: "Barcelona", bandwidth: '??? MB/s', latitude: 41.378691, longitude: 2.175547, radius: 8, fillKey: 'gt90'},
 
