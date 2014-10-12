@@ -216,7 +216,6 @@
 
  [% END %]
 {
-    // Chicago <-> AWS
     origin: {
         latitude: [% lat %],
         longitude: [% long %]
@@ -231,7 +230,7 @@
     }
 },
  [% END %]
- 
+
 ],  {strokeWidth: 1, arcSharpness: 1.4});
 
 </script>
