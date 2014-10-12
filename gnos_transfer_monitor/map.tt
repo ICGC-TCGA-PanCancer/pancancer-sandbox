@@ -61,7 +61,7 @@
 
 [%  FOREACH date IN data.$region %]
 
-<h3>Data Transfer Speeds to [% $region %] on [% $date %]</h3>
+<h3>Data Transfer Speeds to [% data.$region.key %] on [% data.$region.$date.key %]</h3>
 <p>This is a prototype indicating the transfer speeds seen in a single test between AWS Virginia and the various GNOS repositories.  <font color="red">Red</font> indicates that GNOS download is disabled in this location. <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s while <font color="green">Green</font> indicates &gt; 10 MB/s.  This was a one-time test but future versions will be run in 1) multiple AWS regions (e.g. Tokyo and Ireland too) and 2) on a regular cron jobs so we have at least nightly numbers.</p>
 
 <div id="container2" style="position:relative; width:800px; height:500px"></div>
