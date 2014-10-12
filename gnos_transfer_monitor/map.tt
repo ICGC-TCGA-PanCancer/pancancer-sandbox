@@ -98,7 +98,8 @@
      map2.bubbles([
 
        [%  FOREACH server IN data.$region.$date %]
-       {name: "Chicago", bandwidth: '[% data.$region.$date.$server.MB/s %]??? MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
+       [% MBPS = 'MB/s' %]
+       {name: "Chicago", bandwidth: '[% data.$region.$date.$server.$MBPS %]??? MB/s', latitude: 41.891519, longitude: -87.629159, radius: 8, fillKey: 'gt90'},
        [% END %]
 
        {name: "Barcelona", bandwidth: '??? MB/s', latitude: 41.378691, longitude: 2.175547, radius: 8, fillKey: 'gt90'},
