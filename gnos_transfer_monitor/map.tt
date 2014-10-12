@@ -99,7 +99,8 @@
 
        [% FOREACH server IN data.$region.$date.keys %]
 
-       [% MBPS = 'MB/s' %]
+       [% MBPSSTR = 'MB/s' %]
+       [% MBPS = data.$region.$date.$server.$MBPSSTR %]
        [% lat = 41.891519 %]
        [% long = -87.629159 %]
        [% shortname = 'Chicago' %]
