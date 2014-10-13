@@ -294,10 +294,10 @@
   [% END %]
 <tr>
   <td>[% server %] ([% shortname %])</td>
-  <td>[% MBPS %]</td>
-  <td>[% data.$region.$date.$server.Genome_Align_Per_Day %]</td>
-  <td>[% data.$region.$date.$server.Genome_Variant_Call_Per_Day %]</td>
-  <td>[% data.$region.$date.$server.days_for_100TB %]</td>
+  <td>[% MBPS | format('%4.2f') %]</td>
+  <td>[% data.$region.$date.$server.Genome_Align_Per_Day | format('%4.2f') %]</td>
+  <td>[% data.$region.$date.$server.Genome_Variant_Call_Per_Day | format('%4.2f') %]</td>
+  <td>[% data.$region.$date.$server.days_for_100TB | format('%4.2f') %]</td>
 </tr>
 
 [% END %]
@@ -305,7 +305,7 @@
 </tbody>
 <tfoot>
           <tr>
-                  <td colspan="19">Per day estimate is based on 300GB/genome each for aligned an unaligned files.</td>
+                  <td colspan="19">* Per day estimate is based on 300GB/genome each for aligned an unaligned files.</td>
           </tr>
   </tfoot>
 
