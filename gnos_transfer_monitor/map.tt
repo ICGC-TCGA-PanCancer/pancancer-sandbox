@@ -171,14 +171,14 @@
  [% lat = 41.891519 %]
  [% long = -87.629159 %]
  [% shortname = 'Unknown' %]
- [% color = 'gt100' %]
+ [% color = '#FF0000' %]
 
  [% IF MBPS <= 1 %]
-   [% color = 'gt90' %]
+   [% color = '#FF0000' %]
  [% ELSIF MBPS >1 && MBPS <=10 %]
-   [% color = 'gt110' %]
+   [% color = '#FFFF00' %]
  [% ELSE %]
-   [% color = 'gt100' %]
+   [% color = '#33CC33' %]
  [% END %]
 
  [% IF server == 'gtrepo-dkfz.annailabs.com' %]
@@ -226,7 +226,7 @@
     },
     options: {
       strokeWidth: 2,
-      strokeColor: "#FF0000"
+      strokeColor: "[% color %]"
     }
 },
  [% END %]
