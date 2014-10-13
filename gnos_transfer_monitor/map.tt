@@ -235,6 +235,83 @@
 
 </script>
 
+
+<p>
+<table name ="x1" id="rounded-corner" summary="">
+<thead>
+<tr>
+<th>Site</th>
+<th>MB/s to [% region FILTER ucfirst %]</th>
+<th>Genome Alignments per Day</th>
+<th>Variant Calling per Day</th>
+<th>Days to Transfer 100TB</th>
+</tr>
+</thead>
+<tbody>
+
+  [% FOREACH server IN data.$region.$date.keys %]
+
+  [% MBPSSTR = 'MB/s' %]
+  [% MBPS = data.$region.$date.$server.$MBPSSTR %]
+  [% shortname = 'Unknown' %]
+  [% color = '#FF0000' %]
+
+  [% IF MBPS <= 1 %]
+    [% color = '#FF0000' %]
+  [% ELSIF MBPS >1 && MBPS <=10 %]
+    [% color = '#FFFF00' %]
+  [% ELSE %]
+    [% color = '#33CC33' %]
+  [% END %]
+
+  [% IF server == 'gtrepo-dkfz.annailabs.com' %]
+    [% shortname = 'Heidelberg' %]
+
+
+  [% ELSIF server == 'gtrepo-bsc.annailabs.com' %]
+    [% shortname = 'Barcelona' %]
+
+
+  [% ELSIF server == 'gtrepo-riken.annailabs.com' %]
+     [% shortname = 'Tokyo' %]
+
+
+  [% ELSIF server == 'gtrepo-etri.annailabs.com' %]
+    [% shortname = 'Seoul' %]
+
+
+  [% ELSIF server == 'gtrepo-ebi.annailabs.com' %]
+   [% shortname = 'London' %]
+
+
+  [% ELSIF server == 'gtrepo-osdc-icgc.annailabs.com' %]
+    [% shortname = 'Chicago' %]
+
+  [% ELSIF server == 'cghub.ucsc.edu' %]
+   [% shortname = 'Santa Cruz' %]
+
+
+  [% END %]
+<tr>
+  <td>[% server %] ([% shortname %])</td>
+  <td>[% MBPS %]</td>
+  <td>[% data.$region.$date.$server.Genome_Align_Per_Day %]</td>
+  <td>[% data.$region.$date.$server.Genome_Variant_Call_Per_Day %]</td>
+  <td>[% data.$region.$date.$server.days_for_100TB %]</td>
+</tr>
+
+[% END %]
+
+</tbody>
+<tfoot>
+          <tr>
+                  <td colspan="19">Per day estimate is based on 300GB/genome each for aligned an unaligned files.</td>
+          </tr>
+  </tfoot>
+
+</table>
+</p>
+
 [%  END %]
 [%  END %]
 
