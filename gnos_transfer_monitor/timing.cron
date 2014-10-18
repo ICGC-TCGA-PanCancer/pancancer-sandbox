@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# an example cron job
+
+source ~/.bash_profile
+
+cd /home/ubuntu/pancancer-sandbox/gnos_transfer_monitor
+
+perl time_gtdownload.pl --url-file urls.large.txt --output report.large.json --output-format json --pem ~/key.pem --temp /mnt/tmp --use-s3 --test-region virginia
+perl generate_html_report.pl --template map.tt > transfers.html
+mv transfers.html /var/www/
+
