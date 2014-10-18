@@ -1,5 +1,5 @@
 # Chicago - OSDC - ICGC 787MB
-#https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/0127e2de-9937-431f-b741-2b854d542c17
+https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/0127e2de-9937-431f-b741-2b854d542c17
 # London - EBI 610MB... leave this as small since transfer is slow at 3MB/s
 https://gtrepo-ebi.annailabs.com/cghub/data/analysis/download/0b8a5c30-c497-4700-bfbe-64beefd9f8a9
 # Barcelona - BSC 852MB
