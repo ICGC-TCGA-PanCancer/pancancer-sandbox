@@ -33,6 +33,14 @@ The --use-s3 flag outputs a summary file to: s3://pancancer-site-data/transfer_t
     perl time_gtdownload.pl --url-file urls.small.txt --output report.json --output-format json --pem ~/key.pem --temp /mnt/tmp --use-s3 --test-region virginia
     perl generate_html_report.pl --template map.tt > map.html
 
+### Cron Tips
+
+I included a sample cron job. Also, when starting a new AWS host make sure you:
+
+* mkdir /mnt/tmp and chmod
+* alter cron for region, set to 4am
+
+
 ## Output
 
     {
