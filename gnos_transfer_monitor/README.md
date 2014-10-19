@@ -37,6 +37,7 @@ The --use-s3 flag outputs a summary file to: s3://pancancer-site-data/transfer_t
 
 I included a sample cron job. Also, when starting a new AWS host make sure you:
 
+* launch with the ephemeral disk to /dev/sdf
 * mkdir /mnt/tmp and chmod
 * alter cron for region, set to 4am
 
