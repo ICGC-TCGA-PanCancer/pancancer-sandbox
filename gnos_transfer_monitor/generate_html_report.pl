@@ -64,6 +64,7 @@ sub parse_json {
   my ($d) = @_;
   my $n = {};
   foreach my $site (keys %{$d}) {
+    # TODO: add averaging of max x number of previous results
     foreach my $date (reverse sort keys %{$d->{$site}}) {
       $n->{$site}{$date} = $d->{$site}{$date};
       last;
