@@ -55,11 +55,11 @@
 
 
 
-  <h2>ICGC/TGCA PanCancer</h2>
+  <h2>GNOS Transfer Speeds</h2>
 
-[%  FOREACH region IN data.keys %]
+[%  FOREACH region IN data.keys.sort %]
 
-[%  FOREACH date IN data.$region.keys %]
+[%  FOREACH date IN data.$region.keys.sort %]
 
 <!-- Virginia coords -->
 [% awslat =  37.538346 %]
@@ -74,7 +74,7 @@
 [% END %]
 
 <h3>Data Transfer Speeds to AWS [% region FILTER ucfirst %] on [% date %]</h3>
-<p>This is a prototype indicating the transfer speeds seen in a single test between AWS [% region  FILTER ucfirst %] and the various GNOS repositories.  <font color="red">Red</font> indicates that GNOS download is disabled or &lt; 1MB/s in this location. <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s while <font color="green">Green</font> indicates &gt; 10 MB/s.</p>
+<p>This report indicates the transfer speeds seen in a single-client test between AWS [% region  FILTER ucfirst %] and the various GNOS repositories (an average over time report/plot will be implemented soon).  <font color="red">Red</font> indicates that GNOS download is disabled or &lt; 1MB/s in this location, <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s, and <font color="green">Green</font> indicates &gt; 10 MB/s.</p>
 
 <div>
 <!-- style="position:relative; width:800px; height:500px" -->
@@ -82,7 +82,7 @@
      <script>
       var colors = d3.scale.category10();
        //basic map config with custom fills, mercator projection
-      var map2 = new Datamap({
+      var map[% region %] = new Datamap({
         scope: 'world',
         element: document.getElementById('container_[% region %]'),
         geographyConfig: {
@@ -109,7 +109,7 @@
       })
 
        //bubbles, custom popup on hover template
-     map2.bubbles([
+     map[% region %].bubbles([
 
        [% FOREACH server IN data.$region.$date.keys %]
 
@@ -176,7 +176,7 @@
        }
      });
 
- map2.arc([
+ map[% region %].arc([
 
  [% FOREACH server IN data.$region.$date.keys %]
 
@@ -263,7 +263,7 @@
 </thead>
 <tbody>
 
-  [% FOREACH server IN data.$region.$date.keys %]
+  [% FOREACH server IN data.$region.$date.keys.sort %]
 
   [% MBPSSTR = 'MB/s' %]
   [% MBPS = data.$region.$date.$server.$MBPSSTR %]
@@ -319,7 +319,7 @@
 </tbody>
 <tfoot>
           <tr>
-                  <td colspan="19">* Per day estimate is based on 300GB/genome each for aligned an unaligned files.</td>
+                  <td colspan="19">* Per day estimates are based on a single upload/download client transferring 300GB/genome each for unaligned (download) and aligned (uploaded) files (600GB total).</td>
           </tr>
   </tfoot>
 
