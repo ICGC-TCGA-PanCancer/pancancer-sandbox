@@ -234,7 +234,7 @@
         longitude: [% long %]
     },
     destination: {
-        latitude: [% awslat %]
+        latitude: [% awslat %],
         longitude: [% awslong %]
     },
     options: {
