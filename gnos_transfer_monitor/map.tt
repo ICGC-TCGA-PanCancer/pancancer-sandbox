@@ -66,8 +66,8 @@
 [% awslong = -77.461507 %]
 
 [% IF region == "tokyo" %]
-  [% awslat =  37.566667 %]
-  [% awslong = 126.978056 %]
+  [% awslat =  42.916667 %]
+  [% awslong = 143.2 %]
 [% ELSIF region == "ireland" %]
   [% awslat =  53.347778 %]
   [% awslong = -6.259722 %]
@@ -77,13 +77,14 @@
 <p>This is a prototype indicating the transfer speeds seen in a single test between AWS [% region %] and the various GNOS repositories.  <font color="red">Red</font> indicates that GNOS download is disabled or &lt; 1MB/s in this location. <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s while <font color="green">Green</font> indicates &gt; 10 MB/s.</p>
 
 <div>
-<div id="container2" style="position:relative; width:800px; height:500px"></div>
+<!-- style="position:relative; width:800px; height:500px" -->
+<div id="container_[% region %]"></div>
      <script>
       var colors = d3.scale.category10();
        //basic map config with custom fills, mercator projection
       var map2 = new Datamap({
         scope: 'world',
-        element: document.getElementById('container2'),
+        element: document.getElementById('container_[% region %]'),
         geographyConfig: {
           popupOnHover: false,
           highlightOnHover: false,
