@@ -74,7 +74,7 @@
 [% END %]
 
 <h3>Data Transfer Speeds to AWS [% region FILTER ucfirst %] on [% date %]</h3>
-<p>This is a prototype indicating the transfer speeds seen in a single test between AWS [% region %] and the various GNOS repositories.  <font color="red">Red</font> indicates that GNOS download is disabled or &lt; 1MB/s in this location. <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s while <font color="green">Green</font> indicates &gt; 10 MB/s.</p>
+<p>This is a prototype indicating the transfer speeds seen in a single test between AWS [% region  FILTER ucfirst %] and the various GNOS repositories.  <font color="red">Red</font> indicates that GNOS download is disabled or &lt; 1MB/s in this location. <font color="#E6E600">Yellow</font> indicates &lt; 10 MB/s while <font color="green">Green</font> indicates &gt; 10 MB/s.</p>
 
 <div>
 <!-- style="position:relative; width:800px; height:500px" -->
@@ -167,7 +167,7 @@
 
        [% END %]
 
-      {name: "Amazon Virginia", bandwidth: '', latitude: [% awslat %], longitude: [% awslong %], radius: 8, fillKey: 'gt80'}
+      {name: "Amazon [% region  FILTER ucfirst %]", bandwidth: '', latitude: [% awslat %], longitude: [% awslong %], radius: 8, fillKey: 'gt80'}
 
      ]
 , {
