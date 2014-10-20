@@ -78,7 +78,7 @@
 
 <div>
 <!-- style="position:relative; width:800px; height:500px" -->
-<div id="container_[% region %]"></div>
+<div id="container_[% region %]" style="height:500px"></div>
      <script>
       var colors = d3.scale.category10();
        //basic map config with custom fills, mercator projection
