@@ -180,6 +180,7 @@ sub merge_with_s3 {
   my $old = read_json("old.transfer_timing.json");
   merge_json($old, $d, $date, $test_region, "new.transfer_timing.json");
   system("s3cmd put --force new.transfer_timing.json s3://pancancer-site-data/transfer_timing.json");
+  system("s3cmd setacl -P s3://pancancer-site-data/transfer_timing.json");
 }
 
 sub merge_json {
