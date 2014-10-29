@@ -85,8 +85,14 @@ if ($use_nova) {
     $i++;
 
     my ($uuid, $host, $ip) = split " ", $line;
+
+    print "IP: $ip\n";
+
     $ip =~ /vmnet=(\S+)/;
     $ip = $1;
+
+print "IP: $ip\n";
+    
 
     # if network failed, stop the instance so it can be debugged later
     my $r = test_ssh($pem, $username, $ip);
