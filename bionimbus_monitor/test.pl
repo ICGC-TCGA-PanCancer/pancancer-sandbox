@@ -84,6 +84,8 @@ if ($use_nova) {
 
     $i++;
 
+    print "LINE: $line\n";
+
     my ($uuid, $host, $ip) = split " ", $line;
 
     print "IP: $ip\n";
@@ -92,7 +94,7 @@ if ($use_nova) {
     $ip = $1;
 
 print "IP: $ip\n";
-    
+
 
     # if network failed, stop the instance so it can be debugged later
     my $r = test_ssh($pem, $username, $ip);
