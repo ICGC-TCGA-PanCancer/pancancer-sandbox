@@ -345,6 +345,8 @@ sub test_ssh {
 
   my ($curr_pem, $curr_username, $curr_ip) = @_;
 
+  print "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip hostname \n";
+
   my $thr = threads->create(\&launch_ssh, "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip hostname");
   #print "ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=no -i $curr_pem $curr_username\@$curr_ip\n";
   my $max_it = $global_max_it;
