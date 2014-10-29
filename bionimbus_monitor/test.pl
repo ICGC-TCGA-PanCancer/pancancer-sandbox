@@ -92,6 +92,7 @@ if ($use_nova) {
 
     $ip =~ /vmnet=(\S+)/;
     $ip = $1;
+    $ip = "172.16.0.42";
 
 print "IP: $ip\n";
 
