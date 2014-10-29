@@ -66,12 +66,12 @@ if ($glob_base ne "") { $glob_path = "$glob_base/$glob_target"; }
 # can either use nova or a bindle target directory
 if ($use_nova) {
 
-  my $nova_str = `nova list | grep fleet_master | grep ACTIVE | grep Running | awk '{print \$2" "\$4" "\$12}'`;
+  my $nova_str = `nova list | grep fleet_master | grep ACTIVE | awk '{print \$2" "\$4" "\$12}'`;
   if ($glob_target ne "") {
-    $nova_str = `nova list | grep $glob_target | grep ACTIVE | grep Running | awk '{print \$2" "\$4" "\$12}'`;
+    $nova_str = `nova list | grep $glob_target | grep ACTIVE | awk '{print \$2" "\$4" "\$12}'`;
   }
 
-  print "nova list | grep $glob_target | grep ACTIVE | grep Running | awk '{print \$2\" \"\$4\" \"\$12}'\n";
+  print "nova list | grep $glob_target | grep ACTIVE | awk '{print \$2\" \"\$4\" \"\$12}'\n";
 
   open OUT, ">$cluster_json" or die;
   print OUT "{\n";
