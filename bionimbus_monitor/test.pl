@@ -36,7 +36,7 @@ my $seqware_oozie_retry = '/glusterfs/netapp/homes1/BOCONNOR/gitroot/seqware-san
 
 check_if_running();
 
-if (scalar(@ARGV) < 1 || scalar(@ARGV) > 11) {
+if (scalar(@ARGV) < 1 || scalar(@ARGV) > 18) {
  die "USAGE: perl $0 [--test] [--verbose] [--setup-sensu] [--glob-base <path to directory that contains bindle dirs>] [--glob-target <target-*>] [--cleanup-sge] [--restart-failed] [--workflow-accession <accession>]\n";
 }
 
