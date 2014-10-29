@@ -338,8 +338,9 @@ sub stop_host {
 sub launch_ssh {
   $SIG{'KILL'} = sub { threads->exit(); };
   my $ssh = $_[0];
-  system("$ssh");
+  my $r = system("$ssh");
   print "DONE WITH SSH\n";
+  return($r);
 }
 
 sub check_if_running {
