@@ -71,6 +71,8 @@ if ($use_nova) {
     $nova_str = `nova list | grep $glob_target | grep ACTIVE | grep Running | awk '{print \$2" "\$4" "\$12}'`;
   }
 
+  print "nova list | grep $glob_target | grep ACTIVE | grep Running | awk '{print \$2" "\$4" "\$12}'\n";
+
   open OUT, ">$cluster_json" or die;
   print OUT "{\n";
 
