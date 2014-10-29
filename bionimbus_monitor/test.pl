@@ -364,7 +364,8 @@ sub test_ssh {
     sleep $global_wait_time;
     if ($thr->is_joinable()) {
       # then we can exit now
-      print "SSH THREAD FINISHED EARLY, BREAKING\n";
+      my $error_state = $thr->error();
+      print "SSH THREAD FINISHED EARLY, BREAKING $error_state\n";
       $max_it = 0;
     }
     $max_it--;
