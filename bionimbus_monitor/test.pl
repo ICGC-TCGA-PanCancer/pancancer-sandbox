@@ -94,9 +94,6 @@ if ($use_nova) {
     $ip = $1;
     ##$ip = "172.16.0.42";
 
-print "IP: $ip\n";
-
-
     # if network failed, stop the instance so it can be debugged later
     my $r = test_ssh($pem, $username, $ip);
 
@@ -120,7 +117,7 @@ END
     } else {
       # stop the host
       print "STOPPING UNREACHABLE HOST: $uuid $host $ip\n";
-      ######system("nova stop $uuid");
+      if (!$test) { system("nova stop $uuid"); }
     }
 
   }
