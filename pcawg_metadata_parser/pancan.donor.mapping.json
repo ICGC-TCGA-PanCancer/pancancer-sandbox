@@ -1,0 +1,23 @@
+{
+   "dynamic":"true",
+   "dynamic_templates":[
+      {
+         "template_1":{
+            "mapping":{
+               "index":"not_analyzed"
+            },
+            "match":"*",
+            "match_mapping_type":"string"
+         }
+      }
+   ],
+   "_all":{
+      "enabled":false
+   },
+   "_source":{
+      "compress":true,
+      "excludes":[
+         "__comment__"
+      ]
+   }
+}
