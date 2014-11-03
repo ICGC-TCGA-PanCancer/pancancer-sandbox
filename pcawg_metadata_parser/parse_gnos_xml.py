@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Author: Junjun Zhang
 
@@ -166,7 +166,6 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                 donors.get(donor_unique_id)['aligned_tumor_specimen_aliquot_counts'] = 1
                 donors.get(donor_unique_id)['has_aligned_tumor_specimen'] = True
 
-
     bam_file.update( donors[ donor_unique_id ] )
     del bam_file['bam_files']
     del bam_file['normal_specimen']
@@ -176,6 +175,7 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
     del bam_file['has_aligned_tumor_specimen']
     del bam_file['all_tumor_specimen_aliquots']
     del bam_file['all_tumor_specimen_aliquot_counts']
+    del bam_file['are_all_tumor_specimens_aligned']
     donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
 
     # push to Elasticsearch
@@ -308,6 +308,7 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
         'all_tumor_specimen_aliquots': set(),
         'all_tumor_specimen_aliquot_counts': 0,
         'has_aligned_tumor_specimen': False,
+        'are_all_tumor_specimens_aligned': False,
         'bam_files': []
     }
     if type(gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')) == list:
@@ -374,6 +375,9 @@ def process_dir(dir, es_index, es, donor_output_jsonl_file, bam_output_jsonl_fil
             logger.warning( 'skipping invalid xml file: {}{}'.format(dir, f) )
 
     for donor_id in donors.keys():
+        if donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') and donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') == donors[donor_id].get('all_tumor_specimen_aliquot_counts'):
+            donors[donor_id]['are_all_tumor_specimens_aligned'] = True
+
         #print(json.dumps(donors[donor_id])) # debug
         # push to Elasticsearch
         es.index(index=es_index, doc_type='donor', id=donors[donor_id]['donor_unique_id'], body=json.loads( json.dumps(donors[donor_id], default=set_default) ))

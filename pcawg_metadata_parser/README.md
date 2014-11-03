@@ -11,13 +11,17 @@ Elasticsearch for easy search/browse later.
 
 ## Dependencies
 
-Python 3 (will move to python 2 later) and some python modules. Install them
-with pip when needed.
+Python and a few modules: python-dateutil, elasticsearch, xmltodict etc. Install
+them with pip when needed.
 
 Elasticsearch installed and up running on the same host using port 9200.
 
 Kibana, simply download it from Elasticsearch website, then run an HTTP server
 over the Kibana folder to serve the static content.
+
+GNOS metadata XML files need to be retrieved from all PCAWG GNOS servers and
+kept in one single folder. This can usually done by a script wrapping GNOS
+cgquery client tool.
 
 ## Run the parser
 
