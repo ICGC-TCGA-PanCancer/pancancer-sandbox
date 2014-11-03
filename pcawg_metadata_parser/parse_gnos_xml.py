@@ -80,7 +80,8 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
         ):
         # TODO: we may create another ES index for obsoleted BAM entries
         # TODO: we will need more sophisticated check for handling BAMs that are flagged as aligned but
-        #       treated as unaligned (this is actually the case for TCGA input BAM entries)
+        #       treated as unaligned (this is actually the case for TCGA input BAM entries, maybe need a full
+        #       TCGA spciment list from Marc?)
         logger.warning('ignore entry that is aligned but not by train 2 protocol: {}'
                          .format( gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
@@ -102,10 +103,6 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
 
     # now parse out gnos analysis object info to build bam_file doc
     bam_file = create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis)
-
-    # this part can certainly be improved, the code is complex
-    # TODO: fix here, unaligned BAM entire can also be used here to populate cooresponding section of a donor
-    #       this way, we will know explicitly how many input_bam files for which specimen type in a donor
 
     if 'normal' in bam_file.get('dcc_specimen_type').lower(): # normal
         if donors.get(donor_unique_id).get('normal_specimen'): # normal specimen exists
