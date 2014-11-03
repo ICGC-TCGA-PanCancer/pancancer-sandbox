@@ -29,6 +29,6 @@ cgquery client tool.
 ./parse_gnos_xml.py -d <folder_with_GNOS_xmls> -r <revision_string>
 ```
 
-In addition to build an ES index name as 'pancan_<revision_string>', two JSONL
+In addition to build an ES index name as 'pancan_\<revision_string\>', two JSONL
 files will also be created in the current directory.
 
