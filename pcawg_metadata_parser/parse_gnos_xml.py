@@ -116,10 +116,11 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                               )
                         )
                         if donors.get(donor_unique_id).get('normal_specimen').get('upload_date') < bam_file.get(
-                                'upload_date'):
+                                'upload_date'):  # the current one is newer
                             donors.get(donor_unique_id)['normal_specimen'].update(
                                 prepare_aggregated_specimen_level_info(copy.deepcopy(bam_file))
                             )
+                            donors.get(donor_unique_id)['gnos_repo'] = bam_file.get('gnos_repo')
                     else:
                         donors.get(donor_unique_id)['normal_specimen'].update(
                             prepare_aggregated_specimen_level_info(copy.deepcopy(bam_file))
@@ -134,9 +135,12 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                   )
                 )                
         else:
+            # add normal_specimen
             donors.get(donor_unique_id)['normal_specimen'].update(
                 prepare_aggregated_specimen_level_info(copy.deepcopy(bam_file))
             )
+            # update donor's 'gnos_repo' field with normal aligned specimen
+            donors.get(donor_unique_id)['gnos_repo'] = bam_file.get('gnos_repo')
 
     else: # not normal
         donors.get(donor_unique_id).get('all_tumor_specimen_aliquots').add(bam_file.get('aliquot_id'))
@@ -217,6 +221,7 @@ def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
         "use_cntl": analysis_attrib.get('use_cntl'),
         "total_lanes": analysis_attrib.get('total_lanes'),
 
+        "gnos_repo": gnos_analysis.get('analysis_detail_uri').split('/cghub/')[0] + '/',
         "gnos_metadata_url": gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull'),
         "refassem_short_name": gnos_analysis.get('refassem_short_name'),
         "bam_gnos_ao_id": gnos_analysis.get('analysis_id'),
@@ -375,6 +380,12 @@ def process_dir(dir, es_index, es, donor_output_jsonl_file, bam_output_jsonl_fil
         if donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') and donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') == donors[donor_id].get('all_tumor_specimen_aliquot_counts'):
             donors[donor_id]['are_all_tumor_specimens_aligned'] = True
 
+        donors[donor_id]['are_all_aligned_specimens_in_same_gnos_repo'] = True
+        for tumor in donors[donor_id].get('aligned_tumor_specimens'):
+            if donors[donor_id]['gnos_repo'] != tumor.get('gnos_repo'):
+                donors[donor_id]['are_all_aligned_specimens_in_same_gnos_repo'] = False
+                break
+
         #print(json.dumps(donors[donor_id])) # debug
         # push to Elasticsearch
         es.index(index=es_index, doc_type='donor', id=donors[donor_id]['donor_unique_id'], body=json.loads( json.dumps(donors[donor_id], default=set_default) ))
@@ -405,7 +416,7 @@ def main(argv=None):
     logger.setLevel(logging.INFO)
     ch.setLevel(logging.WARN)
 
-    log_file = xml_dir + 'gnos_parser.log'
+    log_file = xml_dir + 'gnos_parser.' + revision + '.log'
     # delete old log first if exists
     if os.path.isfile(log_file): os.remove(log_file)
     fh = logging.FileHandler(log_file)
