@@ -6,6 +6,7 @@ use Data::Dumper;
 
 use WWW::Curl::Easy;
 use IO::Uncompress::Gunzip;
+use List::Util qw(sum);
 use JSON;
 
 use Const::Fast qw(const);
@@ -201,7 +202,7 @@ sub process {
   my $donor_count = 0;
   my $in_fh = input_select($file);
 
-  print join("\t", 'Unique DonorId', 'Normalised X', 'Tumours', @DONOR_ORDERED_ISSUES),"\n";
+  print join("\t", 'GNOS repo', 'GNOS Study', 'Unique DonorId', 'Normalised X', 'Tumours', @DONOR_ORDERED_ISSUES, 'Issue Summary'),"\n";
 
   while (my $jsonl = <$in_fh>) {
     my $donor = decode_json $jsonl;
@@ -245,7 +246,8 @@ sub process {
 
     $donor_count++;
     my @donor_data;
-    # donor_unique_id
+    push @donor_data, $donor->{'gnos_repo'};
+    push @donor_data, $donor->{'gnos_study'};
     push @donor_data, $donor->{'donor_unique_id'};
 
     # this reflects the combined coverage for T/N * number of T/N
@@ -259,8 +261,9 @@ sub process {
     for my $issue(@DONOR_ORDERED_ISSUES) {
       push @donor_data, exists $donor_issues{$issue} ? $donor_issues{$issue} : 0;
     }
+    my $sum_issues = sum @donor_data[5..(scalar @donor_data)-1];
 
-    print join("\t", @donor_data),"\n";
+    print join("\t", @donor_data, $sum_issues),"\n";
   }
   close $in_fh; # this may need to be handled differently for URL based input
 }
