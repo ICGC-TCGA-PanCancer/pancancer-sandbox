@@ -148,7 +148,7 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
         if bam_file.get('is_aligned'):
             if donors.get(donor_unique_id).get('aligned_tumor_specimens'):
                 if donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots').intersection(
-                        bam_file.get('aliquot_id')
+                        [ bam_file.get('aliquot_id') ]
                     ): # multiple alignments for the same tumor aliquot_id
                     logger.warning('more than one tumor aligned bam for donor: {} with aliquot_id: {}, entry in use: {}, additional entry found in: {}'
                           .format(donor_unique_id,
