@@ -229,24 +229,24 @@ sub process {
     if($donor->{'all_tumor_specimen_aliquot_counts'} == 0) {
       $donor_issues{'Tumour available'} = $HC{'Tumour'}{none};
     }
-    elsif($donor->{'aligned_tumor_specimen_aliquot_counts'} == 0) {
-      $donor_issues{'Tumour available'} = $HC{'Tumour'}{not_aligned};
-    }
-    else {
-      for my $specimen (@{$donor->{'aligned_tumor_specimens'}}) {
-        $tum_x += process_aliquot($donor, $specimen, \%donor_issues, 'Tumour', $aliquot_fh);
-      }
-    }
-    if($donor->{'aligned_tumor_specimen_aliquot_counts'} != $donor->{'all_tumor_specimen_aliquot_counts'}) {
+    elsif($donor->{'aligned_tumor_specimen_aliquot_counts'} == 0
+          || $donor->{'aligned_tumor_specimen_aliquot_counts'} != $donor->{'all_tumor_specimen_aliquot_counts'}) {
       $donor_issues{'Tumour available'} = $HC{'Tumour'}{not_aligned};
     }
     else {
       $donor_issues{'Tumour available'} = 0;
+      for my $specimen (@{$donor->{'aligned_tumor_specimens'}}) {
+        $tum_x += process_aliquot($donor, $specimen, \%donor_issues, 'Tumour', $aliquot_fh);
+      }
     }
 
     $donor_count++;
     my @donor_data;
-    push @donor_data, $donor->{'gnos_repo'};
+    my $tmp_repo = $donor->{'gnos_repo'};
+    $tmp_repo =~ s|^https:/{2}||;
+    $tmp_repo =~ s|^gtrepo\-||;
+    $tmp_repo =~ s/\.(ucsc\.edu|annailabs\.com)\/$//;
+    push @donor_data, $tmp_repo;
     push @donor_data, $donor->{'gnos_study'};
     push @donor_data, $donor->{'donor_unique_id'};
 
