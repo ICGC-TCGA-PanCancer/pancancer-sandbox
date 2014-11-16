@@ -70,12 +70,7 @@ def get_ao_from_manifest(manifest_file):
     return xmltodict.parse(xml_str).get('ResultSet').get('Result')
 
 
-def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_file):
-    # let's take a shortcut here getting metadata from local files
-    # THIS IS JUST A ONE-TIME THING
-    #if (os.path.isfile('xmls_nov_8/all_xml/data_' + ao_uuid + '.xml')):
-    #    shutil.copyfile('xmls_nov_8/all_xml/data_' + ao_uuid + '.xml', metadata_xml_file)
-    #    return
+def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, ao_list_file_handler):
 
     logger.info('download metadata xml from GNOS repo: {} for analysis object: {}'.format(gnos_repo.get('repo_code'), ao_uuid))
     
@@ -86,11 +81,16 @@ def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_file):
         logger.warning('unable to download metadata for: {} from {}'.format(ao_uuid, url))
         return
     else:
-        with open(metadata_xml_file, 'wb') as fh:
-            for block in response.iter_content(1024):
-                if not block:
-                    break
-                fh.write(block)
+        metadata_xml_str = response.text
+        gnos_ao = xmltodict.parse(metadata_xml_str).get('ResultSet').get('Result')
+        ao_uuid = gnos_ao.get('analysis_id')
+        ao_state = gnos_ao.get('state')
+        ao_updated = gnos_ao.get('last_modified')
+        ao_list_file_handler.write(ao_uuid + '\t' + ao_state + '\t' + ao_updated + '\n')
+
+        metadata_xml_file = metadata_xml_dir + '/' + ao_uuid + '__' + ao_state + '__' + ao_updated + '.xml'
+        with open(metadata_xml_file, 'w') as f:  # write to metadata xml file now
+            f.write(metadata_xml_str)
 
 
 def sync_metadata_xml(gnos_repo, output_dir, manifest_file):
@@ -100,14 +100,21 @@ def sync_metadata_xml(gnos_repo, output_dir, manifest_file):
     if not os.path.exists(metadata_xml_dir):
         os.makedirs(metadata_xml_dir)
 
+    ao_list_file = manifest_file.replace('manifest.', 'analysis_objects.').replace('.xml', '.tsv')
+    fh = open(ao_list_file, 'w')  # file for list of gnos analysis objects
+
     for gnos_ao in get_ao_from_manifest(manifest_file):
         ao_uuid = gnos_ao.get('analysis_id')
         ao_state = gnos_ao.get('state')
         ao_updated = gnos_ao.get('last_modified')
         metadata_xml_file = metadata_xml_dir + '/' + ao_uuid + '__' + ao_state + '__' + ao_updated + '.xml'
 
-        if not os.path.isfile(metadata_xml_file):  # do not have it locally, donwload from GNOS repo
-            download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_file)
+        if os.path.isfile(metadata_xml_file):
+            fh.write(ao_uuid + '\t' + ao_state + '\t' + ao_updated + '\n')
+        else:  # do not have it locally, donwload from GNOS repo
+            download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, fh)
+
+    fh.close()
 
 
 def process_gnos_repo(gnos_repo, output_dir, mani_output_dir):

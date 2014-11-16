@@ -4,19 +4,14 @@ output_dir: gnos_metadata
 
 gnos_repos:
   - 
-    repo_location: Seoul
-    repo_code: etri
-    base_url: https://gtrepo-etri.annailabs.com/
+    repo_location: Barcelona
+    repo_code: bsc
+    base_url: https://gtrepo-bsc.annailabs.com/
     cgquery_para: study=*
   - 
     repo_location: London
     repo_code: ebi
     base_url: https://gtrepo-ebi.annailabs.com
-    cgquery_para: study=*
-  - 
-    repo_location: Barcelona
-    repo_code: bsc
-    base_url: https://gtrepo-bsc.annailabs.com/
     cgquery_para: study=*
   - 
     repo_location: Heidelberg
@@ -38,4 +33,9 @@ gnos_repos:
     repo_code: cghub
     base_url: https://cghub.ucsc.edu/
     cgquery_para: study=PCAWG\ 2.0
+  - 
+    repo_location: Seoul
+    repo_code: etri
+    base_url: https://gtrepo-etri.annailabs.com/
+    cgquery_para: study=*
 
