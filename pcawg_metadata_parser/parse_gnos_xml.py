@@ -16,7 +16,6 @@ import datetime
 import dateutil.parser
 
 
-# create logger with 'spam_application'
 logger = logging.getLogger('gnos parser')
 # create console handler with a higher log level
 ch = logging.StreamHandler()
