@@ -29,7 +29,7 @@ cgquery client tool.
 ./gnos_metadata_downloader.py -c settings.yml
 ```
 
-## Run the parser
+## Run the parser/ES loader
 
 ```
 ./parse_gnos_xml.py -c settings.yml
