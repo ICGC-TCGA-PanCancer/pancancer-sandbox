@@ -4,8 +4,10 @@
 
 import sys
 import os
+import glob
 import xmltodict
 import json
+import yaml
 import copy
 import logging
 from argparse import ArgumentParser
@@ -23,7 +25,7 @@ ch = logging.StreamHandler()
 
 def init_es(es_host, es_index):
     es = Elasticsearch([ es_host ])
-    es.indices.delete( es_index, ignore=[400, 404] )
+    #es.indices.delete( es_index, ignore=[400, 404] )
     es.indices.create( es_index, ignore=400 )
 
     # create mappings
@@ -312,10 +314,13 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
         'are_all_tumor_specimens_aligned': False,
         'bam_files': []
     }
-    if type(gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')) == list:
-        donor['sequencing_center'] = gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')[0].get('@center_name')
-    else:
-        donor['sequencing_center'] = gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT').get('@center_name')
+    try:
+        if type(gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')) == list:
+            donor['sequencing_center'] = gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')[0].get('@center_name')
+        else:
+            donor['sequencing_center'] = gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT').get('@center_name')
+    except:
+        logger.warning('analysis object has no sequencing_center information: {}'.format(gnos_analysis.get('analysis_detail_uri')))
 
     return donor
 
@@ -359,21 +364,36 @@ def get_gnos_analysis(f):
     return xmltodict.parse(xml_str).get('ResultSet').get('Result')
 
 
-def process_dir(dir, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file):
+def get_xml_files( metadata_dir, conf ):
+    xml_files = []
+    #ao_seen = {}
+    for repo in conf.get('gnos_repos'):
+        with open(metadata_dir + '/analysis_objects.' + repo.get('repo_code') + '.tsv', 'r') as list:
+            for ao in list:
+                ao_uuid, ao_state = str.split(ao, '\t')[0:2]
+                if not ao_state == 'live': continue  # skip ao that is not live
+                #if (ao_seen.get(ao_uuid)): continue  # skip ao if already added
+                #ao_seen[ao_uuid] = 1  # include this one
+                xml_files.append(repo.get('repo_code') + '/' + ao.replace('\t', '__').replace('\n','') + '.xml')
+
+    return xml_files
+
+
+def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file):
     donors = {}
 
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
 
-    for f in os.listdir( dir ):
-        if not f.endswith('.xml'): continue
-        gnos_analysis = get_gnos_analysis(dir + f)
+    for f in get_xml_files( metadata_dir, conf ):
+        f = conf.get('output_dir') + '/__all_metadata_xml/' + f
+        gnos_analysis = get_gnos_analysis(f)
         #print (json.dumps(gnos_analysis)) # debug
         if gnos_analysis:
-            logger.info( 'processing xml file: {}{} ...'.format(dir, f) )
+            logger.info( 'processing xml file: {} ...'.format(f) )
             process_gnos_analysis( gnos_analysis, donors, es_index, es, bam_fh )
         else:
-            logger.warning( 'skipping invalid xml file: {}{}'.format(dir, f) )
+            logger.warning( 'skipping invalid xml file: {}'.format(f) )
 
     for donor_id in donors.keys():
         if donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') and donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') == donors[donor_id].get('all_tumor_specimen_aliquot_counts'):
@@ -403,21 +423,32 @@ def main(argv=None):
 
     parser = ArgumentParser(description="PCAWG GNOS Metadata Parser",
              formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument("-d", "--directory", dest="xml_dir",
-             help="Directory where GNOS metadata XML files are included", required=True)
-    parser.add_argument("-r", "--revision", dest="revision",
-             help="A string for keeping revision information, will be part of the ES index name", required=True)
+    #parser.add_argument("-d", "--directory", dest="xml_dir",
+    #         help="Directory where GNOS metadata XML files are included", required=True)
+    parser.add_argument("-c", "--config", dest="config",
+             help="Configuration file for GNOS repositories", required=True)
+    #parser.add_argument("-r", "--revision", dest="revision",
+    #         help="A string for keeping revision information, will be part of the ES index name", required=True)
 
     args = parser.parse_args()
-    xml_dir = args.xml_dir if args.xml_dir.endswith('/') else args.xml_dir + '/'
-    revision = args.revision
+    #revision = args.revision
+    conf_file = args.config
+
+    with open(conf_file) as f:
+        conf = yaml.safe_load(f)
+
+    # output_dir
+    output_dir = conf.get('output_dir')
+    metadata_dir = glob.glob(output_dir + '/[0-9]*_*_*[A-Z]')[-1] # find the directory for latest metadata list
+    timestamp = str.split(metadata_dir, '/')[-1]
 
     logger.setLevel(logging.INFO)
     ch.setLevel(logging.WARN)
 
-    log_file = xml_dir + 'gnos_parser.' + revision + '.log'
+    log_file = metadata_dir + '.metadata_parser.log'
     # delete old log first if exists
     if os.path.isfile(log_file): os.remove(log_file)
+
     fh = logging.FileHandler(log_file)
     fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -427,11 +458,11 @@ def main(argv=None):
     logger.addHandler(ch)
 
     es_host = 'localhost:9200'
-    es_index = 'pancan_' + revision
+    es_index = 'p_' + timestamp.replace('_','').replace('-','').replace('EST','')
     es = init_es(es_host, es_index)
 
-    logger.info('processing xml files in {}'.format(xml_dir))
-    process_dir(xml_dir, es_index, es, 'donor_'+es_index+'.jsonl', 'bam_'+es_index+'.jsonl')
+    logger.info('processing metadata list files in {}'.format(metadata_dir))
+    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl')
 
     return 0
 
