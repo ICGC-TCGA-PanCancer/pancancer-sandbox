@@ -1,4 +1,4 @@
-# Parser code for parsing/analyzing/aggregating GNOS XMLs
+# Parser code for downloading/parsing/analyzing/aggregating GNOS XMLs
 
 ## Overview
 
@@ -23,12 +23,18 @@ GNOS metadata XML files need to be retrieved from all PCAWG GNOS servers and
 kept in one single folder. This can usually done by a script wrapping GNOS
 cgquery client tool.
 
+## Run the GNOS downloader/synchronizer
+
+```
+./gnos_metadata_downloader.py -c settings.yml
+```
+
 ## Run the parser
 
 ```
-./parse_gnos_xml.py -d <folder_with_GNOS_xmls> -r <revision_string>
+./parse_gnos_xml.py -c settings.yml
 ```
 
-In addition to build an ES index name as 'pancan_\<revision_string\>', two JSONL
-files will also be created in the current directory.
+In addition to build an ES index name as 'p_\<time_stamp\>', two JSONL
+files will also be created.
 
