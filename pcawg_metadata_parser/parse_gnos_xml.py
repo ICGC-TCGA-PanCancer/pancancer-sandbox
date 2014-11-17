@@ -464,6 +464,31 @@ def main(argv=None):
     logger.info('processing metadata list files in {}'.format(metadata_dir))
     process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl')
 
+    # now update kibana dashboard
+    # donor
+    with open('kibana-donor.json', 'r') as d:
+        donor_dashboard = json.loads(d.read())
+    donor_dashboard['index']['default'] = es_index + '/donor'
+    body = {
+        'dashboard': json.dumps(donor_dashboard),
+        'user': 'guest',
+        'group': 'guest',
+        'title': 'PCAWG Donors (beta)'
+    }
+    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG Donors (beta)', body=body)
+
+    # bam
+    with open('kibana-bam.json', 'r') as d:
+        bam_dashboard = json.loads(d.read())
+    bam_dashboard['index']['default'] = es_index + '/bam_file'
+    body = {
+        'dashboard': json.dumps(bam_dashboard),
+        'user': 'guest',
+        'group': 'guest',
+        'title': 'PCAWG BAMs (beta)'
+    }
+    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG BAMs (beta)', body=body)
+
     return 0
 
 
