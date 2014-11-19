@@ -62,7 +62,7 @@
           "exclude": [],
           "missing": true,
           "other": false,
-          "size": 10,
+          "size": 20,
           "order": "count",
           "style": {
             "font-size": "10pt"
@@ -95,7 +95,7 @@
           "exclude": [],
           "missing": true,
           "other": true,
-          "size": 40,
+          "size": 80,
           "order": "count",
           "style": {
             "font-size": "10pt"
