@@ -439,7 +439,7 @@ def main(argv=None):
 
     # output_dir
     output_dir = conf.get('output_dir')
-    metadata_dir = glob.glob(output_dir + '/[0-9]*_*_*[A-Z]')[-1] # find the directory for latest metadata list
+    metadata_dir = sorted(glob.glob(output_dir + '/[0-9]*_*_*[A-Z]'))[-1] # find the directory for latest metadata list
     timestamp = str.split(metadata_dir, '/')[-1]
 
     logger.setLevel(logging.INFO)
