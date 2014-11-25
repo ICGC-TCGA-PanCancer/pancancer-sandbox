@@ -4,6 +4,7 @@
 
 import sys
 import os
+import re
 import glob
 import xmltodict
 import json
@@ -364,28 +365,30 @@ def get_gnos_analysis(f):
     return xmltodict.parse(xml_str).get('ResultSet').get('Result')
 
 
-def get_xml_files( metadata_dir, conf ):
+def get_xml_files( metadata_dir, conf, repo ):
     xml_files = []
     #ao_seen = {}
-    for repo in conf.get('gnos_repos'):
-        with open(metadata_dir + '/analysis_objects.' + repo.get('repo_code') + '.tsv', 'r') as list:
+    for r in conf.get('gnos_repos'):
+        if repo and not r.get('repo_code') == repo:
+            continue
+        with open(metadata_dir + '/analysis_objects.' + r.get('repo_code') + '.tsv', 'r') as list:
             for ao in list:
                 ao_uuid, ao_state = str.split(ao, '\t')[0:2]
                 if not ao_state == 'live': continue  # skip ao that is not live
                 #if (ao_seen.get(ao_uuid)): continue  # skip ao if already added
                 #ao_seen[ao_uuid] = 1  # include this one
-                xml_files.append(repo.get('repo_code') + '/' + ao.replace('\t', '__').replace('\n','') + '.xml')
+                xml_files.append(r.get('repo_code') + '/' + ao.replace('\t', '__').replace('\n','') + '.xml')
 
     return xml_files
 
 
-def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file):
+def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo):
     donors = {}
 
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
 
-    for f in get_xml_files( metadata_dir, conf ):
+    for f in get_xml_files( metadata_dir, conf, repo ):
         f = conf.get('output_dir') + '/__all_metadata_xml/' + f
         gnos_analysis = get_gnos_analysis(f)
         #print (json.dumps(gnos_analysis)) # debug
@@ -415,6 +418,18 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     bam_fh.close()
 
 
+def find_latest_metadata_dir(output_dir):
+    dir_pattern = re.compile(u'^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}_[A-Z]{3}$')
+    metadata_dirs = []
+    for dir in os.listdir(output_dir):
+        if not os.path.isdir(output_dir + '/' + dir):
+            continue
+        if dir_pattern.search(dir):
+            metadata_dirs.append(output_dir + '/' + dir)
+
+    return sorted(metadata_dirs)[-1]
+
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
@@ -423,29 +438,34 @@ def main(argv=None):
 
     parser = ArgumentParser(description="PCAWG GNOS Metadata Parser",
              formatter_class=RawDescriptionHelpFormatter)
-    #parser.add_argument("-d", "--directory", dest="xml_dir",
-    #         help="Directory where GNOS metadata XML files are included", required=True)
     parser.add_argument("-c", "--config", dest="config",
              help="Configuration file for GNOS repositories", required=True)
-    #parser.add_argument("-r", "--revision", dest="revision",
-    #         help="A string for keeping revision information, will be part of the ES index name", required=True)
+    parser.add_argument("-m", "--metadata_dir", dest="metadata_dir",
+             help="Directory containing metadata manifest files", required=False)
+    parser.add_argument("-r", "--gnos_repo", dest="repo",
+             help="Specify which GNOS repo to process, process all repos if none specified", required=False)
 
     args = parser.parse_args()
-    #revision = args.revision
+    metadata_dir = args.metadata_dir
     conf_file = args.config
+    repo = args.repo
 
     with open(conf_file) as f:
         conf = yaml.safe_load(f)
 
     # output_dir
     output_dir = conf.get('output_dir')
-    metadata_dir = sorted(glob.glob(output_dir + '/[0-9]*_*_*[A-Z]'))[-1] # find the directory for latest metadata list
+    if metadata_dir:
+        if not os.path.isdir(metadata_dir):  # TODO: should add more directory name check to make sure it's right
+            sys.exit('Error: specified metadata directory does not exist!')
+    else:
+        metadata_dir = find_latest_metadata_dir(output_dir)  # sorted(glob.glob(output_dir + '/[0-9]*_*_*[A-Z]'))[-1] # find the directory for latest metadata list
     timestamp = str.split(metadata_dir, '/')[-1]
 
     logger.setLevel(logging.INFO)
     ch.setLevel(logging.WARN)
 
-    log_file = metadata_dir + '.metadata_parser.log'
+    log_file = metadata_dir + ('' if not repo else '.'+repo) + '.metadata_parser.log'
     # delete old log first if exists
     if os.path.isfile(log_file): os.remove(log_file)
 
@@ -458,14 +478,15 @@ def main(argv=None):
     logger.addHandler(ch)
 
     es_host = 'localhost:9200'
-    es_index = 'p_' + timestamp.replace('_','').replace('-','').replace('EST','')
+    es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1)
     es = init_es(es_host, es_index)
 
-    logger.info('processing metadata list files in {}'.format(metadata_dir))
-    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl')
+    logger.info('processing metadata list files in {} to build es index {}'.format(metadata_dir, es_index))
+    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl', repo)
 
     # now update kibana dashboard
     # donor
+    dashboard_name = ' ['+repo+']' if repo else ''
     with open('kibana-donor.json', 'r') as d:
         donor_dashboard = json.loads(d.read())
     donor_dashboard['index']['default'] = es_index + '/donor'
@@ -473,9 +494,9 @@ def main(argv=None):
         'dashboard': json.dumps(donor_dashboard),
         'user': 'guest',
         'group': 'guest',
-        'title': 'PCAWG Donors (beta)'
+        'title': 'PCAWG' + dashboard_name + ' Donors (beta)'
     }
-    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG Donors (beta)', body=body)
+    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG' + dashboard_name + ' Donors (beta)', body=body)
 
     # bam
     with open('kibana-bam.json', 'r') as d:
@@ -485,9 +506,9 @@ def main(argv=None):
         'dashboard': json.dumps(bam_dashboard),
         'user': 'guest',
         'group': 'guest',
-        'title': 'PCAWG BAMs (beta)'
+        'title': 'PCAWG' + dashboard_name + ' BAMs (beta)'
     }
-    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG BAMs (beta)', body=body)
+    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG' + dashboard_name + ' BAMs (beta)', body=body)
 
     return 0
 

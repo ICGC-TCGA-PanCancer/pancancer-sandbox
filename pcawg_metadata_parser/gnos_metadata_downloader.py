@@ -69,8 +69,16 @@ def get_ao_from_manifest(manifest_file):
         xml_str = x.read()
     return xmltodict.parse(xml_str).get('ResultSet').get('Result')
 
+def is_blacklisted_ao_uuid(ao_uuid):
+    blacklist = ["CF6A2220-8D48-11E3-884A-AA2401209DA7"]
+    return ao_uuid in blacklist
+
 
 def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, ao_list_file_handler):
+
+    if is_blacklisted_ao_uuid(ao_uuid):
+        logger.warning('skip blacklisted item for: {} from {}'.format(ao_uuid, gnos_repo.get('base_url')))
+        return
 
     logger.info('download metadata xml from GNOS repo: {} for analysis object: {}'.format(gnos_repo.get('repo_code'), ao_uuid))
     
