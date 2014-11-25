@@ -4,6 +4,7 @@
 
 import sys
 import os
+import re
 import glob
 import subprocess
 import shutil
@@ -50,14 +51,28 @@ def download_manifest(gnos_repo, mani_output_dir, use_previous=False):
         return False
 
 
+def find_second_last_metadata_dir(output_dir):
+    dir_pattern = re.compile(u'^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}_[A-Z]{3}$')
+    metadata_dirs = []
+    for dir in os.listdir(output_dir):
+        if not os.path.isdir(output_dir + '/' + dir):
+            continue
+        if dir_pattern.search(dir):
+            metadata_dirs.append(output_dir + '/' + dir)
+
+    return False if len(metadata_dirs) < 2 else sorted(metadata_dirs)[-2]
+
+
 def use_previous_manifest(gnos_repo, output_dir, mani_output_dir):
     # we can use naming convention to find the directory in which the previous manifest directory was kept
     manifest_dirs = glob.glob(output_dir + '/[0-9]*_*_*[A-Z]') # this is not the safest, but should be good for now
     manifest_file = '/manifest.' + gnos_repo.get('repo_code') + '.xml'
 
-    if len(manifest_dirs) > 1 and os.path.isfile(manifest_dirs[-2] + manifest_file):
+    previous_metadata_dir = find_second_last_metadata_dir(output_dir)
+
+    if previous_metadata_dir:
         logger.warning('using previously donwloaded manifest for: {}'.format(gnos_repo.get('repo_code')))
-        os.symlink((manifest_dirs[-2] + manifest_file).replace(output_dir, '..', 1), mani_output_dir + manifest_file)
+        os.symlink((previous_metadata_dir + manifest_file).replace(output_dir, '..', 1), mani_output_dir + manifest_file)
         return mani_output_dir + manifest_file
     else:
         logger.warning('no previously donwloaded manifest found, skipping repo: {}'.format(gnos_repo.get('repo_code')))
