@@ -635,7 +635,7 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, repo):
             if donors:
                 with open(report_dir + '/' + p + '.' + ctype + '.donors.txt', 'w') as o:
                     o.write('# ' + ctype + '\n')
-                    o.write('dcc_project_code' + '\t' + 'submitter_donor_id' + '\n')
+                    o.write('# dcc_project_code' + '\t' + 'submitter_donor_id' + '\n')
                     for d in donors:
                         o.write(d.replace('::', '\t') + '\n')
 
