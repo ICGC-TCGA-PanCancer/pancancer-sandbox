@@ -88,6 +88,11 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                          .format( gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
 
+    if is_corrupted_train_2_alignment(analysis_attrib, gnos_analysis):
+        logger.warning('ignore entry that is aligned by train 2 protocol but seems corrupted: {}'
+                         .format( gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return        
+
     #TODO: put things above into one function
 
     if not donors.get(donor_unique_id):
@@ -290,6 +295,15 @@ def is_train_2_aligned(analysis_attrib, gnos_analysis):
     if ( gnos_analysis.get('refassem_short_name') == 'GRCh37'
            and analysis_attrib.get('workflow_version')
            and analysis_attrib.get('workflow_version').startswith('2.6.')
+       ):
+        return True
+    else:
+        return False
+
+
+def is_corrupted_train_2_alignment(analysis_attrib, gnos_analysis):
+    if ( is_train_2_aligned(analysis_attrib, gnos_analysis)
+           and (not analysis_attrib.get('qc_metrics') or not analysis_attrib.get('markduplicates_metrics'))
        ):
         return True
     else:

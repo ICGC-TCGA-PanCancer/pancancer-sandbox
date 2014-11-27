@@ -5,7 +5,6 @@
 import sys
 import os
 import re
-import glob
 import subprocess
 import shutil
 import xmltodict
@@ -65,7 +64,6 @@ def find_second_last_metadata_dir(output_dir):
 
 def use_previous_manifest(gnos_repo, output_dir, mani_output_dir):
     # we can use naming convention to find the directory in which the previous manifest directory was kept
-    manifest_dirs = glob.glob(output_dir + '/[0-9]*_*_*[A-Z]') # this is not the safest, but should be good for now
     manifest_file = '/manifest.' + gnos_repo.get('repo_code') + '.xml'
 
     previous_metadata_dir = find_second_last_metadata_dir(output_dir)
