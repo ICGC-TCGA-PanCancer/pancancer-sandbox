@@ -633,9 +633,10 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, repo):
             summary[ctype] = report.get(p).get(ctype).get('count') if report.get(p).get(ctype) else 0
             donors = report.get(p).get(ctype).get('donors') if report.get(p).get(ctype) else []
             if donors:
-                with open(report_dir + '/' + p + '.' + ctype + '.donors.tsv', 'w') as o:
+                with open(report_dir + '/' + p + '.' + ctype + '.donors.txt', 'w') as o:
+                    o.write('dcc_project_code' + '\t' + 'submitter_donor_id' + '\n')
                     for d in donors:
-                        o.write(d + '\n')
+                        o.write(d.replace('::', '\t') + '\n')
 
         summary_table.append(summary)
 
