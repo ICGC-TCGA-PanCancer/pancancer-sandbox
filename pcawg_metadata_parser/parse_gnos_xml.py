@@ -246,7 +246,9 @@ def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
         bam_file['is_aligned'] = False
         bam_file['bam_type'] = 'Unaligned BAM'
         bam_file['alignment'] = None  # or initiate as empty object {}, depending on how ES searches it
-    elif analysis_attrib.get('workflow_output_bam_contents') == 'unaligned': # this is actually BAM with unmapped reads
+    elif (analysis_attrib.get('workflow_output_bam_contents') == 'unaligned'
+            or gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].startswith('The BAM file includes unmapped reads extracted from specimen-level BAM with the reference alignment')
+         ): # this is actually BAM with unmapped reads
         bam_file['is_aligned'] = False
         bam_file['bam_type'] = 'Specimen level unmapped reads after BWA alignment'
         bam_file['alignment'] = None
@@ -303,7 +305,7 @@ def is_train_2_aligned(analysis_attrib, gnos_analysis):
 
 def is_corrupted_train_2_alignment(analysis_attrib, gnos_analysis):
     if ( is_train_2_aligned(analysis_attrib, gnos_analysis)
-           and not analysis_attrib.get('workflow_output_bam_contents') == 'unaligned'
+           and not gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].startswith('The BAM file includes unmapped reads extracted from specimen-level BAM with the reference alignment')
            and (not analysis_attrib.get('qc_metrics') or not analysis_attrib.get('markduplicates_metrics'))
        ):
         return True
