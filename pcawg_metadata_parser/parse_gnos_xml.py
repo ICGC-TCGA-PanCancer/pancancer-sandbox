@@ -252,10 +252,14 @@ def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
         bam_file['is_aligned'] = False
         bam_file['bam_type'] = 'Specimen level unmapped reads after BWA alignment'
         bam_file['alignment'] = None
-    else:
+    elif gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].startswith('Specimen-level BAM from the reference alignment'):
         bam_file['is_aligned'] = True
         bam_file['bam_type'] = 'Specimen level aligned BAM'
         bam_file['alignment'] = get_alignment_detail(analysis_attrib, gnos_analysis)
+    else:
+        bam_file['is_aligned'] = False
+        bam_file['bam_type'] = 'Unknown'
+        bam_file['alignment'] = None
 
     return bam_file
 
