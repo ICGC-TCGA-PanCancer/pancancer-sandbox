@@ -303,6 +303,7 @@ def is_train_2_aligned(analysis_attrib, gnos_analysis):
 
 def is_corrupted_train_2_alignment(analysis_attrib, gnos_analysis):
     if ( is_train_2_aligned(analysis_attrib, gnos_analysis)
+           and not analysis_attrib.get('workflow_output_bam_contents') == 'unaligned'
            and (not analysis_attrib.get('qc_metrics') or not analysis_attrib.get('markduplicates_metrics'))
        ):
         return True
