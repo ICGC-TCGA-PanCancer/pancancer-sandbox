@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 import json
 from collections import OrderedDict
 from argparse import ArgumentParser
@@ -587,10 +588,16 @@ es_queries = [
 ]
 
 
-def generate_report(es_index, es_queries):
+def init_report_dir(metadata_dir, report_name, repo):
+    report_dir = metadata_dir + '/reports/' + report_name if not repo else metadata_dir + '/reports/' + report_name + '/' + repo
+    if not os.path.exists(report_dir):
+        os.makedirs(report_dir)
+    return report_dir
+
+
+def generate_report(es_index, es_queries, metadata_dir, report_name, repo):
     # we need to run several queries to get facet counts for different type of donors
     report = OrderedDict()
-
     count_types = [
         "both_aligned",
         "normal_aligned_tumor_not",
@@ -603,7 +610,6 @@ def generate_report(es_index, es_queries):
     ]
 
     for q_index in range(len(count_types)):
-
         response = es.search(index=es_index, body=es_queries[q_index])
         #print(json.dumps(response['aggregations']['project_f']))  # for debugging
     
@@ -618,15 +624,23 @@ def generate_report(es_index, es_queries):
             report[project][count_types[q_index]]['count'] = count
             report[project][count_types[q_index]]['donors'] = donors
 
-    #print(report)  # for debugging only
-    print ('project', count_types)
+    report_dir = init_report_dir(metadata_dir, report_name, repo)
+
+    summary_table = []
     for p in report.keys():
-        counts = []
-        donors = []
+        summary = {"project": p}
         for ctype in count_types:
-            counts.append( report.get(p).get(ctype).get('count') if report.get(p).get(ctype) else 0 )
-            donors.append( report.get(p).get(ctype).get('donors') if report.get(p).get(ctype) else '' )
-        print(p, counts, donors)
+            summary[ctype] = report.get(p).get(ctype).get('count') if report.get(p).get(ctype) else 0
+            donors = report.get(p).get(ctype).get('donors') if report.get(p).get(ctype) else []
+            if donors:
+                with open(report_dir + '/' + p + '.' + ctype + '.donors.tsv', 'w') as o:
+                    for d in donors:
+                        o.write(d + '\n')
+
+        summary_table.append(summary)
+
+    with open(report_dir + '/donor.json', 'w') as o:
+        o.write(json.dumps(summary_table))
 
 
 def get_donors(donor_buckets):
@@ -644,13 +658,25 @@ def main(argv=None):
 
     parser = ArgumentParser(description="PCAWG Report Generator Using ES Backend",
              formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument("-i", "--index", dest="es_index",
-             help="Elasticsearch index to be queried", required=True)
+    parser.add_argument("-m", "--metadata_dir", dest="metadata_dir",
+             help="Directory containing metadata manifest files", required=True)
+    parser.add_argument("-r", "--gnos_repo", dest="repo",
+             help="Specify which GNOS repo to process, process all repos if none specified", required=False)
 
     args = parser.parse_args()
-    es_index = args.es_index
+    metadata_dir = args.metadata_dir  # this dir contains gnos manifest files, will also host all reports
+    repo = args.repo
 
-    generate_report(es_index, es_queries)
+    if not os.path.isdir(metadata_dir):  # TODO: should add more directory name check to make sure it's right
+        sys.exit('Error: specified metadata directory does not exist!')
+
+    timestamp = str.split(metadata_dir, '/')[-1]
+    es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1)
+
+    report_name = re.sub(r'^pc_report-', '', os.path.basename(__file__))
+    report_name = re.sub(r'\.py$', '', report_name)
+
+    generate_report(es_index, es_queries, metadata_dir, report_name, repo)
 
     return 0
 

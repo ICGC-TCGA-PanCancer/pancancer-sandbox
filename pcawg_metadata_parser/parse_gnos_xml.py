@@ -349,14 +349,19 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
     return donor
 
 def is_test(analysis_attrib, gnos_analysis):
-    is_test = False
     if (gnos_analysis.get('aliquot_id') == '85098796-a2c1-11e3-a743-6c6c38d06053'
           or gnos_analysis.get('study') == 'CGTEST'
         ):
-        is_test = True
+        return True
+    elif (analysis_attrib.get('dcc_project_code') == 'None-US'
+          and analysis_attrib.get('submitter_donor_id') == 'None'
+          and analysis_attrib.get('submitter_specimen_id') == 'None'
+          and analysis_attrib.get('dcc_specimen_type') == 'unknown'
+        ):
+        return True
     # TODO: what's the criteria for determining *test* entries
 
-    return is_test
+    return False
 
 
 def is_cell_line(analysis_attrib, gnos_analysis):
