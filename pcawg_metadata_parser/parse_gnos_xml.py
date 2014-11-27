@@ -132,6 +132,7 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                         donors.get(donor_unique_id)['normal_specimen'].update(
                             prepare_aggregated_specimen_level_info(copy.deepcopy(bam_file))
                         )
+                        donors.get(donor_unique_id)['gnos_repo'] = bam_file.get('gnos_repo')
             else:
                 logger.warning('same donor: {} has different aliquot_id: {}, {} for normal specimen, entry in use: {}, additional entry found in {}'
                   .format(donor_unique_id,
@@ -157,10 +158,9 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                 if donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots').intersection(
                         [ bam_file.get('aliquot_id') ]
                     ): # multiple alignments for the same tumor aliquot_id
-                    logger.warning('more than one tumor aligned bam for donor: {} with aliquot_id: {}, entry in use: {}, additional entry found in: {}'
+                    logger.warning('more than one tumor aligned bam for donor: {} with aliquot_id: {}, additional entry found in: {}'
                           .format(donor_unique_id,
                               bam_file.get('aliquot_id'),
-                              donors.get(donor_unique_id).get('normal_specimen').get('gnos_metadata_url'),
                               gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')
                         )
                     )
@@ -174,7 +174,9 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                 donors.get(donor_unique_id)['aligned_tumor_specimen_aliquot_counts'] = 1
                 donors.get(donor_unique_id)['has_aligned_tumor_specimen'] = True
 
+    original_gnos = bam_file['gnos_repo']
     bam_file.update( donors[ donor_unique_id ] )
+    bam_file['gnos_repo'] = original_gnos
     del bam_file['bam_files']
     del bam_file['normal_specimen']
     del bam_file['aligned_tumor_specimens']
