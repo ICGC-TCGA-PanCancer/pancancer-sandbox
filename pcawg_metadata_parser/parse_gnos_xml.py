@@ -71,6 +71,8 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
 
     donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
     if is_in_donor_blacklist(donor_unique_id):
+        logger.warning('ignore blacklisted donor: {} GNOS entry: {}'
+                         .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
 
     if is_test(analysis_attrib, gnos_analysis):
@@ -212,7 +214,8 @@ def is_in_donor_blacklist(donor_unique_id):
             "LIHC-US::G1551",
             "LIHC-US::G15512",
             "TCGA_MUT_BENCHMARK_4::G15511",
-            "TCGA_MUT_BENCHMARK_4::G15512"
+            "TCGA_MUT_BENCHMARK_4::G15512",
+            "PBCA-DE::SNV_CALLING_TEST"
         ])
     if donor_blacklist.intersection([donor_unique_id]):
         return True
