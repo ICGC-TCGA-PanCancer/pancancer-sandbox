@@ -496,7 +496,7 @@ def main(argv=None):
     logger.setLevel(logging.INFO)
     ch.setLevel(logging.WARN)
 
-    log_file = metadata_dir + ('' if not repo else '.'+repo) + '.metadata_parser.log'
+    log_file = metadata_dir + '.metadata_parser' + ('' if not repo else '.'+repo) + '.log'
     # delete old log first if exists
     if os.path.isfile(log_file): os.remove(log_file)
 
@@ -521,25 +521,29 @@ def main(argv=None):
     with open('kibana-donor.json', 'r') as d:
         donor_dashboard = json.loads(d.read())
     donor_dashboard['index']['default'] = es_index + '/donor'
+    title = 'PCAWG Donors' + dashboard_name + ' (beta)'
+    donor_dashboard['title'] = title
     body = {
         'dashboard': json.dumps(donor_dashboard),
         'user': 'guest',
         'group': 'guest',
-        'title': 'PCAWG' + dashboard_name + ' Donors (beta)'
+        'title': title
     }
-    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG' + dashboard_name + ' Donors (beta)', body=body)
+    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG Donors' + dashboard_name, body=body)
 
     # bam
     with open('kibana-bam.json', 'r') as d:
         bam_dashboard = json.loads(d.read())
     bam_dashboard['index']['default'] = es_index + '/bam_file'
+    title = 'PCAWG BAMs' + dashboard_name + ' (beta)'
+    bam_dashboard['title'] = title
     body = {
         'dashboard': json.dumps(bam_dashboard),
         'user': 'guest',
         'group': 'guest',
-        'title': 'PCAWG' + dashboard_name + ' BAMs (beta)'
+        'title': title
     }
-    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG' + dashboard_name + ' BAMs (beta)', body=body)
+    es.index(index='kibana-int', doc_type='dashboard', id='PCAWG BAMs' + dashboard_name, body=body)
 
     return 0
 
