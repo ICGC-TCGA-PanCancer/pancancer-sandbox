@@ -3,7 +3,11 @@
 set -e
 
 # change this as needed
-WEB_DIR=/var/www/gnos_metadata
+WEB_DIR=$1
+if [ -z $WEB_DIR ] || [ ! -d $WEB_DIR ]; then
+  echo Must specify an existing web dir through which report data to be exposed! e.g. /var/www/gnos_metadata
+  exit 1
+fi
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
@@ -46,10 +50,17 @@ echo
 echo updating symlinks
 
 cd $WEB_DIR
-ln -s $DIR/$M .
+DIRNAME=$DIR/$M
+DIRNAME=`echo ${DIRNAME##*/}`
+if [ -h $DIRNAME ]; then
+  rm $DIRNAME
+fi
+ln -s $DIR/$M $DIRNAME
 
-rm latest
-ln -s $DIR/$M latest
+if [ -h latest ]; then
+  rm latest
+fi
+ln -s $DIRNAME latest
 
 echo finished
-
+echo
