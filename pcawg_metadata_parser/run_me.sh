@@ -3,7 +3,7 @@
 set -e
 
 # change this as needed
-WEB_DIR=/var/www
+WEB_DIR=/var/www/gnos_metadata
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
