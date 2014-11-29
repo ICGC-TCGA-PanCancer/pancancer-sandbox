@@ -111,7 +111,7 @@ $(document).ready(function () {
             
             for (var j = 0; j < ctypes.length; j++) {
                 var cell_value = json[i][ctypes[j]] == 0 ? 0
-                   : "<a href='" + report_data_url + json[i]['project'] + "." + ctypes[j] + ".donors.txt'>" + json[i][ctypes[j]] + "</a>";
+                   : "<a target='abc' href='" + report_data_url + json[i]['project'] + "." + ctypes[j] + ".donors.txt'>" + json[i][ctypes[j]] + "</a>";
                 tr.append("<td>" + cell_value + "</td>");
                 total[j] += json[i][ctypes[j]];
             }
