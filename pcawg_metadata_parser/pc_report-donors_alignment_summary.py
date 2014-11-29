@@ -595,7 +595,7 @@ def init_report_dir(metadata_dir, report_name, repo):
     return report_dir
 
 
-def generate_report(es_index, es_queries, metadata_dir, report_name, repo):
+def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, repo):
     # we need to run several queries to get facet counts for different type of donors
     report = OrderedDict()
     count_types = [
@@ -629,6 +629,7 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, repo):
     summary_table = []
     for p in report.keys():
         summary = {"project": p}
+        summary['timestamp'] = timestamp
         for ctype in count_types:
             summary[ctype] = report.get(p).get(ctype).get('count') if report.get(p).get(ctype) else 0
             donors = report.get(p).get(ctype).get('donors') if report.get(p).get(ctype) else []
@@ -678,7 +679,7 @@ def main(argv=None):
     report_name = re.sub(r'^pc_report-', '', os.path.basename(__file__))
     report_name = re.sub(r'\.py$', '', report_name)
 
-    generate_report(es_index, es_queries, metadata_dir, report_name, repo)
+    generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, repo)
 
     return 0
 
