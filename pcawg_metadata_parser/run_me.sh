@@ -36,7 +36,7 @@ echo parsing all gnos
 echo
 echo generating reports
 # find the latest folder with metadata
-M=`find gnos_metadata -regex 'gnos_metadata/20[0-9][0-9]-[0-9][0-9].*[0-9][0-9]_[A-Z][A-Z][A-Z]' | sort | tail -1`
+M=`find gnos_metadata -maxdepth 1 -type d -regex 'gnos_metadata/20[0-9][0-9]-[0-9][0-9].*[0-9][0-9]_[A-Z][A-Z][A-Z]' | sort | tail -1`
 echo running alignment summary report for $M
 for g in ${gnos_repos[*]};
   do
@@ -44,6 +44,13 @@ for g in ${gnos_repos[*]};
 done
 
 ./pc_report-donors_alignment_summary.py -m $M
+
+echo gzip all jsonl files under $M
+gzip $M/*.jsonl
+
+echo generating aggregated QC prioritization metric
+perl ../metadata_tools/prioritise_by_qc.pl $M/donor_p_????????????.jsonl.gz > $M/qc_donor_prioritization.txt
+
 
 # create symlink
 echo
