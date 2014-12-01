@@ -38,3 +38,8 @@ cgquery client tool.
 In addition to build an ES index name as 'p_\<time_stamp\>', two JSONL
 files will also be created.
 
+## Run the report generator
+```
+./pc_report-donors_alignment_summary.py -m
+```
+
