@@ -48,3 +48,8 @@ M=`find gnos_metadata -maxdepth 1 -type d -regex 'gnos_metadata/20[0-9][0-9]-[0-
 ```
 perl ../metadata_tools/prioritise_by_qc.pl $M/donor_p_????????????.jsonl.gz > $M/qc_donor_prioritization.txt
 ```
+
+Alternatively run everything at once:
+```
+./run_me.sh /var/www/gnos_metadata
+```
