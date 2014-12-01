@@ -53,3 +53,9 @@ perl ../metadata_tools/prioritise_by_qc.pl $M/donor_p_????????????.jsonl.gz > $M
 ```
 ./run_me.sh /var/www/gnos_metadata
 ```
+
+## Getting Pre-Built Indexes
+
+You can find nightly pre-built indexes for local usage here:
+
+    http://pancancer.info/gnos_metadata/
