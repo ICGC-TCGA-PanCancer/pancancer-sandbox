@@ -202,7 +202,7 @@ sub process {
   my $donor_count = 0;
   my $in_fh = input_select($file);
 
-  print join("\t", 'GNOS repo', 'GNOS Study', 'Unique DonorId', 'Normalised X', 'Tumours', @DONOR_ORDERED_ISSUES, 'Issue Summary'),"\n";
+  print join("\t", 'GNOS repo', 'GNOS Study', 'Unique DonorId', 'Normal coverage', 'Tumour coverage', 'Normalised coverage', 'Tumours', @DONOR_ORDERED_ISSUES, 'Issue Summary'),"\n";
 
   while (my $jsonl = <$in_fh>) {
     my $donor = decode_json $jsonl;
@@ -251,9 +251,11 @@ sub process {
     push @donor_data, $donor->{'donor_unique_id'};
 
     # this reflects the combined coverage for T/N * number of T/N
-    my $normalised_x = q{.};
+    my $normalised_x = ".\t.\t.";
     if($donor_issues{'Normal available'} == 0 && $donor->{'aligned_tumor_specimen_aliquot_counts'} > 0) {
-      $normalised_x = sprintf '%.2f', ($tum_x + ($norm_x*$donor->{'aligned_tumor_specimen_aliquot_counts'}) / ($donor->{'aligned_tumor_specimen_aliquot_counts'}*2)) / $DIV_X;
+      $normalised_x = sprintf '%.2f', $norm_x / $DIV_X;
+      $normalised_x .= "\t" . (sprintf '%.2f', ($tum_x  / $donor->{'aligned_tumor_specimen_aliquot_counts'}) / $DIV_X);
+      $normalised_x .= "\t" . (sprintf '%.2f', ($norm_x + ($tum_x*$donor->{'aligned_tumor_specimen_aliquot_counts'})) / ($donor->{'aligned_tumor_specimen_aliquot_counts'} + 1) / $DIV_X);
     }
     push @donor_data, $normalised_x;
     push @donor_data, $donor->{'all_tumor_specimen_aliquot_counts'};
