@@ -255,7 +255,7 @@ sub process {
     if($donor_issues{'Normal available'} == 0 && $donor->{'aligned_tumor_specimen_aliquot_counts'} > 0) {
       $normalised_x = sprintf '%.2f', $norm_x / $DIV_X;
       $normalised_x .= "\t" . (sprintf '%.2f', ($tum_x  / $donor->{'aligned_tumor_specimen_aliquot_counts'}) / $DIV_X);
-      $normalised_x .= "\t" . (sprintf '%.2f', ($norm_x + ($tum_x*$donor->{'aligned_tumor_specimen_aliquot_counts'})) / ($donor->{'aligned_tumor_specimen_aliquot_counts'} + 1) / $DIV_X);
+      $normalised_x .= "\t" . (sprintf '%.2f', ($norm_x + $tum_x) / ($donor->{'aligned_tumor_specimen_aliquot_counts'} + 1) / $DIV_X);
     }
     push @donor_data, $normalised_x;
     push @donor_data, $donor->{'all_tumor_specimen_aliquot_counts'};
