@@ -402,7 +402,11 @@ def get_xml_files( metadata_dir, conf, repo ):
     for r in conf.get('gnos_repos'):
         if repo and not r.get('repo_code') == repo:
             continue
-        with open(metadata_dir + '/analysis_objects.' + r.get('repo_code') + '.tsv', 'r') as list:
+        gnos_ao_list_file = metadata_dir + '/analysis_objects.' + r.get('repo_code') + '.tsv'
+        if not os.path.isfile(gnos_ao_list_file):
+            logger.warning('gnos analsysi object list file does not exist: {}'.format(gnos_ao_list_file))
+            continue
+        with open(gnos_ao_list_file, 'r') as list:
             for ao in list:
                 ao_uuid, ao_state = str.split(ao, '\t')[0:2]
                 if not ao_state == 'live': continue  # skip ao that is not live
