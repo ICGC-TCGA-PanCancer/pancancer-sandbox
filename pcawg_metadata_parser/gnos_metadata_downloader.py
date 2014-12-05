@@ -67,11 +67,11 @@ def use_previous_manifest(gnos_repo, output_dir, mani_output_dir):
     manifest_file = '/manifest.' + gnos_repo.get('repo_code') + '.xml'
 
     previous_metadata_dir = find_second_last_metadata_dir(output_dir)
-    previous_manifest_file = (previous_metadata_dir + manifest_file).replace(output_dir, '..', 1)
+    previous_manifest_file = previous_metadata_dir + manifest_file
 
     if previous_metadata_dir and os.path.isfile(previous_manifest_file):
         logger.warning('using previously donwloaded manifest for: {}'.format(gnos_repo.get('repo_code')))
-        os.symlink(previous_manifest_file, mani_output_dir + manifest_file)
+        os.symlink((previous_metadata_dir + manifest_file).replace(output_dir, '..', 1), mani_output_dir + manifest_file)
         return mani_output_dir + manifest_file
     else:
         logger.warning('no previously donwloaded manifest found, skipping repo: {}'.format(gnos_repo.get('repo_code')))
