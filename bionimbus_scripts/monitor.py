@@ -34,9 +34,20 @@ class Host(object):
         self.ip=ip
         self.hostname=hostname
         self.output = None
+        self.step = None
     def RemoteCmd(self, cmd):
         out, err, code = RunCommand("ssh -i %s BOCONNOR@%s \"%s\"" % (PEM, self.ip, cmd))
         self.output = out
+
+def ParseOozieJobStep(host, jobname):
+    host.RemoteCmd("oozie job -oozie http://master:11000/oozie -info %s" % (jobname))
+    lines = host.output.split('\n')
+    step = None
+    for line in lines:
+        match = re.search(r"\S+@(?P<STEP>\S+)\s+\S+\s+\d+\s+\S+\s(?P<ERRORCODE>\S+)", line, re.DOTALL)
+        if match:
+            step = match.group("STEP")
+    host.step = step
 
 def main():
     # create hosts
@@ -63,7 +74,9 @@ def main():
             elif int(host.output) < 1:
                 print "ERROR: host %s is not running any jobs." % (host.hostname)
             else:
-                print "Host %s is fine." % (host.hostname)
+                host.RemoteCmd("oozie jobs -oozie http://master:11000/oozie | grep RUNNING | awk '{ print $1 }'")
+                step = ParseOozieJobStep(host, host.output)
+                print "Host %s is on step: %s" % (host.hostname, host.step)
         os.system("sleep 30")
 
 if __name__ == '__main__':
