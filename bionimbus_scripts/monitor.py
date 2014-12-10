@@ -75,7 +75,6 @@ def main():
                 print "ERROR: host %s is not running any jobs." % (host.hostname)
             else:
                 host.RemoteCmd("oozie jobs -oozie http://master:11000/oozie | grep RUNNING | awk '{ print $1 }'")
-                step = ParseOozieJobStep(host, host.output)
                 print "Host %s is on step: %s" % (host.hostname, host.step)
         os.system("sleep 30")
 
