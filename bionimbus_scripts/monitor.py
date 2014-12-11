@@ -55,8 +55,6 @@ def main():
     out, err, code = RunCommand("nova list")
     novalist = out.split('\n')
     for line in novalist:
-        if line == "+--------------------------------------+--------------------------+--------+------------+-------------+-------------------+":
-            continue
         data = line.split('|')
         if len(data) > 6:
             if 'b_sanger' in data[2]:
