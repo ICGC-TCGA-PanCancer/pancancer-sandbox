@@ -46,6 +46,8 @@ def download_manifest(gnos_repo, mani_output_dir, use_previous=False):
         logger.info('downloading manifest succeeded at: {}'.format(gnos_repo.get('repo_code')))
         return manifest_file
     else:
+        if os.path.isfile(manifest_file): # just in case the file is partially created, clean up here
+            os.remove(manifest_file)
         logger.warning('downloading manifest failed at: {}'.format(gnos_repo.get('repo_code')))
         return False
 
