@@ -242,7 +242,7 @@ sub process {
 
     $donor_count++;
     my @donor_data;
-    my $tmp_repo = $donor->{'gnos_repo'};
+    my $tmp_repo = $donor->{'original_gnos_assignment'};
     $tmp_repo =~ s|^https:/{2}||;
     $tmp_repo =~ s|^gtrepo\-||;
     $tmp_repo =~ s/\.(ucsc\.edu|annailabs\.com)\/$//;
