@@ -26,7 +26,7 @@ ch = logging.StreamHandler()
 
 def init_es(es_host, es_index):
     es = Elasticsearch([ es_host ])
-    es.indices.delete( es_index, ignore=[400, 404] )
+    #es.indices.delete( es_index, ignore=[400, 404] )
     es.indices.create( es_index, ignore=400 )
 
     # create mappings
@@ -355,6 +355,8 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
 def is_test(analysis_attrib, gnos_analysis):
     if (gnos_analysis.get('aliquot_id') == '85098796-a2c1-11e3-a743-6c6c38d06053'
           or gnos_analysis.get('study') == 'CGTEST'
+          or gnos_analysis.get('study') == 'icgc_pancancer_vcf_test'
+          or 'test' in gnos_analysis.get('study').lower()
         ):
         return True
     elif (analysis_attrib.get('dcc_project_code') == 'None-US'
