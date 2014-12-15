@@ -1,0 +1,50 @@
+ebi:
+  - ESAD-UK
+  - BRCA-UK
+  - CMDI-UK
+  - BOCA-UK
+  - BRCA-EU
+  - PACA-CA
+  - PRAD-UK
+bsc:
+  - CLLE-ES
+  - PACA-AU
+  - LICA-FR
+etri:
+  - LAML-KR
+dkfz:
+  - PBCA-DE
+  - MALY-DE
+  - EOPC-DE
+riken:
+  - BTCA-SG
+  - ORCA-IN
+  - LIRI-JP
+  - GACA-CN
+osdc-icgc:
+  - PAEN-AU
+  - OV-AU
+cghub:
+  - BRCA-US
+  - LIHC-US
+  - UCEC-US
+  - THCA-US
+  - KICH-US
+  - LUSC-US
+  - COAD-US
+  - OV-US
+  - HNSC-US
+  - LUAD-US
+  - GBM-US
+  - KIRC-US
+  - STAD-US
+  - SKCM-US
+  - KIRP-US
+  - SARC-US
+  - LAML-US
+  - BLCA-US
+  - CESC-US
+  - PRAD-US
+  - LGG-US
+  - READ-US
+  - DLBC-US

@@ -26,7 +26,7 @@ ch = logging.StreamHandler()
 
 def init_es(es_host, es_index):
     es = Elasticsearch([ es_host ])
-    #es.indices.delete( es_index, ignore=[400, 404] )
+    es.indices.delete( es_index, ignore=[400, 404] )
     es.indices.create( es_index, ignore=400 )
 
     # create mappings
@@ -191,7 +191,8 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
     donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
 
     # push to Elasticsearch
-    es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ))
+    # Let's not worry about this index type, it seems not that useful
+    #es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ))
     bam_output_fh.write(json.dumps(bam_file, default=set_default) + '\n')
 
 
@@ -420,6 +421,13 @@ def get_xml_files( metadata_dir, conf, repo ):
 def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo):
     donors = {}
 
+    annotations = {}
+    read_annotations(annotations, 'gnos_assignment', 'pc_annotation-gnos_assignment.yml')  # hard-code file name for now
+    read_annotations(annotations, 'train2_donors', 'pc_annotation-train2_donors.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'train2_pilot', 'pc_annotation-train2_pilot.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'donor_blacklist', 'pc_annotation-donor_blacklist.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'manual_qc_failed', 'pc_annotation-manual_qc_failed.tsv')  # hard-code file name for now
+    
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
 
@@ -436,7 +444,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     for donor_id in donors.keys():
         donor = donors[donor_id]
 
-        process_donor(donor)
+        process_donor(donor, annotations)
 
         # push to Elasticsearch
         es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], body=json.loads( json.dumps(donor, default=set_default) ))
@@ -447,7 +455,30 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     bam_fh.close()
 
 
-def process_donor(donor):
+def read_annotations(annotations, type, file_name):
+    with open(file_name, 'r') as r:
+        if annotations.get(type): # reset annotation if exists
+            del annotations[type]
+
+        if type == 'gnos_assignment':
+            annotations['gnos_assignment'] = {}
+            assignment = yaml.safe_load(r)
+            for repo, project_donors in assignment.iteritems():
+                for p_d in project_donors:
+                    annotations['gnos_assignment'][p_d] = repo  # key is project or donor unique id, value is repo
+
+        elif type == 'train2_donors' or type == 'train2_pilot' or type == 'donor_blacklist' or type == 'manual_qc_failed':
+            annotations[type] = set()
+            for line in r:
+                if line.startswith('#'): continue
+                if len(line.rstrip()) == 0: continue
+                annotations[type].add(line.rstrip())
+
+        else:
+            logger.warning('unknown annotation type: {}'.format(type))
+
+
+def process_donor(donor, annotations):
     logger.info( 'processing donor: {} ...'.format(donor.get('donor_unique_id')) )
     # check whether all tumor specimen(s) aligned
     if (donor.get('aligned_tumor_specimen_aliquot_counts') 
@@ -462,10 +493,57 @@ def process_donor(donor):
     add_alignment_status_to_donor(donor, aggregated_bam_info)
     #print json.dumps(donor.get('tumor_alignment_status'), default=set_default)  # debug only
     
-    get_gnos_repos_with_complete_alignment_set(donor)
+    # add gnos repos where complete alignments for the current donor are available
+    add_gnos_repos_with_complete_alignment_set(donor)
+
+    # add original gnos repo assignment, this is based on a manually maintained yaml file
+    add_original_gnos_repo(donor, annotations['gnos_assignment'])
+    add_train2_donor_flag(donor, annotations['train2_donors'])
+    add_train2_pilot_flag(donor, annotations['train2_pilot'])
+    add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
+    add_manual_qc_failed_flag(donor, annotations['manual_qc_failed'])
+
+def add_original_gnos_repo(donor, annotation):
+    if donor.get('gnos_repo'):
+        del donor['gnos_repo']  # get rid of this rather confusing old flag
+
+    if annotation.get(donor.get('donor_unique_id')):
+        donor['original_gnos_assignment'] = annotation.get(donor.get('donor_unique_id'))
+    elif annotation.get(donor.get('dcc_project_code')):
+        donor['original_gnos_assignment'] = annotation.get(donor.get('dcc_project_code'))
+    else:
+        donor['original_gnos_assignment'] = None
 
 
-def get_gnos_repos_with_complete_alignment_set(donor):
+def add_train2_donor_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_train2_donor'] = True
+    else:
+        donor['is_train2_donor'] = False
+
+
+def add_train2_pilot_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_train2_pilot'] = True
+    else:
+        donor['is_train2_pilot'] = False
+
+
+def add_donor_blacklist_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_donor_blacklisted'] = True
+    else:
+        donor['is_donor_blacklisted'] = False
+
+
+def add_manual_qc_failed_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_manual_qc_failed'] = True
+    else:
+        donor['is_manual_qc_failed'] = False
+
+
+def add_gnos_repos_with_complete_alignment_set(donor):
     repos = set()
 
     if (donor.get('normal_alignment_status')
@@ -699,7 +777,8 @@ def main(argv=None):
     }
     es.index(index='kibana-int', doc_type='dashboard', id='PCAWG Donors' + dashboard_name, body=body)
 
-    # bam
+    # bam search, no need this for now, not very useful
+    '''
     with open('kibana-bam.json', 'r') as d:
         bam_dashboard = json.loads(d.read())
     bam_dashboard['index']['default'] = es_index + '/bam_file'
@@ -712,6 +791,7 @@ def main(argv=None):
         'title': title
     }
     es.index(index='kibana-int', doc_type='dashboard', id='PCAWG BAMs' + dashboard_name, body=body)
+    '''
 
     return 0
 
