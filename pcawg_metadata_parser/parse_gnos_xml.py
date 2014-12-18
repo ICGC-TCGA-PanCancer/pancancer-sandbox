@@ -191,7 +191,8 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
     donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
 
     # push to Elasticsearch
-    es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ))
+    # Let's not worry about this index type, it seems not that useful
+    #es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ))
     bam_output_fh.write(json.dumps(bam_file, default=set_default) + '\n')
 
 
@@ -354,6 +355,8 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
 def is_test(analysis_attrib, gnos_analysis):
     if (gnos_analysis.get('aliquot_id') == '85098796-a2c1-11e3-a743-6c6c38d06053'
           or gnos_analysis.get('study') == 'CGTEST'
+          or gnos_analysis.get('study') == 'icgc_pancancer_vcf_test'
+          or 'test' in gnos_analysis.get('study').lower()
         ):
         return True
     elif (analysis_attrib.get('dcc_project_code') == 'None-US'
@@ -420,6 +423,13 @@ def get_xml_files( metadata_dir, conf, repo ):
 def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo):
     donors = {}
 
+    annotations = {}
+    read_annotations(annotations, 'gnos_assignment', 'pc_annotation-gnos_assignment.yml')  # hard-code file name for now
+    read_annotations(annotations, 'train2_donors', 'pc_annotation-train2_donors.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'train2_pilot', 'pc_annotation-train2_pilot.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'donor_blacklist', 'pc_annotation-donor_blacklist.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'manual_qc_failed', 'pc_annotation-manual_qc_failed.tsv')  # hard-code file name for now
+    
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
 
@@ -434,23 +444,257 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
             logger.warning( 'skipping invalid xml file: {}'.format(f) )
 
     for donor_id in donors.keys():
-        if donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') and donors[donor_id].get('aligned_tumor_specimen_aliquot_counts') == donors[donor_id].get('all_tumor_specimen_aliquot_counts'):
-            donors[donor_id]['are_all_tumor_specimens_aligned'] = True
+        donor = donors[donor_id]
 
-        donors[donor_id]['are_all_aligned_specimens_in_same_gnos_repo'] = True
-        for tumor in donors[donor_id].get('aligned_tumor_specimens'):
-            if donors[donor_id]['gnos_repo'] != tumor.get('gnos_repo'):
-                donors[donor_id]['are_all_aligned_specimens_in_same_gnos_repo'] = False
-                break
+        process_donor(donor, annotations)
 
-        #print(json.dumps(donors[donor_id])) # debug
         # push to Elasticsearch
-        es.index(index=es_index, doc_type='donor', id=donors[donor_id]['donor_unique_id'], body=json.loads( json.dumps(donors[donor_id], default=set_default) ))
-        del donors[donor_id]['bam_files']  # prune this before dumping JSON for Keiran
-        donor_fh.write(json.dumps(donors[donor_id], default=set_default) + '\n')
+        es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], body=json.loads( json.dumps(donor, default=set_default) ))
+        del donor['bam_files']  # prune this before dumping JSON for Keiran
+        donor_fh.write(json.dumps(donor, default=set_default) + '\n')
 
     donor_fh.close()
     bam_fh.close()
+
+
+def read_annotations(annotations, type, file_name):
+    with open(file_name, 'r') as r:
+        if annotations.get(type): # reset annotation if exists
+            del annotations[type]
+
+        if type == 'gnos_assignment':
+            annotations['gnos_assignment'] = {}
+            assignment = yaml.safe_load(r)
+            for repo, project_donors in assignment.iteritems():
+                for p_d in project_donors:
+                    annotations['gnos_assignment'][p_d] = repo  # key is project or donor unique id, value is repo
+
+        elif type == 'train2_donors' or type == 'train2_pilot' or type == 'donor_blacklist' or type == 'manual_qc_failed':
+            annotations[type] = set()
+            for line in r:
+                if line.startswith('#'): continue
+                if len(line.rstrip()) == 0: continue
+                annotations[type].add(line.rstrip())
+
+        else:
+            logger.warning('unknown annotation type: {}'.format(type))
+
+
+def process_donor(donor, annotations):
+    logger.info( 'processing donor: {} ...'.format(donor.get('donor_unique_id')) )
+    # check whether all tumor specimen(s) aligned
+    if (donor.get('aligned_tumor_specimen_aliquot_counts') 
+            and donor.get('aligned_tumor_specimen_aliquot_counts') == donor.get('all_tumor_specimen_aliquot_counts')):
+        donor['are_all_tumor_specimens_aligned'] = True
+
+    # now build easy-to-use, specimen-level, gnos_repo-aware summary of bwa alignment status by iterating all collected bams
+    aggregated_bam_info = bam_aggregation(donor['bam_files'])
+    #print (json.dumps(aggregated_bam_info, default=set_default))  # debug only
+
+    # let's add this aggregated alignment information to donor object
+    add_alignment_status_to_donor(donor, aggregated_bam_info)
+    #print json.dumps(donor.get('tumor_alignment_status'), default=set_default)  # debug only
+    
+    # add gnos repos where complete alignments for the current donor are available
+    add_gnos_repos_with_complete_alignment_set(donor)
+
+    # add original gnos repo assignment, this is based on a manually maintained yaml file
+    add_original_gnos_repo(donor, annotations['gnos_assignment'])
+    add_train2_donor_flag(donor, annotations['train2_donors'])
+    add_train2_pilot_flag(donor, annotations['train2_pilot'])
+    add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
+    add_manual_qc_failed_flag(donor, annotations['manual_qc_failed'])
+
+def add_original_gnos_repo(donor, annotation):
+    if donor.get('gnos_repo'):
+        del donor['gnos_repo']  # get rid of this rather confusing old flag
+
+    if annotation.get(donor.get('donor_unique_id')):
+        donor['original_gnos_assignment'] = annotation.get(donor.get('donor_unique_id'))
+    elif annotation.get(donor.get('dcc_project_code')):
+        donor['original_gnos_assignment'] = annotation.get(donor.get('dcc_project_code'))
+    else:
+        donor['original_gnos_assignment'] = None
+
+
+def add_train2_donor_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_train2_donor'] = True
+    else:
+        donor['is_train2_donor'] = False
+
+
+def add_train2_pilot_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_train2_pilot'] = True
+    else:
+        donor['is_train2_pilot'] = False
+
+
+def add_donor_blacklist_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_donor_blacklisted'] = True
+    else:
+        donor['is_donor_blacklisted'] = False
+
+
+def add_manual_qc_failed_flag(donor, annotation):
+    if donor.get('donor_unique_id') in annotation:
+        donor['is_manual_qc_failed'] = True
+    else:
+        donor['is_manual_qc_failed'] = False
+
+
+def add_gnos_repos_with_complete_alignment_set(donor):
+    repos = set()
+
+    if (donor.get('normal_alignment_status')
+            and donor.get('normal_alignment_status').get('aligned_bam')):
+        repos = donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')
+
+    if repos and donor.get('tumor_alignment_status'):
+        for t in donor.get('tumor_alignment_status'):
+            if t.get('aligned_bam'):
+                repos = set.intersection(repos, t.get('aligned_bam').get('gnos_repo'))
+            else:
+                repos = set()
+    else:
+        repos = set()
+
+    donor['gnos_repos_with_complete_alignment_set'] = repos
+    if repos:
+        donor['is_alignment_completed'] = True
+    else:
+        donor['is_alignment_completed'] = False
+
+
+def add_alignment_status_to_donor(donor, aggregated_bam_info):
+    for aliquot_id in aggregated_bam_info.keys():
+        alignment_status = aggregated_bam_info.get(aliquot_id)
+        if 'normal' in alignment_status.get('dcc_specimen_type').lower(): # normal specimen
+            if not donor.get('normal_alignment_status'): # no normal yet in this donor, this is good
+                donor['normal_alignment_status'] = reorganize_unaligned_bam_info(alignment_status)
+            else: # another normal with different aliquot_id! this is no good
+                logger.warning('donor: {} has more than one normal, in use aliquot_id: {}, additional aliquot_id found: {}'
+                        .format(donor.get('donor_unique_id'),
+                                donor.get('normal_alignment_status').get('aliquot_id'),
+                                aliquot_id)
+                    )
+        elif 'tumour' in alignment_status.get('dcc_specimen_type').lower(): # tumour specimen
+            if not donor.get('tumor_alignment_status'):
+                donor['tumor_alignment_status'] = []
+            donor['tumor_alignment_status'].append(reorganize_unaligned_bam_info(alignment_status))
+        else:
+            logger.warning('invalid specimen type: {} in donor: {} with aliquot_id: {}'
+                    .format(alignment_status.get('dcc_specimen_type'), donor.get('donor_unique_id'), aliquot_id)
+                )
+
+
+def reorganize_unaligned_bam_info(alignment_status):
+    unaligned_bams = []
+    for gnos_id in alignment_status.get('unaligned_bams').keys():
+        unaligned_bams.append(
+            {
+                "gnos_id": gnos_id,
+                "bam_file_name": alignment_status.get('unaligned_bams').get(gnos_id).get('bam_file_name'),
+                "gnos_repo": alignment_status.get('unaligned_bams').get(gnos_id).get('gnos_repo'),
+            }
+        )
+    alignment_status['unaligned_bams'] = unaligned_bams
+    return alignment_status
+
+
+def bam_aggregation(bam_files):
+    aggregated_bam_info = {}
+
+    for bam in bam_files:  # check aligned BAM(s) first
+        if not bam['bam_type'] == 'Specimen level aligned BAM':
+            continue
+
+        if not aggregated_bam_info.get(bam['aliquot_id']): # new aliquot
+            aggregated_bam_info[bam['aliquot_id']] = {
+                "aliquot_id": bam['aliquot_id'],
+                "submitter_specimen_id": bam['submitter_specimen_id'],
+                "submitter_sample_id": bam['submitter_sample_id'],
+                "dcc_specimen_type": bam['dcc_specimen_type'],
+                "aligned": True,
+                "aligned_bam": {
+                    "gnos_id": bam['bam_gnos_ao_id'],
+                    "bam_file_name": bam['bam_file_name'],
+                    "gnos_repo": set([bam['gnos_repo']])
+                 },
+                 "bam_with_unmappable_reads": {},
+                 "unaligned_bams": {}
+            }
+        else:
+            alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
+            if alignment_status.get('aligned_bam').get('gnos_id') == bam['bam_gnos_ao_id']:
+                alignment_status.get('aligned_bam').get('gnos_repo').add(bam['gnos_repo'])
+            else:
+                logger.warning( 'Same aliquot: {} has different aligned GNOS BAM entries, in use: {}, additional: {}'
+                                    .format(
+                                        bam['aliquot_id'],
+                                        alignment_status.get('aligned_bam').get('gnos_id'),
+                                        bam['bam_gnos_ao_id']) 
+                              )
+
+    for bam in bam_files:  # now check BAM with unmappable reads that were derived from aligned BAM
+        if not bam['bam_type'] == 'Specimen level unmapped reads after BWA alignment':
+            continue
+
+        if not aggregated_bam_info.get(bam['aliquot_id']): # new aliquot, too bad this is an orphaned unmapped read BAM the main aligned BAM is missing
+            logger.warning('aliquot: {} has GNOS BAM entry for unmapped reads found: {}, however the main aligned BAM entry is missing'
+                    .format(bam['aliquot_id'], bam['bam_gnos_ao_id'])
+                )
+        else:
+            alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
+            if not alignment_status.get('bam_with_unmappable_reads'):
+                alignment_status['bam_with_unmappable_reads'] = {
+                    "gnos_id": bam['bam_gnos_ao_id'],
+                    "bam_file_name": bam['bam_file_name'],
+                    "gnos_repo": set([bam['gnos_repo']])
+                }
+            elif alignment_status.get('bam_with_unmappable_reads').get('gnos_id') == bam['bam_gnos_ao_id']:
+                alignment_status.get('bam_with_unmappable_reads').get('gnos_repo').add(bam['gnos_repo'])
+            else:
+                logger.warning( 'same aliquot: {} has different unmappable reads GNOS BAM entries, in use: {}, additional: {}'
+                                    .format(
+                                        bam['aliquot_id'],
+                                        alignment_status.get('bam_with_unmappable_reads').get('gnos_id'),
+                                        bam['bam_gnos_ao_id']) 
+                              )
+
+    for bam in bam_files:  # last check original (submitted) unaligned BAM(s)
+        if not bam['bam_type'] == 'Unaligned BAM':
+            continue
+
+        if not aggregated_bam_info.get(bam['aliquot_id']): # new aliquot with no aligned BAM yet
+            aggregated_bam_info[bam['aliquot_id']] = {
+                "aliquot_id": bam['aliquot_id'],
+                "submitter_specimen_id": bam['submitter_specimen_id'],
+                "submitter_sample_id": bam['submitter_sample_id'],
+                "dcc_specimen_type": bam['dcc_specimen_type'],
+                "aligned": False,
+                "aligned_bam": {},
+                "bam_with_unmappable_reads": {},
+                "unaligned_bams": {
+                    bam['bam_gnos_ao_id']: {
+                        "bam_file_name": bam['bam_file_name'],
+                        "gnos_repo": set([bam['gnos_repo']])
+                    }
+                }
+            }
+        else: # aliquot already exists
+            alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
+            if alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']): # this unaligned bam was encountered before
+                alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo').add(bam['gnos_repo'])
+            else:
+                alignment_status.get('unaligned_bams')[bam['bam_gnos_ao_id']] = {
+                        "bam_file_name": bam['bam_file_name'],
+                        "gnos_repo": set([bam['gnos_repo']])
+                }
+
+    return aggregated_bam_info
 
 
 def find_latest_metadata_dir(output_dir):
@@ -535,7 +779,8 @@ def main(argv=None):
     }
     es.index(index='kibana-int', doc_type='dashboard', id='PCAWG Donors' + dashboard_name, body=body)
 
-    # bam
+    # bam search, no need this for now, not very useful
+    '''
     with open('kibana-bam.json', 'r') as d:
         bam_dashboard = json.loads(d.read())
     bam_dashboard['index']['default'] = es_index + '/bam_file'
@@ -548,6 +793,7 @@ def main(argv=None):
         'title': title
     }
     es.index(index='kibana-int', doc_type='dashboard', id='PCAWG BAMs' + dashboard_name, body=body)
+    '''
 
     return 0
 
