@@ -21,6 +21,7 @@ riken:
   - ORCA-IN
   - LIRI-JP
   - GACA-CN
+  - LINC-JP
 osdc-icgc:
   - PAEN-AU
   - OV-AU
