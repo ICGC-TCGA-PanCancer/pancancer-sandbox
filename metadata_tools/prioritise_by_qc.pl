@@ -159,8 +159,8 @@ sub add_aliquot {
     $total_mapped += $lib->{'metrics'}->{'read_pairs_examined'} * 2;
     $total_mapped += $lib->{'metrics'}->{'unpaired_reads_examined'};
   }
-  my $overall_dup_frac = 1
-  $overall_dup_frac = $total_dup / $total_mapped if($total_mapped == 0);
+  my $overall_dup_frac = 1;
+  $overall_dup_frac = $total_dup / $total_mapped if $total_mapped;
   $donor_issues->{$norm_or_tum.' dup_frac'} = $HC{$norm_or_tum}{dup_frac} if($overall_dup_frac > $MAX_DUP_FRAC);
 
 #if($max_insert_sd > $MAX_ISIZE_SD_FRAC) {
