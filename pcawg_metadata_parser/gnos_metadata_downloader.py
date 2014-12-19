@@ -46,6 +46,8 @@ def download_manifest(gnos_repo, mani_output_dir, use_previous=False):
         logger.info('downloading manifest succeeded at: {}'.format(gnos_repo.get('repo_code')))
         return manifest_file
     else:
+        if os.path.isfile(manifest_file): # just in case the file is partially created, clean up here
+            os.remove(manifest_file)
         logger.warning('downloading manifest failed at: {}'.format(gnos_repo.get('repo_code')))
         return False
 
@@ -67,8 +69,9 @@ def use_previous_manifest(gnos_repo, output_dir, mani_output_dir):
     manifest_file = '/manifest.' + gnos_repo.get('repo_code') + '.xml'
 
     previous_metadata_dir = find_second_last_metadata_dir(output_dir)
+    previous_manifest_file = previous_metadata_dir + manifest_file
 
-    if previous_metadata_dir:
+    if previous_metadata_dir and os.path.isfile(previous_manifest_file):
         logger.warning('using previously donwloaded manifest for: {}'.format(gnos_repo.get('repo_code')))
         os.symlink((previous_metadata_dir + manifest_file).replace(output_dir, '..', 1), mani_output_dir + manifest_file)
         return mani_output_dir + manifest_file

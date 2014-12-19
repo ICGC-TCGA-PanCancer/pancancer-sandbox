@@ -16,7 +16,7 @@ echo Script location: $DIR
 cd $DIR
 
 # this is just for running individual reports, does not affect downloader download from all gnos repos
-gnos_repos=(ebi bsc dkfz etri riken cghub osdc-icgc)
+gnos_repos=(ebi bsc dkfz)
 
 echo
 echo synchronizing with GNOS repos
@@ -25,13 +25,13 @@ echo synchronizing with GNOS repos
 echo
 echo parsing metadata xml, build ES index
 
+echo parsing all gnos
+./parse_gnos_xml.py -c settings.yml
+
 for g in ${gnos_repos[*]};
   do echo parsing gnos $g;
   ./parse_gnos_xml.py -c settings.yml -r $g;
 done
-
-echo parsing all gnos
-./parse_gnos_xml.py -c settings.yml
 
 echo
 echo generating reports
@@ -44,10 +44,12 @@ for g in ${gnos_repos[*]};
 done
 
 ./pc_report-donors_alignment_summary.py -m $M
+./pc_report-gnos_repo_summary.py -m $M
 
 echo gzip all jsonl files under $M
 gzip $M/*.jsonl
 
+# comment this out for now as it seems cause problems
 echo generating aggregated QC prioritization metric
 perl ../metadata_tools/prioritise_by_qc.pl $M/donor_p_????????????.jsonl.gz > $M/qc_donor_prioritization.txt
 

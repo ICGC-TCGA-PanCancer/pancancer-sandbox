@@ -106,6 +106,18 @@ $(document).ready(function () {
         var total = [0, 0, 0, 0, 0, 0, 0, 0];
         var tr;
         for (var i = 0; i < json.length; i++) {
+            for (var j = 0; j < ctypes.length; j++) {
+                total[j] += json[i][ctypes[j]];
+            }
+        }
+        tr = $('<tr/>');
+        tr.append("<td><font color=\"red\">[Total]</font></td>");
+        for (var i = 0; i < total.length; i++) {
+            tr.append("<td>" + (i == 0 ? "<a target='abc' href='search/#/dashboard/elasticsearch/PCAWG%20Donors'>" : "") + total[i] + (i == 0 ? "</a>" : "") + "</td>");
+        }
+        $("table[name='x9']").append(tr);
+
+        for (var i = 0; i < json.length; i++) {
             tr = $('<tr/>');
             tr.append("<td>" + json[i].project + "</td>");
             
@@ -117,12 +129,8 @@ $(document).ready(function () {
             }
             $("table[name='x9']").append(tr);
         }
-        tr = $('<tr/>');
-        tr.append("<td><b>Total</b></td>");
-        for (var i = 0; i < total.length; i++) {
-            tr.append("<td>" + (i == 0 ? "<a target='abc' href='search/#/dashboard/elasticsearch/PCAWG%20Donors'>" : "") + total[i] + (i == 0 ? "</a>" : "") + "</td>");
-        }
-        $("table[name='x9']").append(tr);
+
+
         tfoot = $('<tfoot/>');
         tfoot.append('<tr><td colspan="50">*Report processed: ' + json[0]['timestamp'] + '</td></tr>');
         $("table[name='x9']").append(tfoot);
