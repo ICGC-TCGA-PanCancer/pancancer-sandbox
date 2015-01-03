@@ -60,14 +60,14 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "T"
                           ]
                         }
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "T"
                           ]
                         }

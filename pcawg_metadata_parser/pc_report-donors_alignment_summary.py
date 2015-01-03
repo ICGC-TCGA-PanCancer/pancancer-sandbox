@@ -60,14 +60,14 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "T"
                           ]
                         }
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "T"
                           ]
                         }
@@ -128,7 +128,7 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "T"
                           ]
                         }
@@ -137,7 +137,7 @@ es_queries = [
                         { "filter":
                           {
                             "terms": {
-                              "all_tumor_specimen_aliquot_counts": [
+                              "flags.all_tumor_specimen_aliquot_counts": [
                                 "0"
                               ]
                             }
@@ -146,7 +146,7 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "F"
                           ]
                         }
@@ -207,14 +207,14 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "F"
                           ]
                         }
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "T"
                           ]
                         }
@@ -275,7 +275,7 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "F"
                           ]
                         }
@@ -284,7 +284,7 @@ es_queries = [
                         { "filter":
                           {
                             "terms": {
-                              "all_tumor_specimen_aliquot_counts": [
+                              "flags.all_tumor_specimen_aliquot_counts": [
                                 "0"
                               ]
                             }
@@ -293,7 +293,7 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "F"
                           ]
                         }
@@ -354,14 +354,14 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "T"
                           ]
                         }
                       },
                       {
                         "terms": {
-                          "all_tumor_specimen_aliquot_counts": [
+                          "flags.all_tumor_specimen_aliquot_counts": [
                             "0"
                           ]
                         }
@@ -422,14 +422,14 @@ es_queries = [
                       },
                       {
                         "terms": {
-                          "normal_specimen.is_aligned": [
+                          "flags.is_normal_specimen_aligned": [
                             "F"
                           ]
                         }
                       },
                       {
                         "terms": {
-                          "all_tumor_specimen_aliquot_counts": [
+                          "flags.all_tumor_specimen_aliquot_counts": [
                             "0"
                           ]
                         }
@@ -492,14 +492,14 @@ es_queries = [
                         { "filter":
                           {
                             "exists": {
-                              "field": "normal_specimen.is_aligned"
+                              "field": "flags.is_normal_specimen_aligned"
                             }
                           }
                         }
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "T"
                           ]
                         }
@@ -562,14 +562,14 @@ es_queries = [
                         { "filter":
                           {
                             "exists": {
-                              "field": "normal_specimen.is_aligned"
+                              "field": "flags.is_normal_specimen_aligned"
                             }
                           }
                         }
                       },
                       {
                         "terms": {
-                          "are_all_tumor_specimens_aligned": [
+                          "flags.are_all_tumor_specimens_aligned": [
                             "F"
                           ]
                         }
