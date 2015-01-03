@@ -154,7 +154,7 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
 
     else: # not normal
         donors.get(donor_unique_id).get('all_tumor_specimen_aliquots').add(bam_file.get('aliquot_id'))
-        donors.get(donor_unique_id)['all_tumor_specimen_aliquot_counts'] = len(donors.get(donor_unique_id).get('all_tumor_specimen_aliquots'))
+        donors.get(donor_unique_id).get('flags')['all_tumor_specimen_aliquot_counts'] = len(donors.get(donor_unique_id).get('all_tumor_specimen_aliquots'))
         if bam_file.get('is_aligned'):
             if donors.get(donor_unique_id).get('aligned_tumor_specimens'):
                 if donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots').intersection(
@@ -169,12 +169,12 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                 else:
                     donors.get(donor_unique_id).get('aligned_tumor_specimens').append( copy.deepcopy(bam_file) )
                     donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots').add(bam_file.get('aliquot_id'))
-                    donors.get(donor_unique_id)['aligned_tumor_specimen_aliquot_counts'] = len(donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots'))
+                    donors.get(donor_unique_id).get('flags')['aligned_tumor_specimen_aliquot_counts'] = len(donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots'))
             else:  # create the first element of the list
                 donors.get(donor_unique_id)['aligned_tumor_specimens'] = [copy.deepcopy(bam_file)]
                 donors.get(donor_unique_id).get('aligned_tumor_specimen_aliquots').add(bam_file.get('aliquot_id'))  # set of aliquot_id
-                donors.get(donor_unique_id)['aligned_tumor_specimen_aliquot_counts'] = 1
-                donors.get(donor_unique_id)['has_aligned_tumor_specimen'] = True
+                donors.get(donor_unique_id).get('flags')['aligned_tumor_specimen_aliquot_counts'] = 1
+                donors.get(donor_unique_id).get('flags')['has_aligned_tumor_specimen'] = True
 
     original_gnos = bam_file['gnos_repo']
     bam_file.update( donors[ donor_unique_id ] )
@@ -183,11 +183,8 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
     del bam_file['normal_specimen']
     del bam_file['aligned_tumor_specimens']
     del bam_file['aligned_tumor_specimen_aliquots']
-    del bam_file['aligned_tumor_specimen_aliquot_counts']
-    del bam_file['has_aligned_tumor_specimen']
     del bam_file['all_tumor_specimen_aliquots']
-    del bam_file['all_tumor_specimen_aliquot_counts']
-    del bam_file['are_all_tumor_specimens_aligned']
+    del bam_file['flags']
     donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
 
     # push to Elasticsearch
@@ -330,17 +327,24 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
         'dcc_project_code': analysis_attrib['dcc_project_code'],
         'gnos_study': gnos_analysis.get('study'),
         'gnos_repo': gnos_analysis.get('analysis_detail_uri').split('/cghub/')[0] + '/', # can be better
-        'is_test': is_test(analysis_attrib, gnos_analysis),
-        'is_cell_line': is_cell_line(analysis_attrib, gnos_analysis),
+        'flags': {
+            'is_test': is_test(analysis_attrib, gnos_analysis),
+            'is_cell_line': is_cell_line(analysis_attrib, gnos_analysis),
+            'is_train2_donor': False,
+            'is_train2_pilot': False,
+            'is_normal_specimen_aligned': False,
+            'are_all_tumor_specimens_aligned': False,
+            'has_aligned_tumor_specimen': False,
+            'aligned_tumor_specimen_aliquot_counts': 0,
+            'all_tumor_specimen_aliquot_counts': 0,
+            'is_sanger_variant_calling_performed': False
+        },
         'normal_specimen': {},
         'aligned_tumor_specimens': [],
         'aligned_tumor_specimen_aliquots': set(),
-        'aligned_tumor_specimen_aliquot_counts': 0,
         'all_tumor_specimen_aliquots': set(),
-        'all_tumor_specimen_aliquot_counts': 0,
-        'has_aligned_tumor_specimen': False,
-        'are_all_tumor_specimens_aligned': False,
-        'bam_files': []
+        'bam_files': [],
+        'gnos_repos_with_sanger_variant_calling_result': []
     }
     try:
         if type(gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')) == list:
@@ -483,9 +487,9 @@ def read_annotations(annotations, type, file_name):
 def process_donor(donor, annotations):
     logger.info( 'processing donor: {} ...'.format(donor.get('donor_unique_id')) )
     # check whether all tumor specimen(s) aligned
-    if (donor.get('aligned_tumor_specimen_aliquot_counts') 
-            and donor.get('aligned_tumor_specimen_aliquot_counts') == donor.get('all_tumor_specimen_aliquot_counts')):
-        donor['are_all_tumor_specimens_aligned'] = True
+    if (donor.get('flags').get('aligned_tumor_specimen_aliquot_counts') 
+            and donor.get('flags').get('aligned_tumor_specimen_aliquot_counts') == donor.get('flags').get('all_tumor_specimen_aliquot_counts')):
+        donor.get('flags')['are_all_tumor_specimens_aligned'] = True
 
     # now build easy-to-use, specimen-level, gnos_repo-aware summary of bwa alignment status by iterating all collected bams
     aggregated_bam_info = bam_aggregation(donor['bam_files'])
@@ -494,9 +498,15 @@ def process_donor(donor, annotations):
     # let's add this aggregated alignment information to donor object
     add_alignment_status_to_donor(donor, aggregated_bam_info)
     #print json.dumps(donor.get('tumor_alignment_status'), default=set_default)  # debug only
+
+    if donor.get('normal_alignment_status') and donor.get('normal_alignment_status').get('aligned'):
+        donor.get('flags')['is_normal_specimen_aligned'] = True
     
     # add gnos repos where complete alignments for the current donor are available
     add_gnos_repos_with_complete_alignment_set(donor)
+
+    # add gnos repos where one alignment or all alignments for the current donor are available
+    add_gnos_repos_with_alignment_result(donor)
 
     # add original gnos repo assignment, this is based on a manually maintained yaml file
     add_original_gnos_repo(donor, annotations['gnos_assignment'])
@@ -519,30 +529,44 @@ def add_original_gnos_repo(donor, annotation):
 
 def add_train2_donor_flag(donor, annotation):
     if donor.get('donor_unique_id') in annotation:
-        donor['is_train2_donor'] = True
+        donor.get('flags')['is_train2_donor'] = True
     else:
-        donor['is_train2_donor'] = False
+        donor.get('flags')['is_train2_donor'] = False
 
 
 def add_train2_pilot_flag(donor, annotation):
     if donor.get('donor_unique_id') in annotation:
-        donor['is_train2_pilot'] = True
+        donor.get('flags')['is_train2_pilot'] = True
     else:
-        donor['is_train2_pilot'] = False
+        donor.get('flags')['is_train2_pilot'] = False
 
 
 def add_donor_blacklist_flag(donor, annotation):
     if donor.get('donor_unique_id') in annotation:
-        donor['is_donor_blacklisted'] = True
+        donor.get('flags')['is_donor_blacklisted'] = True
     else:
-        donor['is_donor_blacklisted'] = False
+        donor.get('flags')['is_donor_blacklisted'] = False
 
 
 def add_manual_qc_failed_flag(donor, annotation):
     if donor.get('donor_unique_id') in annotation:
-        donor['is_manual_qc_failed'] = True
+        donor.get('flags')['is_manual_qc_failed'] = True
     else:
-        donor['is_manual_qc_failed'] = False
+        donor.get('flags')['is_manual_qc_failed'] = False
+
+def add_gnos_repos_with_alignment_result(donor):
+    repos = set()
+
+    if (donor.get('normal_alignment_status')
+            and donor.get('normal_alignment_status').get('aligned_bam')):
+        repos = donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')
+
+    if donor.get('tumor_alignment_status'):
+        for t in donor.get('tumor_alignment_status'):
+            if t.get('aligned_bam'):
+                repos.update(t.get('aligned_bam').get('gnos_repo'))
+
+    donor['gnos_repos_with_alignment_result'] = repos
 
 
 def add_gnos_repos_with_complete_alignment_set(donor):
@@ -562,10 +586,13 @@ def add_gnos_repos_with_complete_alignment_set(donor):
         repos = set()
 
     donor['gnos_repos_with_complete_alignment_set'] = repos
+    '''
+    # this flag is not entirely accurate, disable it for now
     if repos:
         donor['is_alignment_completed'] = True
     else:
         donor['is_alignment_completed'] = False
+    '''
 
 
 def add_alignment_status_to_donor(donor, aggregated_bam_info):

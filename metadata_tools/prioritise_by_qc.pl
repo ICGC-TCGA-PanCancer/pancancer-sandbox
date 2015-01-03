@@ -227,11 +227,11 @@ sub process {
     }
 
     my $tum_x = 0;
-    if($donor->{'all_tumor_specimen_aliquot_counts'} == 0) {
+    if($donor->{'flags'}->{'all_tumor_specimen_aliquot_counts'} == 0) {
       $donor_issues{'Tumour available'} = $HC{'Tumour'}{none};
     }
-    elsif($donor->{'aligned_tumor_specimen_aliquot_counts'} == 0
-          || $donor->{'aligned_tumor_specimen_aliquot_counts'} != $donor->{'all_tumor_specimen_aliquot_counts'}) {
+    elsif($donor->{'flags'}->{'aligned_tumor_specimen_aliquot_counts'} == 0
+          || $donor->{'flags'}->{'aligned_tumor_specimen_aliquot_counts'} != $donor->{'flags'}->{'all_tumor_specimen_aliquot_counts'}) {
       $donor_issues{'Tumour available'} = $HC{'Tumour'}{not_aligned};
     }
     else {
@@ -253,13 +253,13 @@ sub process {
 
     # this reflects the combined coverage for T/N * number of T/N
     my $normalised_x = ".\t.\t.";
-    if($donor_issues{'Normal available'} == 0 && $donor->{'aligned_tumor_specimen_aliquot_counts'} > 0) {
+    if($donor_issues{'Normal available'} == 0 && $donor->{'flags'}->{'aligned_tumor_specimen_aliquot_counts'} > 0) {
       $normalised_x = sprintf '%.2f', $norm_x / $DIV_X;
-      $normalised_x .= "\t" . (sprintf '%.2f', ($tum_x  / $donor->{'aligned_tumor_specimen_aliquot_counts'}) / $DIV_X);
-      $normalised_x .= "\t" . (sprintf '%.2f', ($norm_x + $tum_x) / ($donor->{'aligned_tumor_specimen_aliquot_counts'} + 1) / $DIV_X);
+      $normalised_x .= "\t" . (sprintf '%.2f', ($tum_x  / $donor->{'flags'}->{'aligned_tumor_specimen_aliquot_counts'}) / $DIV_X);
+      $normalised_x .= "\t" . (sprintf '%.2f', ($norm_x + $tum_x) / ($donor->{'flags'}->{'aligned_tumor_specimen_aliquot_counts'} + 1) / $DIV_X);
     }
     push @donor_data, $normalised_x;
-    push @donor_data, $donor->{'all_tumor_specimen_aliquot_counts'};
+    push @donor_data, $donor->{'flags'}->{'all_tumor_specimen_aliquot_counts'};
 
     for my $issue(@DONOR_ORDERED_ISSUES) {
       push @donor_data, exists $donor_issues{$issue} ? $donor_issues{$issue} : 0;
