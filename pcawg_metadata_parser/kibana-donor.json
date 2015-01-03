@@ -1,6 +1,6 @@
 {
   "index": {
-    "default": "p_141214234637/donor",
+    "default": "p_150103030642/donor",
     "pattern": "[logstash-]YYYY.MM.DD",
     "warm_fields": false,
     "interval": "none"
@@ -9,6 +9,11 @@
   "rows": [
     {
       "notice": false,
+      "collapsable": true,
+      "collapse": false,
+      "title": "Graph",
+      "editable": true,
+      "height": "250px",
       "panels": [
         {
           "labels": true,
@@ -29,6 +34,39 @@
           "loadingEditor": false,
           "type": "terms",
           "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "count"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 10,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 4,
+          "title": "GNOS repos with complete alignment set available",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "gnos_repos_with_complete_alignment_set",
+          "other": true,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
           "error": false,
           "editable": true,
           "chart": "bar",
@@ -42,39 +80,6 @@
             ]
           },
           "order": "count"
-        },
-        {
-          "error": false,
-          "span": 4,
-          "editable": true,
-          "type": "terms",
-          "loadingEditor": false,
-          "field": "gnos_repos_with_complete_alignment_set",
-          "exclude": [],
-          "missing": true,
-          "other": true,
-          "size": 10,
-          "order": "count",
-          "style": {
-            "font-size": "10pt"
-          },
-          "donut": false,
-          "tilt": false,
-          "labels": true,
-          "arrangement": "horizontal",
-          "chart": "bar",
-          "counter_pos": "above",
-          "spyable": true,
-          "queries": {
-            "mode": "all",
-            "ids": [
-              0
-            ]
-          },
-          "tmode": "terms",
-          "tstat": "total",
-          "valuefield": "",
-          "title": "GNOS repos with complete alignment set available"
         },
         {
           "labels": true,
@@ -95,18 +100,18 @@
           "loadingEditor": false,
           "type": "terms",
           "missing": true,
-          "error": false,
-          "editable": true,
-          "chart": "bar",
-          "counter_pos": "above",
-          "tstat": "total",
-          "donut": false,
           "queries": {
             "mode": "all",
             "ids": [
               0
             ]
           },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
           "order": "count"
         },
         {
@@ -128,18 +133,18 @@
           "loadingEditor": false,
           "type": "terms",
           "missing": true,
-          "error": false,
-          "editable": true,
-          "chart": "bar",
-          "counter_pos": "above",
-          "tstat": "total",
-          "donut": false,
           "queries": {
             "mode": "all",
             "ids": [
               0
             ]
           },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
           "order": "term"
         },
         {
@@ -161,18 +166,150 @@
           "loadingEditor": false,
           "type": "terms",
           "missing": true,
-          "error": false,
-          "editable": true,
-          "chart": "bar",
-          "counter_pos": "above",
-          "tstat": "total",
-          "donut": false,
           "queries": {
             "mode": "all",
             "ids": [
               0
             ]
           },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is Train2 Pilot",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_train2_pilot",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is Train2 Donor",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_train2_donor",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is donor blacklisted",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_donor_blacklisted",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is manual QC failed",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_manual_qc_failed",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
           "order": "term"
         },
         {
@@ -185,7 +322,7 @@
           "style": {
             "font-size": "10pt"
           },
-          "span": 4,
+          "span": 3,
           "title": "Sequencing center",
           "tilt": false,
           "arrangement": "horizontal",
@@ -194,18 +331,18 @@
           "loadingEditor": false,
           "type": "terms",
           "missing": true,
-          "error": false,
-          "editable": true,
-          "chart": "pie",
-          "counter_pos": "above",
-          "tstat": "total",
-          "donut": true,
           "queries": {
             "mode": "all",
             "ids": [
               0
             ]
           },
+          "editable": true,
+          "chart": "pie",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": true,
+          "error": false,
           "order": "count"
         },
         {
@@ -227,18 +364,18 @@
           "loadingEditor": false,
           "type": "terms",
           "missing": true,
-          "error": false,
-          "editable": true,
-          "chart": "table",
-          "counter_pos": "above",
-          "tstat": "total",
-          "donut": false,
           "queries": {
             "mode": "all",
             "ids": [
               0
             ]
           },
+          "editable": true,
+          "chart": "table",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
           "order": "term"
         },
         {
@@ -246,14 +383,17 @@
           "style": {
             "font-size": "24pt"
           },
-          "display_breakdown": "yes",
+          "sort_field": "",
           "span": 3,
-          "format": "number",
+          "spyable": true,
           "title": "Normal aligned BAM size stats",
-          "error": false,
+          "format": "number",
+          "display_breakdown": "yes",
           "editable": true,
           "field": "normal_specimen.bam_file_size",
           "label_name": "Query",
+          "mode": "count",
+          "error": false,
           "show": {
             "count": true,
             "min": true,
@@ -264,31 +404,31 @@
             "total": true,
             "mean": true
           },
-          "mode": "count",
+          "sort_reverse": false,
+          "loadingEditor": false,
           "queries": {
             "mode": "all",
             "ids": [
               0
             ]
           },
-          "sort_reverse": false,
-          "spyable": true,
-          "loadingEditor": false,
-          "sort_field": "",
           "type": "stats"
         }
-      ],
-      "collapse": false,
-      "title": "Graph",
-      "editable": true,
-      "height": "250px",
-      "collapsable": true
+      ]
     },
     {
       "notice": false,
+      "collapsable": true,
+      "collapse": false,
+      "title": "Events",
+      "editable": true,
+      "height": "650px",
       "panels": [
         {
-          "status": "Stable",
+          "sort": [
+            "gnos_study",
+            "asc"
+          ],
           "header": true,
           "trimFactor": 300,
           "spyable": true,
@@ -302,16 +442,8 @@
           "title": "Documents",
           "pages": 5,
           "type": "table",
-          "sort": [
-            "gnos_study",
-            "asc"
-          ],
-          "queries": {
-            "mode": "all",
-            "ids": [
-              0
-            ]
-          },
+          "status": "Stable",
+          "error": false,
           "editable": true,
           "offset": 0,
           "group": [
@@ -327,20 +459,19 @@
             "normal_specimen.aliquot_id",
             "sequencing_center",
             "all_tumor_specimen_aliquots",
-            "all_tumor_specimen_aliquot_counts",
             "gnos_repos_with_complete_alignment_set"
           ],
           "paging": true,
-          "error": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
           "timeField": "@timestamp",
           "highlight": []
         }
-      ],
-      "collapse": false,
-      "title": "Events",
-      "editable": true,
-      "height": "650px",
-      "collapsable": true
+      ]
     }
   ],
   "title": "PCAWG Donors (beta)",
@@ -356,8 +487,8 @@
     "save_temp_ttl": "30d",
     "load_elasticsearch": true,
     "save_local": true,
-    "save_elasticsearch": true,
     "save_temp_ttl_enable": true,
+    "save_elasticsearch": true,
     "save_gist": false,
     "save_default": true
   },
@@ -366,11 +497,11 @@
       "notice": false,
       "enable": true,
       "collapse": true,
-      "remember": 10,
       "pinned": true,
       "query": "*",
+      "history": [],
       "type": "query",
-      "history": []
+      "remember": 10
     },
     {
       "notice": true,
@@ -417,28 +548,68 @@
   "services": {
     "filter": {
       "list": {
-        "1": {
-          "alias": "",
+        "0": {
+          "type": "terms",
+          "field": "flags.is_train2_pilot",
           "value": "T",
+          "mandate": "must",
+          "active": false,
+          "alias": "",
+          "id": 0
+        },
+        "1": {
           "field": "flags.is_normal_specimen_aligned",
+          "value": "T",
+          "alias": "",
           "mandate": "must",
           "active": true,
           "type": "terms",
           "id": 1
         },
-        "3": {
-          "alias": "",
+        "2": {
+          "type": "terms",
+          "field": "flags.is_train2_donor",
           "value": "T",
+          "mandate": "must",
+          "active": false,
+          "alias": "",
+          "id": 2
+        },
+        "3": {
           "field": "flags.are_all_tumor_specimens_aligned",
+          "value": "T",
+          "alias": "",
           "mandate": "must",
           "active": true,
           "type": "terms",
           "id": 3
+        },
+        "4": {
+          "type": "terms",
+          "field": "flags.is_manual_qc_failed",
+          "value": "T",
+          "mandate": "mustNot",
+          "active": false,
+          "alias": "",
+          "id": 4
+        },
+        "5": {
+          "type": "terms",
+          "field": "flags.is_donor_blacklisted",
+          "value": "T",
+          "mandate": "mustNot",
+          "active": false,
+          "alias": "",
+          "id": 5
         }
       },
       "ids": [
+        0,
         1,
-        3
+        2,
+        3,
+        4,
+        5
       ]
     },
     "query": {
