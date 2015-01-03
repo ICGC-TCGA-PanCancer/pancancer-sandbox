@@ -66,6 +66,11 @@ es_queries = [
                         }
                       },
                       {
+                        "exists": {
+                          "field": "normal_specimen.is_aligned"
+                        }
+                      },
+                      {
                         "terms": {
                           "flags.are_all_tumor_specimens_aligned": [
                             "T"
@@ -131,6 +136,11 @@ es_queries = [
                           "flags.is_normal_specimen_aligned": [
                             "T"
                           ]
+                        }
+                      },
+                      {
+                        "exists": {
+                          "field": "normal_specimen.is_aligned"
                         }
                       },
                       { "not": 
@@ -213,6 +223,11 @@ es_queries = [
                         }
                       },
                       {
+                        "exists": {
+                          "field": "normal_specimen.is_aligned"
+                        }
+                      },
+                      {
                         "terms": {
                           "flags.are_all_tumor_specimens_aligned": [
                             "T"
@@ -278,6 +293,11 @@ es_queries = [
                           "flags.is_normal_specimen_aligned": [
                             "F"
                           ]
+                        }
+                      },
+                      {
+                        "exists": {
+                          "field": "normal_specimen.is_aligned"
                         }
                       },
                       { "not": 
@@ -360,6 +380,11 @@ es_queries = [
                         }
                       },
                       {
+                        "exists": {
+                          "field": "normal_specimen.is_aligned"
+                        }
+                      },
+                      {
                         "terms": {
                           "flags.all_tumor_specimen_aliquot_counts": [
                             "0"
@@ -428,6 +453,11 @@ es_queries = [
                         }
                       },
                       {
+                        "exists": {
+                          "field": "normal_specimen.is_aligned"
+                        }
+                      },
+                      {
                         "terms": {
                           "flags.all_tumor_specimen_aliquot_counts": [
                             "0"
@@ -492,7 +522,7 @@ es_queries = [
                         { "filter":
                           {
                             "exists": {
-                              "field": "flags.is_normal_specimen_aligned"
+                              "field": "normal_specimen.is_aligned"
                             }
                           }
                         }
@@ -562,7 +592,7 @@ es_queries = [
                         { "filter":
                           {
                             "exists": {
-                              "field": "flags.is_normal_specimen_aligned"
+                              "field": "normal_specimen.is_aligned"
                             }
                           }
                         }
