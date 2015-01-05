@@ -114,7 +114,7 @@ def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, ao_list_file_han
 
         metadata_xml_file = metadata_xml_dir + '/' + ao_uuid + '__' + ao_state + '__' + ao_updated + '.xml'
         with open(metadata_xml_file, 'w') as f:  # write to metadata xml file now
-            f.write(metadata_xml_str)
+            f.write(metadata_xml_str.encode('utf8'))
 
 
 def sync_metadata_xml(gnos_repo, output_dir, manifest_file):
