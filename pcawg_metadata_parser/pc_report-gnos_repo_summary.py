@@ -14,78 +14,164 @@ es_type = "donor"
 es = Elasticsearch([es_host])
 
 es_queries = [
-  # order of the queries is important
-  # query 0: live_alignment_completed_donors
-  {
-    "aggs": {
-      "gnos_f": {
-        "aggs": {
-          "gnos_assignment": {
-            "terms": {
-              "field": "original_gnos_assignment",
-              "size": 100
-            },
-            "aggs": {
-              "exist_in_gnos_repo": {
-                "terms": {
-                  "field": "gnos_repos_with_complete_alignment_set",
-                  "size": 100
+    # order of the queries is important
+    # query 0: live_alignment_completed_donors
+  [
+    # es_query for donor counts
+    {
+      "aggs": {
+        "gnos_f": {
+          "aggs": {
+            "gnos_assignment": {
+              "terms": {
+                "field": "original_gnos_assignment",
+                "size": 100
+              },
+              "aggs": {
+                "exist_in_gnos_repo": {
+                  "terms": {
+                    "field": "gnos_repos_with_complete_alignment_set",
+                    "size": 100
+                  }
                 }
               }
             }
-          }
-        },
-        "filter": {
-          "fquery": {
-            "query": {
-              "filtered": {
-                "query": {
-                  "bool": {
-                    "should": [
-                      {
-                        "query_string": {
-                          "query": "*"
+          },
+          "filter": {
+            "fquery": {
+              "query": {
+                "filtered": {
+                  "query": {
+                    "bool": {
+                      "should": [
+                        {
+                          "query_string": {
+                            "query": "*"
+                          }
                         }
-                      }
-                    ]
-                  }
-                },
-                "filter": {
-                  "bool": {
-                    "must": [
-                      {
-                        "type": {
-                          "value": es_type
+                      ]
+                    }
+                  },
+                  "filter": {
+                    "bool": {
+                      "must": [
+                        {
+                          "type": {
+                            "value": es_type
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_normal_specimen_aligned": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.are_all_tumor_specimens_aligned": [
+                              "T"
+                            ]
+                          }
                         }
-                      },
-                      {
-                        "terms": {
-                          "flags.is_normal_specimen_aligned": [
-                            "T"
-                          ]
-                        }
-                      },
-                      {
-                        "terms": {
-                          "flags.are_all_tumor_specimens_aligned": [
-                            "T"
-                          ]
-                        }
-                      }
-                    ]
+                      ]
+                    }
                   }
                 }
               }
             }
           }
         }
-      }
+      },
+      "size": 0
     },
-    "size": 0
-  },
-  # query 1: train2_donors
-  # query 2: train2_pilot_donors
+    # es_query for specimen counts
+    {
+      "aggs": {
+        "gnos_f": {
+          "aggs": {
+            "gnos_assignment": {
+              "terms": {
+                "field": "original_gnos_assignment",
+                "size": 100
+              },
+              "aggs": {
+                "normal_exists_in_gnos_repo": {
+                  "terms": {
+                    "field": "normal_alignment_status.aligned_bam.gnos_repo",
+                    "size": 100
+                  }
+                },
+                "tumor_specimens": {
+                  "nested": {
+                    "path": "tumor_alignment_status",
+                  },
+                  "aggs":{
+                    "tumor_exists_in_gnos_repo":{
+                      "terms": {
+                        "field": "tumor_alignment_status.aligned_bam.gnos_repo",
+                        "size": 100
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "filter": {
+            "fquery": {
+              "query": {
+                "filtered": {
+                  "query": {
+                    "bool": {
+                      "should": [
+                        {
+                          "query_string": {
+                            "query": "*"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "filter": {
+                    "bool": {
+                      "must": [
+                        {
+                          "type": {
+                            "value": "donor"
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_normal_specimen_aligned": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.are_all_tumor_specimens_aligned": [
+                              "T"
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "size": 0
+    },
+  ],
+    # query 1: train2_donors
+    # query 2: train2_pilot_donors
+
 ]
+
 
 
 def init_report_dir(metadata_dir, report_name, repo):
@@ -105,22 +191,41 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
     ]
 
     for q_index in range(len(count_types)):
-        response = es.search(index=es_index, body=es_queries[q_index])
+        # get donor counts
+        response = es.search(index=es_index, body=es_queries[q_index][0])
         #print json.dumps(response['aggregations']['gnos_f']) + '\n'  # for debugging
     
         for p in response['aggregations']['gnos_f']['gnos_assignment'].get('buckets'):
             count = p.get('doc_count')
+            original_gnos_repo = p.get('key')
             repos = get_donors_per_repo(p.get('exist_in_gnos_repo').get('buckets'))
 
-            original_gnos_repo = p.get('key')
             if not report.get(original_gnos_repo):
                 report[original_gnos_repo] = {}
             if not report[original_gnos_repo].get(count_types[q_index]):
                 report[original_gnos_repo][count_types[q_index]] = {}
-            report[original_gnos_repo][count_types[q_index]]['count'] = count
+
+            report[original_gnos_repo][count_types[q_index]]['count'] = [count] # first count is donor
             report[original_gnos_repo][count_types[q_index]]['repos'] = repos
 
-    #print report  # for debug
+        # get specimen counts
+        response = es.search(index=es_index, body=es_queries[q_index][1])
+        #print json.dumps(response['aggregations']['gnos_f']) + '\n'  # for debugging
+
+        for p in response['aggregations']['gnos_f']['gnos_assignment'].get('buckets'):
+            count_normal = p.get('doc_count')
+            count_tumor = p.get('tumor_specimens').get('doc_count')
+            original_gnos_repo = p.get('key')
+            repos = add_specimen_counts_per_repo(
+                        report[original_gnos_repo][count_types[q_index]]['repos'],
+                        p.get('normal_exists_in_gnos_repo').get('buckets'),
+                        p.get('tumor_specimens').get('tumor_exists_in_gnos_repo').get('buckets'),
+                    )
+
+            report[original_gnos_repo][count_types[q_index]]['count'].extend([count_normal, count_tumor]) # second count is normal specimen
+            report[original_gnos_repo][count_types[q_index]]['repos'] = repos
+
+    #print json.dumps(report)  # for debug
 
     report_dir = init_report_dir(metadata_dir, report_name, repo)
 
@@ -135,6 +240,7 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
 
         with open(report_dir + '/' + ctype + '.repos.json', 'w') as o:
             o.write(json.dumps(repos))
+
 
 def get_formal_repo_name(repo):
     repo_url_to_repo = {
@@ -157,10 +263,20 @@ def get_formal_repo_name(repo):
     return repo_url_to_repo.get(repo)
 
 
+def add_specimen_counts_per_repo(repos, repo_buckets_normal, repo_buckets_tumor):
+    for s in repo_buckets_normal:
+        repos[s.get('key')].append(s.get('doc_count') if s.get('doc_count') else 0)
+
+    for s in repo_buckets_tumor:
+        repos[s.get('key')].append(s.get('doc_count') if s.get('doc_count') else 0)
+
+    return repos
+
+
 def get_donors_per_repo(repo_buckets):
     repos = {}
     for d in repo_buckets:
-        repos[d.get('key')] = d.get('doc_count')
+        repos[d.get('key')] = [d.get('doc_count')]
     return repos
 
 
