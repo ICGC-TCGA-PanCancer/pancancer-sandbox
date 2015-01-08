@@ -185,6 +185,7 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
     del bam_file['aligned_tumor_specimen_aliquots']
     del bam_file['all_tumor_specimen_aliquots']
     del bam_file['flags']
+    del bam_file['gnos_repos_with_sanger_variant_calling_result']
     donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
 
     # push to Elasticsearch
@@ -559,12 +560,12 @@ def add_gnos_repos_with_alignment_result(donor):
 
     if (donor.get('normal_alignment_status')
             and donor.get('normal_alignment_status').get('aligned_bam')):
-        repos = donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')
+        repos = set(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo'))
 
     if donor.get('tumor_alignment_status'):
         for t in donor.get('tumor_alignment_status'):
             if t.get('aligned_bam'):
-                repos.update(t.get('aligned_bam').get('gnos_repo'))
+                repos.update(set(t.get('aligned_bam').get('gnos_repo')))
 
     donor['gnos_repos_with_alignment_result'] = repos
 
@@ -574,12 +575,12 @@ def add_gnos_repos_with_complete_alignment_set(donor):
 
     if (donor.get('normal_alignment_status')
             and donor.get('normal_alignment_status').get('aligned_bam')):
-        repos = donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')
+        repos = set(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo'))
 
     if repos and donor.get('tumor_alignment_status'):
         for t in donor.get('tumor_alignment_status'):
             if t.get('aligned_bam'):
-                repos = set.intersection(repos, t.get('aligned_bam').get('gnos_repo'))
+                repos = set.intersection(repos, set(t.get('aligned_bam').get('gnos_repo')))
             else:
                 repos = set()
     else:
@@ -648,7 +649,9 @@ def bam_aggregation(bam_files):
                 "aligned_bam": {
                     "gnos_id": bam['bam_gnos_ao_id'],
                     "bam_file_name": bam['bam_file_name'],
-                    "gnos_repo": set([bam['gnos_repo']])
+                    "bam_file_size": bam['bam_file_size'],
+                    "gnos_last_modified": [bam['last_modified']],
+                    "gnos_repo": [bam['gnos_repo']]
                  },
                  "bam_with_unmappable_reads": {},
                  "unaligned_bams": {}
@@ -656,7 +659,16 @@ def bam_aggregation(bam_files):
         else:
             alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
             if alignment_status.get('aligned_bam').get('gnos_id') == bam['bam_gnos_ao_id']:
-                alignment_status.get('aligned_bam').get('gnos_repo').add(bam['gnos_repo'])
+                if bam['gnos_repo'] in alignment_status.get('aligned_bam').get('gnos_repo'):
+                    logger.warning( 'Same aliquot: {}, same GNOS ID: {} in the same GNOS repo: {} more than once. This should never be possible.'
+                                    .format(
+                                        bam['aliquot_id'],
+                                        alignment_status.get('aligned_bam').get('gnos_id'),
+                                        bam['gnos_repo']) 
+                              )
+                else:
+                    alignment_status.get('aligned_bam').get('gnos_repo').append(bam['gnos_repo'])
+                    alignment_status.get('aligned_bam').get('gnos_last_modified').append(bam['last_modified'])
             else:
                 logger.warning( 'Same aliquot: {} has different aligned GNOS BAM entries, in use: {}, additional: {}'
                                     .format(
@@ -679,6 +691,7 @@ def bam_aggregation(bam_files):
                 alignment_status['bam_with_unmappable_reads'] = {
                     "gnos_id": bam['bam_gnos_ao_id'],
                     "bam_file_name": bam['bam_file_name'],
+                    "bam_file_size": bam['bam_file_size'],
                     "gnos_repo": set([bam['gnos_repo']])
                 }
             elif alignment_status.get('bam_with_unmappable_reads').get('gnos_id') == bam['bam_gnos_ao_id']:

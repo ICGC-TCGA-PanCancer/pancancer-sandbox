@@ -57,7 +57,7 @@ es_queries = [
                       "must": [
                         {
                           "type": {
-                            "value": es_type
+                            "value": "donor"
                           }
                         },
                         {

@@ -668,6 +668,7 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
                     o.write('# ' + ctype + '\n')
                     o.write('# dcc_project_code' + '\t' + 'submitter_donor_id' + '\n')
                     for d in donors:
+                        # TODO: query ES to get JSON then retrieve BAM info: aligned/unaligned, gnos, bam file name etc
                         o.write(d.replace('::', '\t') + '\n')
 
         summary_table.append(summary)
