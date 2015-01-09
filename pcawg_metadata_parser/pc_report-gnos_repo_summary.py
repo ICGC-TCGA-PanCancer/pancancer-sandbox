@@ -449,8 +449,8 @@ def get_formal_repo_name(repo):
       "dkfz": "Heidelberg",
       "https://gtrepo-riken.annailabs.com/": "Tokyo",
       "riken": "Tokyo",
-      "https://gtrepo-osdc-icgc.annailabs.com/": "Chicago-ICGC",
-      "osdc-icgc": "Chicago-ICGC",
+      "https://gtrepo-osdc-icgc.annailabs.com/": "Chicago",
+      "osdc-icgc": "Chicago",
       "https://gtrepo-etri.annailabs.com/": "Seoul",
       "etri": "Seoul",
     }
