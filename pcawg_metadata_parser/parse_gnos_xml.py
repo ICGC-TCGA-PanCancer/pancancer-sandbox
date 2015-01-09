@@ -17,6 +17,7 @@ from elasticsearch import Elasticsearch
 from collections import OrderedDict
 import datetime
 import dateutil.parser
+from itertools import izip
 
 
 logger = logging.getLogger('gnos parser')
@@ -677,6 +678,8 @@ def bam_aggregation(bam_files):
                                         bam['bam_gnos_ao_id']) 
                               )
 
+    sort_repos_by_time(aggregated_bam_info)
+
     for bam in bam_files:  # now check BAM with unmappable reads that were derived from aligned BAM
         if not bam['bam_type'] == 'Specimen level unmapped reads after BWA alignment':
             continue
@@ -735,6 +738,17 @@ def bam_aggregation(bam_files):
                 }
 
     return aggregated_bam_info
+
+
+def sort_repos_by_time(aggregated_bam_info):
+    for aliquot in aggregated_bam_info:
+        agg_bam = aggregated_bam_info.get(aliquot)
+        if not agg_bam.get('aligned_bam'):
+            continue
+        modified_dates = agg_bam.get('aligned_bam').get('gnos_last_modified')
+        gnos_repos = agg_bam.get('aligned_bam').get('gnos_repo')
+        agg_bam.get('aligned_bam')['gnos_last_modified'], agg_bam.get('aligned_bam')['gnos_repo'] = \
+            izip(*sorted(izip(modified_dates, gnos_repos), key=lambda x: x[0]))
 
 
 def find_latest_metadata_dir(output_dir):
