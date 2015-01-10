@@ -82,6 +82,22 @@ es_queries = [
                             ]
                           }
                         }
+                      ],
+                      "must_not": [
+                        {
+                          "terms": {
+                            "flags.is_manual_qc_failed": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_donor_blacklisted": [
+                              "T"
+                            ]
+                          }
+                        }
                       ]
                     }
                   }
@@ -159,6 +175,22 @@ es_queries = [
                         {
                           "terms": {
                             "flags.are_all_tumor_specimens_aligned": [
+                              "T"
+                            ]
+                          }
+                        }
+                      ],
+                      "must_not": [
+                        {
+                          "terms": {
+                            "flags.is_manual_qc_failed": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_donor_blacklisted": [
                               "T"
                             ]
                           }
@@ -249,6 +281,22 @@ es_queries = [
                             ]
                           }
                         }
+                      ],
+                      "must_not": [
+                        {
+                          "terms": {
+                            "flags.is_manual_qc_failed": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_donor_blacklisted": [
+                              "T"
+                            ]
+                          }
+                        }
                       ]
                     }
                   }
@@ -337,6 +385,22 @@ es_queries = [
                             ]
                           }
                         }
+                      ],
+                      "must_not": [
+                        {
+                          "terms": {
+                            "flags.is_manual_qc_failed": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_donor_blacklisted": [
+                              "T"
+                            ]
+                          }
+                        }
                       ]
                     }
                   }
@@ -369,7 +433,7 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
     donors_per_repo = {}
     count_types = [
         "live_alignment_completed_donors",
-        "live_aligned_sanger_not_called_donors",
+        #"live_aligned_sanger_not_called_donors",
         #"train2_donors",
         #"train2_pilot_donors"
     ]
@@ -422,7 +486,7 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
     for ctype in count_types:
         for ori_repo in donors_per_repo[ctype]:
             for repo in donors_per_repo[ctype][ori_repo]:
-                with open(report_dir + '/' + ctype + '.' + ori_repo + '.' + repo + '.aligned_donors.txt', 'w') as o:
+                with open(report_dir + '/' + ctype + '.' + ori_repo + '.' + repo + '.txt', 'w') as o:
                     o.write('\n'.join(donors_per_repo[ctype][ori_repo][repo]))
 
         repos = {}
@@ -439,37 +503,23 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
 
 def get_formal_repo_name(repo):
     repo_url_to_repo = {
-      "https://gtrepo-bsc.annailabs.com/": "Barcelona",
-      "bsc": "Barcelona",
-      "https://gtrepo-ebi.annailabs.com/": "London",
-      "ebi": "London",
-      "https://cghub.ucsc.edu/": "Santa Cruz",
-      "cghub": "Santa Cruz",
-      "https://gtrepo-dkfz.annailabs.com/": "Heidelberg",
-      "dkfz": "Heidelberg",
-      "https://gtrepo-riken.annailabs.com/": "Tokyo",
-      "riken": "Tokyo",
-      "https://gtrepo-osdc-icgc.annailabs.com/": "Chicago",
-      "osdc-icgc": "Chicago",
-      "https://gtrepo-etri.annailabs.com/": "Seoul",
-      "etri": "Seoul",
+      "https://gtrepo-bsc.annailabs.com/": "bsc",
+      "bsc": "bsc",
+      "https://gtrepo-ebi.annailabs.com/": "ebi",
+      "ebi": "ebi",
+      "https://cghub.ucsc.edu/": "cghub",
+      "cghub": "cghub",
+      "https://gtrepo-dkfz.annailabs.com/": "dkfz",
+      "dkfz": "dkfz",
+      "https://gtrepo-riken.annailabs.com/": "riken",
+      "riken": "riken",
+      "https://gtrepo-osdc-icgc.annailabs.com/": "osdc-icgc",
+      "osdc-icgc": "osdc-icgc",
+      "https://gtrepo-etri.annailabs.com/": "etri",
+      "etri": "etri"
     }
 
     return repo_url_to_repo.get(repo)
-
-
-def get_short_repo_name(url):
-    repo_url_to_repo = {
-      "https://gtrepo-bsc.annailabs.com/": "bsc",
-      "https://gtrepo-ebi.annailabs.com/": "ebi",
-      "https://cghub.ucsc.edu/": "cghub",
-      "https://gtrepo-dkfz.annailabs.com/": "dkfz",
-      "https://gtrepo-riken.annailabs.com/": "riken",
-      "https://gtrepo-osdc-icgc.annailabs.com/": "osdc-icgc",
-      "https://gtrepo-etri.annailabs.com/": "etri",
-    }
-
-    return repo_url_to_repo.get(url)
 
 
 def add_specimen_counts_per_repo(repos, repo_buckets_normal, repo_buckets_tumor):
@@ -488,7 +538,7 @@ def get_donors_per_repo(repo_buckets, donors):
     repos = {}
     for d in repo_buckets:
         repos[d.get('key')] = [d.get('doc_count')]
-        donors[get_short_repo_name(d.get('key'))] = [ item.get('key') for item in d.get('donors').get('buckets') ]
+        donors[get_formal_repo_name(d.get('key'))] = [ item.get('key') for item in d.get('donors').get('buckets') ]
     return repos
 
 
