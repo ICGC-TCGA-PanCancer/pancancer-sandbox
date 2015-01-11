@@ -207,7 +207,7 @@ es_queries = [
       "size": 0
     },
   ],
-  # query 1: live_aligned_sanger_not_called_donors
+  # query 1: live_aligned_sanger_variant_not_called_donors
   [
     # es_query for donor counts
     {
@@ -413,8 +413,110 @@ es_queries = [
       "size": 0
     },
   ],
-  # query 2: train2_donors
-  # query 3: train2_pilot_donors
+  # query 2: live_sanger_variant_called_donors
+  [
+    # es_query for donor counts
+    {
+      "aggs": {
+        "gnos_f": {
+          "aggs": {
+            "gnos_assignment": {
+              "terms": {
+                "field": "original_gnos_assignment",
+                "size": 100
+              },
+              "aggs": {
+                "exist_in_gnos_repo": {
+                  "terms": {
+                    "field": "variant_calling_results.sanger_variant_calling.gnos_repo",
+                    "size": 100
+                  },
+                  "aggs": {
+                    "donors": {
+                      "terms": {
+                        "field": "donor_unique_id",
+                        "size": 50000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "filter": {
+            "fquery": {
+              "query": {
+                "filtered": {
+                  "query": {
+                    "bool": {
+                      "should": [
+                        {
+                          "query_string": {
+                            "query": "*"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "filter": {
+                    "bool": {
+                      "must": [
+                        {
+                          "type": {
+                            "value": "donor"
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_normal_specimen_aligned": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.are_all_tumor_specimens_aligned": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_sanger_variant_calling_performed": [
+                              "T"
+                            ]
+                          }
+                        }
+                      ],
+                      "must_not": [
+                        {
+                          "terms": {
+                            "flags.is_manual_qc_failed": [
+                              "T"
+                            ]
+                          }
+                        },
+                        {
+                          "terms": {
+                            "flags.is_donor_blacklisted": [
+                              "T"
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "size": 0
+    },
+  ],
+  # query 3: train2_donors
+  # query 4: train2_pilot_donors
 
 ]
 
@@ -433,7 +535,8 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
     donors_per_repo = {}
     count_types = [
         "live_alignment_completed_donors",
-        #"live_aligned_sanger_not_called_donors",
+        "live_aligned_sanger_variant_not_called_donors",
+        "live_sanger_variant_called_donors",
         #"train2_donors",
         #"train2_pilot_donors"
     ]
@@ -463,8 +566,11 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
         #print json.dumps(donors_per_repo) # for debugging
 
         # get specimen counts
-        response = es.search(index=es_index, body=es_queries[q_index][1])
-        #print json.dumps(response['aggregations']['gnos_f']) + '\n'  # for debugging
+        if len(es_queries[q_index]) >= 2:
+            response = es.search(index=es_index, body=es_queries[q_index][1])
+            #print json.dumps(response['aggregations']['gnos_f']) + '\n'  # for debugging
+        else:
+            continue
 
         for p in response['aggregations']['gnos_f']['gnos_assignment'].get('buckets'):
             count_normal = p.get('doc_count')
@@ -487,13 +593,15 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
         for ori_repo in donors_per_repo[ctype]:
             for repo in donors_per_repo[ctype][ori_repo]:
                 with open(report_dir + '/' + ctype + '.' + ori_repo + '.' + repo + '.txt', 'w') as o:
-                    o.write('\n'.join(donors_per_repo[ctype][ori_repo][repo]))
+                    o.write('\n'.join(donors_per_repo[ctype][ori_repo][repo]) + '\n')
 
         repos = {}
         for original_repo in report.keys():
             repos[get_formal_repo_name(original_repo)] = {
-                "_ori_count": report[original_repo][ctype]['count']
+                "_ori_count": report[original_repo][ctype]['count'] if report.get(original_repo).get(ctype) else []
             }
+            if not report.get(original_repo).get(ctype):
+                continue
             for repo, count in report[original_repo][ctype]['repos'].iteritems():
                 repos[get_formal_repo_name(original_repo)][get_formal_repo_name(repo)] = count
 
