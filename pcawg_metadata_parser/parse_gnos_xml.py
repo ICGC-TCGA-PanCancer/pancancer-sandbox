@@ -46,8 +46,13 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
   analysis_attrib = get_analysis_attrib(gnos_analysis)
 
   if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
+    if 'test' in gnos_analysis.get('study').lower() or not 'vcf' in gnos_analysis.get('study').lower():
+        logger.warning('ignore test variant calling entry: {}'
+                .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
-        and (analysis_attrib.get('variant_workflow_version') == '1.0.2'
+        and (analysis_attrib.get('variant_workflow_version') == '1.0.1'
+                or analysis_attrib.get('variant_workflow_version') == '1.0.2'
                 or analysis_attrib.get('variant_workflow_version') == '1.0.3'
             ):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
@@ -56,9 +61,16 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
             .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
         if vcf_entries.get(donor_unique_id) and vcf_entries.get(donor_unique_id).get('sanger_variant_calling'):
-            # TODO: we need to revisit this later, this maybe due to variant calling result being synchronized in different GNOS repos
-            logger.warning('Sanger variant calling result already exist for donor: {}'
-                .format(donor_unique_id))
+            # let's see whether they have the same GNOS ID first, if yes, it's a copy at different GNOS repo
+            # if not the same GNOS ID, we will see which one is newer, will keep the newer one
+            # this can be complicated as the GNOS entries coming as a ramdon order, it's not possible to decide 
+            # which ones to keep when there are multiple GNOS IDs and one or all of them have replicates in different GNOS repo
+            # worry about this later.
+            # If there is no synchronization or redundant calling/uploading it would be much easier.
+            # The other way of handling this is to keep all VCF call entries and sort them out at
+            # the end when all entries are at hand
+            logger.warning('Sanger variant calling result already exist for donor: {}, ignoring entry {}'
+                .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
         else:
             if not vcf_entries.get('donor_unique_id'):
                 vcf_entries[donor_unique_id] = {}
