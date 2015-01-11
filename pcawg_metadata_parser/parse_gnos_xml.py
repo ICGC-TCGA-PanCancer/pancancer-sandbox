@@ -42,7 +42,35 @@ def init_es(es_host, es_index):
     return es
 
 
-def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
+def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_output_fh):
+  analysis_attrib = get_analysis_attrib(gnos_analysis)
+
+  if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
+    if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
+        and (analysis_attrib.get('variant_workflow_version') == '1.0.2'
+                or analysis_attrib.get('variant_workflow_version') == '1.0.3'
+            ):
+        donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
+
+        logger.info('process Sanger variant call for donor: {}, in entry {}'
+            .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
+        if vcf_entries.get(donor_unique_id) and vcf_entries.get(donor_unique_id).get('sanger_variant_calling'):
+            # TODO: we need to revisit this later, this maybe due to variant calling result being synchronized in different GNOS repos
+            logger.warning('Sanger variant calling result already exist for donor: {}'
+                .format(donor_unique_id))
+        else:
+            if not vcf_entries.get('donor_unique_id'):
+                vcf_entries[donor_unique_id] = {}
+
+            vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = create_vcf_entry(analysis_attrib, gnos_analysis)
+
+    else:  # this is test for VCF upload
+        logger.warning('ignore entry that is variant calling but likely is test entry, GNOS entry: {}'
+                         .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
+
+  else:  # BAM entry
     if ( not gnos_analysis.get('aliquot_id')
         ):
         logger.warning('ignore entry does not have aliquot_id, GNOS entry: {}'
@@ -54,14 +82,8 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
                          .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return # completely ignore test gnos entries for now, this is the quickest way to avoid test interferes real data 
 
-    analysis_attrib = get_analysis_attrib(gnos_analysis)
     if not analysis_attrib:
         logger.warning('ignore entry does not have ANALYSIS information, GNOS entry: {}'
-                         .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
-        return
-
-    if analysis_attrib.get('variant_workflow_name'): # this is test for VCF upload
-        logger.warning('ignore entry that is VCF upload test, GNOS entry: {}'
                          .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
 
@@ -186,13 +208,34 @@ def process_gnos_analysis(gnos_analysis, donors, es_index, es, bam_output_fh):
     del bam_file['aligned_tumor_specimen_aliquots']
     del bam_file['all_tumor_specimen_aliquots']
     del bam_file['flags']
-    del bam_file['gnos_repos_with_sanger_variant_calling_result']
     donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
 
     # push to Elasticsearch
     # Let's not worry about this index type, it seems not that useful
     #es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ))
     bam_output_fh.write(json.dumps(bam_file, default=set_default) + '\n')
+
+
+def create_vcf_entry(analysis_attrib, gnos_analysis):
+    vcf_entry = {
+        #'analysis_attrib': analysis_attrib, # remove this later
+        #'gnos_analysis': gnos_analysis, # remove this later
+        "gnos_id": gnos_analysis.get('analysis_id'),
+        "gnos_repo": [gnos_analysis.get('analysis_detail_uri').split('/cghub/')[0] + '/'],
+        "gnos_last_modified": [gnos_analysis.get('last_modified')],
+        "files": [],
+        "variant_calling_performed_at": gnos_analysis.get('analysis_xml').get('ANALYSIS_SET').get('ANALYSIS').get('@center_name'),
+        "workflow_details": {
+            "variant_workflow_name": analysis_attrib.get('variant_workflow_name'),
+            "variant_workflow_version": analysis_attrib.get('variant_workflow_version'),
+            "variant_pipeline_input_info": json.loads( analysis_attrib.get('variant_pipeline_input_info') ).get('workflow_inputs') if analysis_attrib.get('variant_pipeline_input_info') else [],
+            "variant_pipeline_output_info": json.loads( analysis_attrib.get('variant_pipeline_output_info') ).get('workflow_outputs') if analysis_attrib.get('variant_pipeline_output_info') else [],
+            "variant_qc_metrics": json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics') if analysis_attrib.get('variant_qc_metrics') else [],
+        }
+    }
+
+    #print json.dumps(vcf_entry)  # debugging only
+    return vcf_entry
 
 
 def set_default(obj):
@@ -346,7 +389,6 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
         'aligned_tumor_specimen_aliquots': set(),
         'all_tumor_specimen_aliquots': set(),
         'bam_files': [],
-        'gnos_repos_with_sanger_variant_calling_result': []
     }
     try:
         if type(gnos_analysis.get('experiment_xml').get('EXPERIMENT_SET').get('EXPERIMENT')) == list:
@@ -428,6 +470,7 @@ def get_xml_files( metadata_dir, conf, repo ):
 
 def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo):
     donors = {}
+    vcf_entries = {}
 
     annotations = {}
     read_annotations(annotations, 'gnos_assignment', 'pc_annotation-gnos_assignment.yml')  # hard-code file name for now
@@ -445,14 +488,14 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
         #print (json.dumps(gnos_analysis)) # debug
         if gnos_analysis:
             logger.info( 'processing xml file: {} ...'.format(f) )
-            process_gnos_analysis( gnos_analysis, donors, es_index, es, bam_fh )
+            process_gnos_analysis( gnos_analysis, donors, vcf_entries, es_index, es, bam_fh )
         else:
             logger.warning( 'skipping invalid xml file: {}'.format(f) )
 
     for donor_id in donors.keys():
         donor = donors[donor_id]
 
-        process_donor(donor, annotations)
+        process_donor(donor, annotations, vcf_entries)
 
         # push to Elasticsearch
         es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], body=json.loads( json.dumps(donor, default=set_default) ))
@@ -486,8 +529,9 @@ def read_annotations(annotations, type, file_name):
             logger.warning('unknown annotation type: {}'.format(type))
 
 
-def process_donor(donor, annotations):
+def process_donor(donor, annotations, vcf_entries):
     logger.info( 'processing donor: {} ...'.format(donor.get('donor_unique_id')) )
+
     # check whether all tumor specimen(s) aligned
     if (donor.get('flags').get('aligned_tumor_specimen_aliquot_counts') 
             and donor.get('flags').get('aligned_tumor_specimen_aliquot_counts') == donor.get('flags').get('all_tumor_specimen_aliquot_counts')):
@@ -516,6 +560,26 @@ def process_donor(donor, annotations):
     add_train2_pilot_flag(donor, annotations['train2_pilot'])
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
     add_manual_qc_failed_flag(donor, annotations['manual_qc_failed'])
+
+    add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
+
+
+def add_vcf_entry(donor, vcf_entry):
+    if not vcf_entry: return
+    if not donor.get('variant_calling_results'):
+        donor['variant_calling_results'] = {}
+    donor.get('variant_calling_results').update(vcf_entry)
+
+    if donor.get('variant_calling_results').get('sanger_variant_calling'):
+        donor.get('flags')['is_sanger_variant_calling_performed'] = True
+        if not donor.get('flags').get('all_tumor_specimen_aliquot_counts') + 1 == \
+                len(donor.get('variant_calling_results').get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_output_info')):
+            logger.warning('sanger variant calling workflow may have missed tumour specimen for donor: {}'
+                    .format(donor.get('donor_unique_id')))
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = True
+        else:
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = False
+
 
 def add_original_gnos_repo(donor, annotation):
     if donor.get('gnos_repo'):
