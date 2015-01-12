@@ -77,6 +77,22 @@ es_queries = [
                           ]
                         }
                       }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
+                            "T"
+                          ]
+                        }
+                      }
                     ]
                   }
                 }
@@ -161,6 +177,22 @@ es_queries = [
                           ]
                         }
                       }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
+                            "T"
+                          ]
+                        }
+                      }
                     ]
                   }
                 }
@@ -230,6 +262,22 @@ es_queries = [
                       {
                         "terms": {
                           "flags.are_all_tumor_specimens_aligned": [
+                            "T"
+                          ]
+                        }
+                      }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
                             "T"
                           ]
                         }
@@ -318,6 +366,22 @@ es_queries = [
                           ]
                         }
                       }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
+                            "T"
+                          ]
+                        }
+                      }
                     ]
                   }
                 }
@@ -388,6 +452,22 @@ es_queries = [
                         "terms": {
                           "flags.all_tumor_specimen_aliquot_counts": [
                             "0"
+                          ]
+                        }
+                      }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
+                            "T"
                           ]
                         }
                       }
@@ -464,6 +544,22 @@ es_queries = [
                           ]
                         }
                       }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
+                            "T"
+                          ]
+                        }
+                      }
                     ]
                   }
                 }
@@ -530,6 +626,22 @@ es_queries = [
                       {
                         "terms": {
                           "flags.are_all_tumor_specimens_aligned": [
+                            "T"
+                          ]
+                        }
+                      }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
                             "T"
                           ]
                         }
@@ -601,6 +713,22 @@ es_queries = [
                         "terms": {
                           "flags.are_all_tumor_specimens_aligned": [
                             "F"
+                          ]
+                        }
+                      }
+                    ],
+                    "must_not": [
+                      {
+                        "terms": {
+                          "flags.is_manual_qc_failed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_donor_blacklisted": [
+                            "T"
                           ]
                         }
                       }
