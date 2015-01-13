@@ -648,7 +648,7 @@ def get_donors_per_repo(repo_buckets, donors):
     repos = {}
     for d in repo_buckets:
         repos[d.get('key')] = [d.get('doc_count')]
-        donors[get_formal_repo_name(d.get('key'))] = [ item.get('key') for item in d.get('donors').get('buckets') ]
+        donors[get_formal_repo_name(d.get('key'))] = [ item.get('key').replace('::', '\t') for item in d.get('donors').get('buckets') ]
     return repos
 
 
