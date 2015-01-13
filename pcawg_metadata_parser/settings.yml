@@ -34,6 +34,11 @@ gnos_repos:
     base_url: https://gtrepo-osdc-icgc.annailabs.com/
     cgquery_para: study=*
   - 
+    repo_location: Chicago (TCGA)
+    repo_code: osdc-tcga
+    base_url: https://gtrepo-osdc-tcga.annailabs.com/
+    cgquery_para: study=*
+  - 
     repo_location: Santa Cruz
     repo_code: cghub
     base_url: https://cghub.ucsc.edu/

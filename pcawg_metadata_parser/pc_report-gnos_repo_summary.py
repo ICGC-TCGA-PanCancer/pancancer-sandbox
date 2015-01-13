@@ -623,6 +623,8 @@ def get_formal_repo_name(repo):
       "riken": "riken",
       "https://gtrepo-osdc-icgc.annailabs.com/": "osdc-icgc",
       "osdc-icgc": "osdc-icgc",
+      "https://gtrepo-osdc-tcga.annailabs.com/": "osdc-tcga",
+      "osdc-tcga": "osdc-tcga",
       "https://gtrepo-etri.annailabs.com/": "etri",
       "etri": "etri"
     }

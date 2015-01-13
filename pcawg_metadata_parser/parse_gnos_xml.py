@@ -51,8 +51,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                 .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
-        and (analysis_attrib.get('variant_workflow_version') == '1.0.1'
-                or analysis_attrib.get('variant_workflow_version') == '1.0.2'
+        and (analysis_attrib.get('variant_workflow_version') == '1.0.2'
                 or analysis_attrib.get('variant_workflow_version') == '1.0.3'
             ):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
@@ -128,9 +127,16 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
     if is_corrupted_train_2_alignment(analysis_attrib, gnos_analysis):
         logger.warning('ignore entry that is aligned by train 2 protocol but seems corrupted: {}'
                          .format( gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
-        return        
+        return
 
     #TODO: put things above into one function
+
+    # temporary hack here to skip any BAM entries from odsc-tcga repo as it's supposed not contain
+    # any BAM data, but it does, and those aligned BAMs it has overlap with what in CGHub hence causes problems
+    if 'osdc-tcga' in gnos_analysis.get('analysis_detail_uri'):
+        logger.warning('ignore BAM entry in osdc-tcga repo: {}'
+                         .format( gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
 
     if not donors.get(donor_unique_id):
         # create a new donor if not exist
@@ -153,12 +159,20 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
             if donors.get(donor_unique_id).get('normal_specimen').get('aliquot_id') == gnos_analysis.get('aliquot_id'):
                 if bam_file.get('is_aligned'):
                     if donors.get(donor_unique_id)['normal_specimen'].get('is_aligned'):
-                        logger.warning('more than one normal aligned bam for donor: {}, entry in use: {}, additional entry found in: {}'
+                        logger.info('more than one normal aligned bam for donor: {}, entry in use: {}, additional entry found in: {}'
                               .format(donor_unique_id,
                                   donors.get(donor_unique_id).get('normal_specimen').get('gnos_metadata_url'),
                                   gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')
                               )
                         )
+                        if (not donors.get(donor_unique_id).get('normal_specimen').get('gnos_metadata_url').split('/')[-1]
+                                == gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull').split('/')[-1]):
+                            logger.warning('Two aligned BAM entries for the same normal specimen from donor: {} have different GNOS UUIDs: {} and {}'
+                                .format(donor_unique_id,
+                                    donors.get(donor_unique_id).get('normal_specimen').get('gnos_metadata_url'),
+                                    gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')
+                                )
+                            )
                         if donors.get(donor_unique_id).get('normal_specimen').get('upload_date') < bam_file.get(
                                 'upload_date'):  # the current one is newer
                             donors.get(donor_unique_id)['normal_specimen'].update(
@@ -747,11 +761,12 @@ def bam_aggregation(bam_files):
                     alignment_status.get('aligned_bam').get('gnos_repo').append(bam['gnos_repo'])
                     alignment_status.get('aligned_bam').get('gnos_last_modified').append(bam['last_modified'])
             else:
-                logger.warning( 'Same aliquot: {} has different aligned GNOS BAM entries, in use: {}, additional: {}'
+                logger.warning( 'Same aliquot: {} from donor: {} has different aligned GNOS BAM entries, in use: {}, additional: {}'
                                     .format(
                                         bam['aliquot_id'],
+                                        bam['donor_unique_id'],
                                         alignment_status.get('aligned_bam').get('gnos_id'),
-                                        bam['bam_gnos_ao_id']) 
+                                        bam['gnos_metadata_url'])
                               )
 
     sort_repos_by_time(aggregated_bam_info)
