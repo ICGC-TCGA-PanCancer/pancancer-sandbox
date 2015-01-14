@@ -51,8 +51,9 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                 .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
-        and (analysis_attrib.get('variant_workflow_version') == '1.0.2'
-                or analysis_attrib.get('variant_workflow_version') == '1.0.3'
+        and (
+                analysis_attrib.get('variant_workflow_version').startswith('1.0.')
+                and not analysis_attrib.get('variant_workflow_version') in ['1.0.0', '1.0.1']
             ):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
 
@@ -582,6 +583,9 @@ def process_donor(donor, annotations, vcf_entries):
 
     # add original gnos repo assignment, this is based on a manually maintained yaml file
     add_original_gnos_repo(donor, annotations['gnos_assignment'])
+    if donor.get('flags').get('is_normal_specimen_aligned') and not donor.get('original_gnos_assignment'):
+        logger.warning('donor with normal aligned but gnos_for_originally_aligned_at is empty, please update gnos assignment annotation for donor: {} with {}'
+            .format(donor.get('donor_unique_id'), donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')))
     add_train2_donor_flag(donor, annotations['train2_donors'])
     add_train2_pilot_flag(donor, annotations['train2_pilot'])
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])

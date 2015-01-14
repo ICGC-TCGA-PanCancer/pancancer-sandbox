@@ -16,7 +16,7 @@ echo Script location: $DIR
 cd $DIR
 
 # this is just for running individual reports, does not affect downloader download from all gnos repos
-gnos_repos=(ebi bsc dkfz)
+#gnos_repos=(ebi bsc dkfz)
 
 echo
 echo synchronizing with GNOS repos
@@ -28,20 +28,20 @@ echo parsing metadata xml, build ES index
 echo parsing all gnos
 ./parse_gnos_xml.py -c settings.yml
 
-for g in ${gnos_repos[*]};
-  do echo parsing gnos $g;
-  ./parse_gnos_xml.py -c settings.yml -r $g;
-done
+#for g in ${gnos_repos[*]};
+#  do echo parsing gnos $g;
+#  ./parse_gnos_xml.py -c settings.yml -r $g;
+#done
 
 echo
 echo generating reports
 # find the latest folder with metadata
 M=`find gnos_metadata -maxdepth 1 -type d -regex 'gnos_metadata/20[0-9][0-9]-[0-9][0-9].*[0-9][0-9]_[A-Z][A-Z][A-Z]' | sort | tail -1`
 echo running alignment summary report for $M
-for g in ${gnos_repos[*]};
-  do
-  ./pc_report-donors_alignment_summary.py -m $M -r $g;
-done
+#for g in ${gnos_repos[*]};
+#  do
+#  ./pc_report-donors_alignment_summary.py -m $M -r $g;
+#done
 
 ./pc_report-donors_alignment_summary.py -m $M
 ./pc_report-gnos_repo_summary.py -m $M
