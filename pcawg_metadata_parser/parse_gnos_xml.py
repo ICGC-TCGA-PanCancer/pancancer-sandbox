@@ -586,9 +586,9 @@ def process_donor(donor, annotations, vcf_entries, conf):
     add_original_gnos_repo(donor, annotations['gnos_assignment'])
     if donor.get('flags').get('is_normal_specimen_aligned') and not donor.get('original_gnos_assignment'):
         logger.warning('donor with normal aligned but gnos_for_originally_aligned_at is empty, please update gnos assignment annotation for donor: {} with {}'
-            .format(donor.get('donor_unique_id'), donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')))
+            .format(donor.get('donor_unique_id'), conf.get(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')[0])))
         # it should be pretty safe to assign it automatically for this freshly aligned normal specimen
-        donor['original_gnos_assignment'] = conf.get(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo'))
+        donor['original_gnos_assignment'] = conf.get(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')[0])
     add_train2_donor_flag(donor, annotations['train2_donors'])
     add_train2_pilot_flag(donor, annotations['train2_pilot'])
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
