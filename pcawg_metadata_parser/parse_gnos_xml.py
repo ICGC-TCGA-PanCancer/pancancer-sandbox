@@ -523,7 +523,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     for donor_id in donors.keys():
         donor = donors[donor_id]
 
-        process_donor(donor, annotations, vcf_entries)
+        process_donor(donor, annotations, vcf_entries, conf)
 
         # push to Elasticsearch
         es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], body=json.loads( json.dumps(donor, default=set_default) ))
@@ -557,7 +557,7 @@ def read_annotations(annotations, type, file_name):
             logger.warning('unknown annotation type: {}'.format(type))
 
 
-def process_donor(donor, annotations, vcf_entries):
+def process_donor(donor, annotations, vcf_entries, conf):
     logger.info( 'processing donor: {} ...'.format(donor.get('donor_unique_id')) )
 
     # check whether all tumor specimen(s) aligned
@@ -587,6 +587,8 @@ def process_donor(donor, annotations, vcf_entries):
     if donor.get('flags').get('is_normal_specimen_aligned') and not donor.get('original_gnos_assignment'):
         logger.warning('donor with normal aligned but gnos_for_originally_aligned_at is empty, please update gnos assignment annotation for donor: {} with {}'
             .format(donor.get('donor_unique_id'), donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')))
+        # it should be pretty safe to assign it automatically for this freshly aligned normal specimen
+        donor['original_gnos_assignment'] = conf.get(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo'))
     add_train2_donor_flag(donor, annotations['train2_donors'])
     add_train2_pilot_flag(donor, annotations['train2_pilot'])
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
@@ -881,6 +883,8 @@ def main(argv=None):
 
     with open(conf_file) as f:
         conf = yaml.safe_load(f)
+        for repo in conf.get('gnos_repos'):
+            conf[repo.get('base_url')] = repo.get('repo_code')
 
     # output_dir
     output_dir = conf.get('output_dir')
