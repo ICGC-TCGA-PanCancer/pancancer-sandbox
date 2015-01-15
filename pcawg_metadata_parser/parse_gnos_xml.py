@@ -883,8 +883,8 @@ def main(argv=None):
 
     with open(conf_file) as f:
         conf = yaml.safe_load(f)
-        for repo in conf.get('gnos_repos'):
-            conf[repo.get('base_url')] = repo.get('repo_code')
+        for r in conf.get('gnos_repos'):
+            conf[r.get('base_url')] = r.get('repo_code')
 
     # output_dir
     output_dir = conf.get('output_dir')
