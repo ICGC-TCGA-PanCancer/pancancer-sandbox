@@ -52,7 +52,8 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
         and (
-                analysis_attrib.get('variant_workflow_version').startswith('1.0.')
+                (analysis_attrib.get('variant_workflow_version').startswith('1.0.')
+                and analysis_attrib.get('variant_workflow_version').startswith('1.1.'))
                 and not analysis_attrib.get('variant_workflow_version') in ['1.0.0', '1.0.1']
             ):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
