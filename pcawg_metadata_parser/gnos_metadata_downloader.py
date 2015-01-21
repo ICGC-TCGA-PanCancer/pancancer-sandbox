@@ -101,7 +101,7 @@ def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, ao_list_file_han
     url = gnos_repo.get('base_url') + '/cghub/metadata/analysisFull/' + ao_uuid
     response = None
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=5)
     except requests.exceptions.Timeout:
         pass
 
