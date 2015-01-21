@@ -99,9 +99,13 @@ def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, ao_list_file_han
     logger.info('download metadata xml from GNOS repo: {} for analysis object: {}'.format(gnos_repo.get('repo_code'), ao_uuid))
     
     url = gnos_repo.get('base_url') + '/cghub/metadata/analysisFull/' + ao_uuid
-    response = requests.get(url, stream=True)
+    response = None
+    try:
+        response = requests.get(url, stream=True)
+    except requests.exceptions.Timeout:
+        pass
 
-    if not response.ok:
+    if not response or not response.ok:
         logger.warning('unable to download metadata for: {} from {}'.format(ao_uuid, url))
         return
     else:

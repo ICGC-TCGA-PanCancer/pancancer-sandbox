@@ -46,9 +46,10 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
   analysis_attrib = get_analysis_attrib(gnos_analysis)
 
   if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
-    if 'test' in gnos_analysis.get('study').lower() or not 'vcf' in gnos_analysis.get('study').lower():
-        logger.warning('ignore test variant calling entry: {}'
-                .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+    # commented out this filter on test entry on Jan 21, 2015
+    #if 'test' in gnos_analysis.get('study').lower() or not 'vcf' in gnos_analysis.get('study').lower():
+    #    logger.warning('ignore test variant calling entry: {}'
+    #            .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
         and (
