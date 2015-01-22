@@ -46,10 +46,6 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
   analysis_attrib = get_analysis_attrib(gnos_analysis)
 
   if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
-    # uncommented back again, to keep this filter out test entry on Jan 21, 2015 after one run
-    if 'test' in gnos_analysis.get('study').lower() or not 'vcf' in gnos_analysis.get('study').lower():
-        logger.warning('ignore test variant calling entry: {}'
-                .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
         and (
@@ -253,6 +249,7 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
         "gnos_repo": [gnos_analysis.get('analysis_detail_uri').split('/cghub/')[0] + '/'],
         "gnos_last_modified": [gnos_analysis.get('last_modified')],
         "files": [],
+        "study": gnos_analysis.get('study'),
         "variant_calling_performed_at": gnos_analysis.get('analysis_xml').get('ANALYSIS_SET').get('ANALYSIS').get('@center_name'),
         "workflow_details": {
             "variant_workflow_name": analysis_attrib.get('variant_workflow_name'),
