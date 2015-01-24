@@ -47,8 +47,8 @@ def file_len(fname):
             pass
     return i + 1
 
-def get_metadata_dirs(metadata_dir, start_date='2015-01-09'):
-    dirs = glob.glob(metadata_dir + '/../20*_???')
+def get_metadata_dirs(metadata_dir, start_date='2015-01-11'):
+    dirs = sort(glob.glob(metadata_dir + '/../20*_???'))
     dir_name = os.path.basename(metadata_dir)
     ret_dirs = []
     ret_dates = []
