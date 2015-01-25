@@ -31,9 +31,11 @@ def generate_report(metadata_dir, report_name):
     for ctype in count_types:
     	donor_counts = []
         for md in metadata_dirs:
+            donors = set()
     	    file_name_pattern = md + '/reports/gnos_repo_summary/' + ctype + '.*.txt'
             files = glob.glob(file_name_pattern)
-            donor_counts.append(sum([file_len(fname) for fname in files]))
+            for f in files: donors.update(get_donors(f))
+            donor_counts.append(len(donors))
         counts.append(donor_counts)
 
     for i, d in enumerate(dates):
@@ -43,11 +45,12 @@ def generate_report(metadata_dir, report_name):
         o.write(json.dumps(data))
 
 
-def file_len(fname):
+def get_donors(fname):
+    donors = []
     with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
+        for d in f:
+            donors.append(d)
+    return donors
 
 def get_metadata_dirs(metadata_dir, start_date='2015-01-11'):
     dirs = sorted(glob.glob(metadata_dir + '/../20*_???'))
