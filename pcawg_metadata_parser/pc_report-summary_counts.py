@@ -5,7 +5,6 @@ import os
 import glob
 import json
 import re
-from datetime import datetime
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
@@ -26,19 +25,22 @@ def generate_report(metadata_dir, report_name):
     report_dir = init_report_dir(metadata_dir, report_name)
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir)
 
+    data = [["Date", "Not Called", "Called"]]
+    counts = []
+
     for ctype in count_types:
     	donor_counts = []
         for md in metadata_dirs:
     	    file_name_pattern = md + '/reports/gnos_repo_summary/' + ctype + '.*.txt'
             files = glob.glob(file_name_pattern)
             donor_counts.append(sum([file_len(fname) for fname in files]))
+        counts.append(donor_counts)
 
-        data = [["Date", "Donors"]]
-        for i, d in enumerate(donor_counts):
-        	data.append([dates[i], d])
+    for i, d in enumerate(dates):
+        data.append([d, counts[0][i], counts[1][i]])
 
-        with open(report_dir + '/' + ctype + '.counts.json', 'w') as o:
-            o.write(json.dumps(data))
+    with open(report_dir + '/summary_counts.json', 'w') as o:
+        o.write(json.dumps(data))
 
 
 def file_len(fname):
@@ -48,7 +50,7 @@ def file_len(fname):
     return i + 1
 
 def get_metadata_dirs(metadata_dir, start_date='2015-01-11'):
-    dirs = sort(glob.glob(metadata_dir + '/../20*_???'))
+    dirs = sorted(glob.glob(metadata_dir + '/../20*_???'))
     dir_name = os.path.basename(metadata_dir)
     ret_dirs = []
     ret_dates = []
