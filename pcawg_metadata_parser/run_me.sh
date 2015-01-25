@@ -45,6 +45,7 @@ echo running alignment summary report for $M
 
 ./pc_report-donors_alignment_summary.py -m $M
 ./pc_report-gnos_repo_summary.py -m $M
+./pc_report-summary_counts.py -m $M
 
 echo gzip all jsonl files under $M
 gzip $M/*.jsonl

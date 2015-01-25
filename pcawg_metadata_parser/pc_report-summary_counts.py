@@ -25,7 +25,7 @@ def generate_report(metadata_dir, report_name):
     report_dir = init_report_dir(metadata_dir, report_name)
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir)
 
-    data = [["Date", "Not Called", "Called"]]
+    data = [["Date", "To be called", "Called"]]
     counts = []
 
     for ctype in count_types:
