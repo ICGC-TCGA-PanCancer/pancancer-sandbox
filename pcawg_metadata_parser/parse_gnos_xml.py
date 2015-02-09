@@ -596,7 +596,16 @@ def process_donor(donor, annotations, vcf_entries, conf):
 
 
 def add_vcf_entry(donor, vcf_entry):
-    if not vcf_entry: return
+    if not vcf_entry:
+        return
+    else:
+        if not donor.get('flags').get('all_tumor_specimen_aliquot_counts') + 1 == \
+            len(vcf_entry.get('workflow_details').get('variant_pipeline_output_info')):
+            # not to add this variant call result since it missed tumor specimen(s)
+            logger.warning('sanger variant calling workflow may have missed tumour specimen for donor: {}, ignore variant calling result.'
+                    .format(donor.get('donor_unique_id')))
+            return
+
     if not donor.get('variant_calling_results'):
         donor['variant_calling_results'] = {}
     donor.get('variant_calling_results').update(vcf_entry)
