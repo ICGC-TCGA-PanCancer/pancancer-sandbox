@@ -18,6 +18,7 @@ from collections import OrderedDict
 import datetime
 import dateutil.parser
 from itertools import izip
+from distutils.version import LooseVersion
 
 
 logger = logging.getLogger('gnos parser')
@@ -58,6 +59,8 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         logger.info('process Sanger variant call for donor: {}, in entry {}'
             .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
+        current_vcf_entry = create_vcf_entry(analysis_attrib, gnos_analysis)
+
         if vcf_entries.get(donor_unique_id) and vcf_entries.get(donor_unique_id).get('sanger_variant_calling'):
             # let's see whether they have the same GNOS ID first, if yes, it's a copy at different GNOS repo
             # if not the same GNOS ID, we will see which one is newer, will keep the newer one
@@ -67,13 +70,30 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
             # If there is no synchronization or redundant calling/uploading it would be much easier.
             # The other way of handling this is to keep all VCF call entries and sort them out at
             # the end when all entries are at hand
-            logger.warning('Sanger variant calling result already exist for donor: {}, ignoring entry {}'
-                .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
+            workflow_version_current = current_vcf_entry.get('workflow_details').get('variant_workflow_version')
+            workflow_version_previous = vcf_entries.get(donor_unique_id).get('sanger_variant_calling').get('workflow_details').get('variant_workflow_version')
+            gnos_updated_current = current_vcf_entry.get('gnos_last_modified')[0]
+            gnos_updated_previous = vcf_entries.get(donor_unique_id).get('sanger_variant_calling').get('gnos_last_modified')[0]
+
+            if LooseVersion(workflow_version_current) > LooseVersion(workflow_version_previous): # current is newer version
+                vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = current_vcf_entry
+                logger.info('Newer Sanger variant calling result with version: {} in entry: {} replacing older one for donor: {}'
+                    .format(workflow_version_current, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')), donor_unique_id)
+            elif LooseVersion(workflow_version_current) == LooseVersion(workflow_version_previous) \
+                 and gnos_updated_current > gnos_updated_previous: # current is newer
+                vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = current_vcf_entry
+                logger.info('Newer Sanger variant calling result with last modified date: {} in entry: {} replacing older one for donor: {}'
+                    .format(gnos_updated_current, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')), donor_unique_id)
+            else: # no need to replace
+                logger.warning('Sanger variant calling result already exist and is latest for donor: {}, ignoring entry {}'
+                    .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+                
         else:
             if not vcf_entries.get('donor_unique_id'):
                 vcf_entries[donor_unique_id] = {}
 
-            vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = create_vcf_entry(analysis_attrib, gnos_analysis)
+            vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = current_vcf_entry
 
     else:  # this is test for VCF upload
         logger.warning('ignore entry that is variant calling but likely is test entry, GNOS entry: {}'
@@ -247,7 +267,7 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
         #'gnos_analysis': gnos_analysis, # remove this later
         "gnos_id": gnos_analysis.get('analysis_id'),
         "gnos_repo": [gnos_analysis.get('analysis_detail_uri').split('/cghub/')[0] + '/'],
-        "gnos_last_modified": [gnos_analysis.get('last_modified')],
+        "gnos_last_modified": [dateutil.parser.parse(gnos_analysis.get('last_modified'))],
         "files": [],
         "study": gnos_analysis.get('study'),
         "variant_calling_performed_at": gnos_analysis.get('analysis_xml').get('ANALYSIS_SET').get('ANALYSIS').get('@center_name'),
