@@ -79,16 +79,16 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
             if LooseVersion(workflow_version_current) > LooseVersion(workflow_version_previous): # current is newer version
                 vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = current_vcf_entry
                 logger.info('Newer Sanger variant calling result with version: {} in entry: {} replacing older one for donor: {}'
-                    .format(workflow_version_current, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')), donor_unique_id)
+                    .format(workflow_version_current, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull'), donor_unique_id))
             elif LooseVersion(workflow_version_current) == LooseVersion(workflow_version_previous) \
                  and gnos_updated_current > gnos_updated_previous: # current is newer
                 vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = current_vcf_entry
                 logger.info('Newer Sanger variant calling result with last modified date: {} in entry: {} replacing older one for donor: {}'
-                    .format(gnos_updated_current, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')), donor_unique_id)
+                    .format(gnos_updated_current, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull'), donor_unique_id))
             else: # no need to replace
                 logger.warning('Sanger variant calling result already exist and is latest for donor: {}, ignoring entry {}'
                     .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
-                
+
         else:
             if not vcf_entries.get('donor_unique_id'):
                 vcf_entries[donor_unique_id] = {}
