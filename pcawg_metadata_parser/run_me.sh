@@ -15,6 +15,10 @@ echo Script location: $DIR
 
 cd $DIR
 
+# update the code
+echo update the code
+git pull
+
 # this is just for running individual reports, does not affect downloader download from all gnos repos
 #gnos_repos=(ebi bsc dkfz)
 
