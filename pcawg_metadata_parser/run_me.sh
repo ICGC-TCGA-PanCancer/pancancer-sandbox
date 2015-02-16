@@ -26,6 +26,15 @@ echo
 echo synchronizing with GNOS repos
 ./gnos_metadata_downloader.py -c settings.yml
 
+
+echo
+echo cleaning up older ES indexes
+for f in `curl 'localhost:9200/_cat/indices?v' |awk '{print $3}' |grep p_ |grep -v p_150210030103 |sort -r |tail -n +3`;
+  do echo deleting index $f ;
+  curl -XDELETE localhost:9200/$f ;
+done
+
+
 echo
 echo parsing metadata xml, build ES index
 
