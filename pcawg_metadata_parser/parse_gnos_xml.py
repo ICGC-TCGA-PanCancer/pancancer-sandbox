@@ -43,7 +43,7 @@ def init_es(es_host, es_index):
     return es
 
 
-def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_output_fh):
+def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_output_fh, annotations):
   analysis_attrib = get_analysis_attrib(gnos_analysis)
 
   if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
@@ -61,7 +61,16 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
 
         current_vcf_entry = create_vcf_entry(analysis_attrib, gnos_analysis)
 
-        if vcf_entries.get(donor_unique_id) and vcf_entries.get(donor_unique_id).get('sanger_variant_calling'):
+        if annotations.get('sanger_vcf_in_jamboree').get(donor_unique_id): # the current donor has sanger variant calling result in jamboree
+            if annotations.get('sanger_vcf_in_jamboree').get(donor_unique_id) == current_vcf_entry.get('gnos_id'): # this is the one expected
+                vcf_entries[donor_unique_id] = {'sanger_variant_calling': current_vcf_entry}
+                logger.info('Sanger variant calling result for donor: {}. It is already saved in Jamboree, GNOS entry is {}'
+                    .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+            else: # this is not the one expected, likely duplications
+                logger.warning('Sanger variant calling result for donor: {}. Ignored as it not the one saved in Jamboree, ignoring entry {}'
+                    .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
+        elif vcf_entries.get(donor_unique_id) and vcf_entries.get(donor_unique_id).get('sanger_variant_calling'):
             # let's see whether they have the same GNOS ID first, if yes, it's a copy at different GNOS repo
             # if not the same GNOS ID, we will see which one is newer, will keep the newer one
             # this can be complicated as the GNOS entries coming as a ramdon order, it's not possible to decide 
@@ -96,10 +105,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                     .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
         else:
-            if not vcf_entries.get('donor_unique_id'):
-                vcf_entries[donor_unique_id] = {}
-
-            vcf_entries.get(donor_unique_id)['sanger_variant_calling'] = current_vcf_entry
+            vcf_entries[donor_unique_id] = {'sanger_variant_calling': current_vcf_entry}
 
     else:  # this is test for VCF upload
         logger.warning('ignore entry that is variant calling but likely is test entry, GNOS entry: {}'
@@ -530,6 +536,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     read_annotations(annotations, 'train2_pilot', 'pc_annotation-train2_pilot.tsv')  # hard-code file name for now
     read_annotations(annotations, 'donor_blacklist', 'pc_annotation-donor_blacklist.tsv')  # hard-code file name for now
     read_annotations(annotations, 'manual_qc_failed', 'pc_annotation-manual_qc_failed.tsv')  # hard-code file name for now
+    read_annotations(annotations, 'sanger_vcf_in_jamboree', 'pc_annotation-sanger_vcf_in_jamboree.tsv')  # hard-code file name for now
     
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
@@ -540,7 +547,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
         #print (json.dumps(gnos_analysis)) # debug
         if gnos_analysis:
             logger.info( 'processing xml file: {} ...'.format(f) )
-            process_gnos_analysis( gnos_analysis, donors, vcf_entries, es_index, es, bam_fh )
+            process_gnos_analysis( gnos_analysis, donors, vcf_entries, es_index, es, bam_fh, annotations )
         else:
             logger.warning( 'skipping invalid xml file: {}'.format(f) )
 
@@ -570,7 +577,15 @@ def read_annotations(annotations, type, file_name):
                 for p_d in project_donors:
                     annotations['gnos_assignment'][p_d] = repo  # key is project or donor unique id, value is repo
 
-        elif type == 'train2_donors' or type == 'train2_pilot' or type == 'donor_blacklist' or type == 'manual_qc_failed':
+        elif type == 'sanger_vcf_in_jamboree':
+            annotations['sanger_vcf_in_jamboree'] = {}
+            for line in r:
+                if line.startswith('#'): continue
+                if len(line.rstrip()) == 0: continue
+                donor_id, ao_id = str.split(line.rstrip(), '\t')
+                annotations[type][donor_id] = ao_id
+
+        elif type in ['train2_donors', 'train2_pilot', 'donor_blacklist', 'manual_qc_failed']:
             annotations[type] = set()
             for line in r:
                 if line.startswith('#'): continue
@@ -617,6 +632,10 @@ def process_donor(donor, annotations, vcf_entries, conf):
     add_train2_pilot_flag(donor, annotations['train2_pilot'])
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
     add_manual_qc_failed_flag(donor, annotations['manual_qc_failed'])
+    
+    donor.get('flags')['sanger_vcf_in_jamboree'] = False
+    if donor.get('donor_unique_id') in annotations.get('sanger_vcf_in_jamboree'):
+        donor.get('flags')['sanger_vcf_in_jamboree'] = True
 
     add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
 
