@@ -633,9 +633,9 @@ def process_donor(donor, annotations, vcf_entries, conf):
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
     add_manual_qc_failed_flag(donor, annotations['manual_qc_failed'])
     
-    donor.get('flags')['sanger_vcf_in_jamboree'] = False
+    donor.get('flags')['is_sanger_vcf_in_jamboree'] = False
     if donor.get('donor_unique_id') in annotations.get('sanger_vcf_in_jamboree'):
-        donor.get('flags')['sanger_vcf_in_jamboree'] = True
+        donor.get('flags')['is_sanger_vcf_in_jamboree'] = True
 
     add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
 
