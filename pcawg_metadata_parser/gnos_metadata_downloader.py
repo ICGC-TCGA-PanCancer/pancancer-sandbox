@@ -102,7 +102,7 @@ def download_metadata_xml(gnos_repo, ao_uuid, metadata_xml_dir, ao_list_file_han
     response = None
     try:
         response = requests.get(url, stream=True, timeout=5)
-    except requests.exceptions.Timeout or requests.exceptions.ConnectionError:
+    except: # download failed, no need to do anything
         pass
 
     if not response or not response.ok:
