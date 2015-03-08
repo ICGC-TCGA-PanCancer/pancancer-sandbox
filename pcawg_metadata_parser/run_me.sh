@@ -72,7 +72,7 @@ echo running alignment summary report for $M
 echo update pcawg-operations git submodule where white lists are maintained
 cd ../pcawg-operations/
 git pull
-cd ../pcawg_metadata_parser/
+cd $DIR
 
 ./pc_report-donors_alignment_summary.py -m $M
 ./pc_report-gnos_repo_summary.py -m $M
