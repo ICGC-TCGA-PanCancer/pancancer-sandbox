@@ -91,7 +91,7 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-03-07')
 
     site_summary_report = []
-    for i, md in enumerate(metadata_dirs):
+    for i, md in reversed(list(enumerate(metadata_dirs))):
         summary_site_count_file = md + '/reports/summary_counts/summary_site_counts.json'
         if not os.path.isfile(summary_site_count_file): continue
 
