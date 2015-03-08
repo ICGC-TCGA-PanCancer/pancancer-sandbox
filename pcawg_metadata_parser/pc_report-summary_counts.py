@@ -19,7 +19,7 @@ def init_report_dir(metadata_dir, report_name):
 def generate_report(metadata_dir, report_name):
     count_types = [
         "live_aligned_sanger_variant_not_called_donors",
-        "live_sanger_variant_called_donors",
+        "live_sanger_variant_called_donors", # don't switch order
     ]
 
     report_dir = init_report_dir(metadata_dir, report_name)
@@ -27,6 +27,7 @@ def generate_report(metadata_dir, report_name):
 
     data = [["Date", "To be called", "Called"]]
     counts = []
+    today_donors = []
 
     for ctype in count_types:
     	donor_counts = []
@@ -36,21 +37,84 @@ def generate_report(metadata_dir, report_name):
             files = glob.glob(file_name_pattern)
             for f in files: donors.update(get_donors(f))
             donor_counts.append(len(donors))
+            if len(donor_counts) == len(metadata_dirs):
+                today_donors.append(donors)
+
         counts.append(donor_counts)
 
-    for i, d in enumerate(dates):
-        data.append([d, counts[0][i], counts[1][i]])
+    for i, d in enumerate(dates): data.append([d, counts[0][i], counts[1][i]])
 
-    with open(report_dir + '/summary_counts.json', 'w') as o:
-        o.write(json.dumps(data))
+    with open(report_dir + '/summary_counts.json', 'w') as o: o.write(json.dumps(data))
+
+    compute_site_report(metadata_dir, report_dir, today_donors)
+
+
+def compute_site_report(metadata_dir, report_dir, today_donors):
+    compute_sites = {
+        "bsc": set(),
+        "dkfz": set(),
+        "ebi": set(),
+        "etri": set(),
+        "oicr": set(),
+        "pdc1_1": set(),
+        "pdc2_0": set(),
+        "tokyo": set(),
+        "ucsc": set()
+    }
+
+    get_whitelists(compute_sites)
+
+    completed_donors = {}
+    site_assigned_donors = set()
+
+    for c in compute_sites:
+        for d in compute_sites:
+            if c == d: continue
+            if compute_sites.get(c).intersection(compute_sites.get(d)):
+                # log overlap donors issue
+                print "WARN: overlap donors found between " + c + " and " + d
+        completed_donors[c] = compute_sites.get(c).intersection(today_donors[1])
+        site_assigned_donors.update(completed_donors[c])
+
+    site_not_assigned_donors = today_donors[1].difference(site_assigned_donors)
+
+    #print completed_donors
+    #print site_not_assigned_donors
+
+    site_summary = {}
+    for c in completed_donors: site_summary[c] = len(completed_donors.get(c))
+
+    # today's counts
+    with open(report_dir + '/summary_site_counts.json', 'w') as o: o.write(json.dumps(site_summary))
+
+    # get all previous days counts
+    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-03-07')
+
+    site_summary_report = []
+    for i, md in enumerate(metadata_dirs):
+        summary_site_count_file = md + '/reports/summary_counts/summary_site_counts.json'
+        if not os.path.isfile(summary_site_count_file): continue
+
+        site_counts = json.load(open(summary_site_count_file))
+        site_summary_report.append([dates[i], site_counts])
+    with open(report_dir + '/hist_summary_site_counts.json', 'w') as o: o.write(json.dumps(site_summary_report))
+
+
+def get_whitelists(compute_sites):
+    whitelist_dir = '../pcawg-operations/variant_calling/sanger_workflow/whitelists/'
+
+    for c in compute_sites:
+        files = glob.glob(whitelist_dir + '/' + c + '/' + c + '.*.txt')
+        for f in files: compute_sites.get(c).update(get_donors(f))
 
 
 def get_donors(fname):
     donors = []
     with open(fname) as f:
         for d in f:
-            donors.append(d)
+            donors.append(d.rstrip())
     return donors
+
 
 def get_metadata_dirs(metadata_dir, start_date='2015-01-11'):
     dirs = sorted(glob.glob(metadata_dir + '/../20*_???'))
@@ -59,7 +123,7 @@ def get_metadata_dirs(metadata_dir, start_date='2015-01-11'):
     ret_dates = []
     start = False
     for d in dirs:
-    	if start_date in d: start = True
+    	if '../' + start_date in d: start = True
     	if not start: continue
     	ret_dates.append( str.split(os.path.basename(d),'_')[0] )
         ret_dirs.append(d)
