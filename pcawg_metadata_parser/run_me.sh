@@ -41,6 +41,18 @@ echo parsing metadata xml, build ES index
 echo parsing all gnos
 ./parse_gnos_xml.py -c settings.yml
 
+# update ES alias to point to the latest index
+echo 'delete old alias'
+for f in `curl 'localhost:9200/_cat/aliases?v' |grep pcawg_es |awk '{print $2}'`;
+  do echo deleting alias for $f ;
+  curl -XDELETE localhost:9200/$f/_alias/pcawg_es ;
+done
+
+echo 'create new alias'
+f=`curl 'localhost:9200/_cat/indices?v' |awk '{print $3}' |grep p_ |sort |tail -1`
+curl -XPUT localhost:9200/$f/_alias/pcawg_es
+
+
 #for g in ${gnos_repos[*]};
 #  do echo parsing gnos $g;
 #  ./parse_gnos_xml.py -c settings.yml -r $g;
@@ -56,9 +68,16 @@ echo running alignment summary report for $M
 #  ./pc_report-donors_alignment_summary.py -m $M -r $g;
 #done
 
+# now report on compute site
+echo update pcawg-operations git submodule where white lists are maintained
+cd ../pcawg-operations/
+git pull
+cd ../pcawg_metadata_parser/
+
 ./pc_report-donors_alignment_summary.py -m $M
 ./pc_report-gnos_repo_summary.py -m $M
 ./pc_report-summary_counts.py -m $M
+
 
 echo gzip all jsonl files under $M
 gzip $M/*.jsonl
