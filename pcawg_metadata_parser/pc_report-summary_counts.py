@@ -51,6 +51,8 @@ def generate_report(metadata_dir, report_name):
 
 def compute_site_report(metadata_dir, report_dir, today_donors):
     compute_sites = {
+        "aws_irland": set(),
+        "aws_oregon": set(),
         "bsc": set(),
         "dkfz": set(),
         "ebi": set(),
@@ -72,7 +74,8 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
             if c == d: continue
             if compute_sites.get(c).intersection(compute_sites.get(d)):
                 # log overlap donors issue
-                print "WARN: overlap donors found between " + c + " and " + d
+                print "WARN: overlap donors found between " + c + " and " + d \
+                      + ": " + ", ".join(compute_sites.get(c).intersection(compute_sites.get(d)))
         completed_donors[c] = compute_sites.get(c).intersection(today_donors[1])
         site_assigned_donors.update(completed_donors[c])
 
