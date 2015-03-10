@@ -51,7 +51,7 @@ def generate_report(metadata_dir, report_name):
 
 def compute_site_report(metadata_dir, report_dir, today_donors):
     compute_sites = {
-        "aws_irland": set(),
+        "aws_ireland": set(),
         "aws_oregon": set(),
         "bsc": set(),
         "dkfz": set(),
