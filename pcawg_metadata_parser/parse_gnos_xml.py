@@ -440,7 +440,9 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
             'has_aligned_tumor_specimen': False,
             'aligned_tumor_specimen_aliquot_counts': 0,
             'all_tumor_specimen_aliquot_counts': 0,
-            'is_sanger_variant_calling_performed': False
+            'is_sanger_variant_calling_performed': False,
+            'variant_calling_performed': [],
+            'vcf_in_jamboree': []
         },
         'normal_specimen': {},
         'aligned_tumor_specimens': [],
@@ -636,6 +638,7 @@ def process_donor(donor, annotations, vcf_entries, conf):
     donor.get('flags')['is_sanger_vcf_in_jamboree'] = False
     if donor.get('donor_unique_id') in annotations.get('sanger_vcf_in_jamboree'):
         donor.get('flags')['is_sanger_vcf_in_jamboree'] = True
+        donor.get('flags').get('vcf_in_jamboree').append('sanger')
 
     add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
 
@@ -657,6 +660,7 @@ def add_vcf_entry(donor, vcf_entry):
 
     if donor.get('variant_calling_results').get('sanger_variant_calling'):
         donor.get('flags')['is_sanger_variant_calling_performed'] = True
+        donor.get('flags').get('variant_calling_performed').append('sanger')
         if not donor.get('flags').get('all_tumor_specimen_aliquot_counts') + 1 == \
                 len(donor.get('variant_calling_results').get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_output_info')):
             logger.warning('sanger variant calling workflow may have missed tumour specimen for donor: {}'
