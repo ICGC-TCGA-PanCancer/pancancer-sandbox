@@ -269,7 +269,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
 
     # push to Elasticsearch
     # Let's not worry about this index type, it seems not that useful
-    #es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ))
+    #es.index(index=es_index, doc_type='bam_file', id=bam_file['bam_gnos_ao_id'], body=json.loads( json.dumps(bam_file, default=set_default) ), timeout=90)
     bam_output_fh.write(json.dumps(bam_file, default=set_default) + '\n')
 
 
@@ -559,7 +559,8 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
         process_donor(donor, annotations, vcf_entries, conf)
 
         # push to Elasticsearch
-        es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], body=json.loads( json.dumps(donor, default=set_default) ))
+        es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], \
+            body=json.loads(json.dumps(donor, default=set_default)), timeout=90 )
         del donor['bam_files']  # prune this before dumping JSON for Keiran
         donor_fh.write(json.dumps(donor, default=set_default) + '\n')
 
