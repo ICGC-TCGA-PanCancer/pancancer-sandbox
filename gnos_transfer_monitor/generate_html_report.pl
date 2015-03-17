@@ -43,6 +43,7 @@ my $d = download_url($s3);
 
 # parse the JSON
 $d = parse_json($d);
+my $text = JSON->new->utf8->encode($d);
 
 # fill in the template
 fill_template($d, $template, $output);
@@ -79,15 +80,15 @@ sub sort_dates {
         next if ( (length $datetime == 17) and ($dates_hash{$datetime} = $datetime) );
 
         my ($date, $time) = split /\./, $datetime;
-
+        
         my $padded_date;
         if (length( $date ) == 8) {
             $padded_date = $date;
         }
         else {
             my ($year, $month_day) = $date =~ /^(\d{4})(.*)$/;
-            $padded_date = $year;
-
+            $padded_date = $year; 
+            
             my ($month, $day);
             if (substr($month_day, 0, 1) == 1) {
                 ($month, $day) = $month_day =~ /^(\d{2})(.*)$/;
@@ -100,13 +101,13 @@ sub sort_dates {
             $padded_date .= ($day < 10)? "0$day" : $day;
         }
 
-        my $padded_datetime;
+        my $padded_datetime; 
         if (length( $time) == 8 ) {
             $padded_datetime = "$padded_date.$time";
         }
         else {
             $padded_datetime = "$padded_date.";
-
+   
             my @time_parts = split /\:/, $time;
             foreach my $time (@time_parts) {
                 $padded_datetime .= ($time < 10)? "0$time:": "$time:";
@@ -119,9 +120,10 @@ sub sort_dates {
 
     my @sorted_keys = reverse sort keys(%dates_hash);
     my @sorted_original_dates = @dates_hash{@sorted_keys};
-
+ 
    return @sorted_original_dates;
-}
+} 
+
 
 sub fill_template {
   my ($d, $file, $output) = @_;
