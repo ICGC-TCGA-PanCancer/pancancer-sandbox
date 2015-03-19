@@ -289,6 +289,7 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
             "variant_pipeline_input_info": json.loads( analysis_attrib.get('variant_pipeline_input_info') ).get('workflow_inputs') if analysis_attrib.get('variant_pipeline_input_info') else [],
             "variant_pipeline_output_info": json.loads( analysis_attrib.get('variant_pipeline_output_info') ).get('workflow_outputs') if analysis_attrib.get('variant_pipeline_output_info') else [],
             "variant_qc_metrics": json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics') if analysis_attrib.get('variant_qc_metrics') else [],
+            "variant_timing_metrics": json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') else [],
         }
     }
 
