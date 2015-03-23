@@ -113,8 +113,17 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         return
 
   else:  # BAM entry
-    if ( not gnos_analysis.get('aliquot_id')
-        ):
+    if gnos_analysis.get('dcc_project_code') and gnos_analysis.get('dcc_project_code').upper() == 'TEST':
+        logger.warning('ignore entry with dcc_project_code being TEST, GNOS entry: {}'
+                         .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
+
+    if gnos_analysis.get('library_strategy') and gnos_analysis.get('library_strategy') == 'RNA-Seq':
+        logger.warning('ignore entry with library_strategy being RNA-Seq for now, GNOS entry: {}'
+                         .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
+
+    if not gnos_analysis.get('aliquot_id'):
         logger.warning('ignore entry does not have aliquot_id, GNOS entry: {}'
                          .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
