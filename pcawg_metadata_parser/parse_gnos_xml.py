@@ -452,7 +452,8 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
             'all_tumor_specimen_aliquot_counts': 0,
             'is_sanger_variant_calling_performed': False,
             'variant_calling_performed': [],
-            'vcf_in_jamboree': []
+            'vcf_in_jamboree': [],
+            'has_duplicated_bwa_alignments': False
         },
         'normal_specimen': {},
         'aligned_tumor_specimens': [],
@@ -549,7 +550,10 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     read_annotations(annotations, 'donor_blacklist', 'pc_annotation-donor_blacklist.tsv')  # hard-code file name for now
     read_annotations(annotations, 'manual_qc_failed', 'pc_annotation-manual_qc_failed.tsv')  # hard-code file name for now
     read_annotations(annotations, 'sanger_vcf_in_jamboree', 'pc_annotation-sanger_vcf_in_jamboree.tsv')  # hard-code file name for now
-    
+
+    # hard-code the file name for now    
+    train2_freeze_bams = read_train2_bams('../pcawg-operations/variant_calling/train2-lists/Data_Freeze_Train_2.0_GoogleDocs__2015_03_26_1637.tsv')
+
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
 
@@ -566,7 +570,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     for donor_id in donors.keys():
         donor = donors[donor_id]
 
-        process_donor(donor, annotations, vcf_entries, conf)
+        process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams)
 
         # push to Elasticsearch
         es.index(index=es_index, doc_type='donor', id=donor['donor_unique_id'], \
@@ -576,6 +580,30 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
 
     donor_fh.close()
     bam_fh.close()
+
+
+def read_train2_bams(filename):
+    train2_bams = {}
+
+    with open(filename, 'r') as r:
+        for line in r:
+            if line.startswith('dcc_project_code'): continue
+            if len(line.rstrip()) == 0: continue
+            dcc_project_code, donor_submitter_id, normal_aligned_bam_gnos_url,\
+                num_tumor_samples, tumour_aligned_bam_gnos_url = str.split(line.rstrip(), '\t')
+
+            normal_repo, normal_gnos_id = str.split(normal_aligned_bam_gnos_url, 'cghub/metadata/analysisFull/')
+
+            train2_bams[dcc_project_code + "::" + donor_submitter_id] = {}
+            train2_bams.get(dcc_project_code + "::" + donor_submitter_id)[normal_gnos_id] = \
+                {"repo": normal_repo, "specimen_type": "normal"}
+
+            for tumor_url in str.split(tumour_aligned_bam_gnos_url, ','):
+                tumor_repo, tumor_gnos_id = str.split(tumor_url, 'cghub/metadata/analysisFull/')
+                train2_bams.get(dcc_project_code + "::" + donor_submitter_id)[tumor_gnos_id] = \
+                    {"repo": tumor_repo, "specimen_type": "tumor"}
+
+    return train2_bams
 
 
 def read_annotations(annotations, type, file_name):
@@ -609,7 +637,7 @@ def read_annotations(annotations, type, file_name):
             logger.warning('unknown annotation type: {}'.format(type))
 
 
-def process_donor(donor, annotations, vcf_entries, conf):
+def process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams):
     logger.info( 'processing donor: {} ...'.format(donor.get('donor_unique_id')) )
 
     # check whether all tumor specimen(s) aligned
@@ -652,6 +680,128 @@ def process_donor(donor, annotations, vcf_entries, conf):
         donor.get('flags').get('vcf_in_jamboree').append('sanger')
 
     add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
+
+    check_bwa_duplicates(donor, train2_freeze_bams)
+
+
+def check_bwa_duplicates(donor, train2_freeze_bams):
+    duplicated_bwa_alignment_summary = {
+        'exists_md5sum_mismatch': False,
+        'exists_version_mismatch': False,
+        'exists_md5sum_mismatch_in_normal': False,
+        'exists_version_mismatch_in_normal': False,
+        'exists_md5sum_mismatch_in_tumor': False,
+        'exists_version_mismatch_in_tumor': False,
+        'exists_md5sum_mismatch_between_train2_marked_and_sanger_used': False,
+        'exists_version_mismatch_between_train2_marked_and_sanger_used': False,
+        'is_train2_freeze_normal_bam_missing': False,
+        'is_train2_freeze_tumor_bam_missing': False,
+        'normal': {},
+        '_tmp_tumor': {},
+        'tumor': []
+    }
+    aliquots = {}
+    duplicated_bwa = False
+
+    for bam_file in donor.get('bam_files'):
+        if not bam_file.get('is_aligned'): continue
+
+        if aliquots.get(bam_file.get('aliquot_id')): # exists already
+            duplicated_bwa = True
+            aliquots.get(bam_file.get('aliquot_id')).append(bam_file)
+        else:
+            aliquots[bam_file.get('aliquot_id')] = [bam_file]
+
+    if duplicated_bwa:
+        donor.get('flags')['has_duplicated_bwa_alignments'] = True
+        for aliquot in aliquots:
+          for bam_file in aliquots.get(aliquot):
+            if 'normal' in bam_file.get('dcc_specimen_type').lower():
+                if duplicated_bwa_alignment_summary.get('normal'):
+                    duplicated_bwa_alignment_summary.get('normal').get('aligned_bam').append(
+                            {
+                                'gnos_id': bam_file.get('bam_gnos_ao_id'),
+                                'gnos_repo': bam_file.get('gnos_repo'),
+                                'md5sum': bam_file.get('md5sum'),
+                                'upload_date': bam_file.get('upload_date'),
+                                'published_date': bam_file.get('published_date'),
+                                'last_modified': bam_file.get('last_modified'),
+                                'bwa_workflow_version': bam_file.get('alignment').get('workflow_version'),
+                                'is_train2_bam': is_train2_bam(donor, train2_freeze_bams, bam_file.get('bam_gnos_ao_id'), 'normal'),
+                                'is_used_in_sanger_variant_call': is_used_in_sanger_variant_call(donor,
+                                        bam_file.get('bam_gnos_ao_id'))
+                            }
+                        )
+                else:
+                    duplicated_bwa_alignment_summary['normal'] = {
+                        'aliquot_id': aliquot,
+                        'dcc_specimen_type': bam_file.get('dcc_specimen_type'),
+                        'aligned_bam': [
+                            {
+                                'gnos_id': bam_file.get('bam_gnos_ao_id'),
+                                'gnos_repo': bam_file.get('gnos_repo'),
+                                'md5sum': bam_file.get('md5sum'),
+                                'upload_date': bam_file.get('upload_date'),
+                                'published_date': bam_file.get('published_date'),
+                                'last_modified': bam_file.get('last_modified'),
+                                'bwa_workflow_version': bam_file.get('alignment').get('workflow_version'),
+                                'is_train2_bam': is_train2_bam(donor, train2_freeze_bams, bam_file.get('bam_gnos_ao_id'), 'normal'),
+                                'is_used_in_sanger_variant_call': is_used_in_sanger_variant_call(donor,
+                                        bam_file.get('bam_gnos_ao_id'))
+                            }
+                        ]
+                    }
+
+            else: # tumor
+                if not duplicated_bwa_alignment_summary.get('_tmp_tumor').get(aliquot):
+                    duplicated_bwa_alignment_summary.get('_tmp_tumor')[aliquot] = {
+                        'aliquot_id': aliquot,
+                        'dcc_specimen_type': bam_file.get('dcc_specimen_type'),
+                        'aligned_bam': []
+                    }
+
+                duplicated_bwa_alignment_summary.get('_tmp_tumor').get(aliquot).get('aligned_bam').append(
+                        {
+                            'gnos_id': bam_file.get('bam_gnos_ao_id'),
+                            'gnos_repo': bam_file.get('gnos_repo'),
+                            'md5sum': bam_file.get('md5sum'),
+                            'upload_date': bam_file.get('upload_date'),
+                            'published_date': bam_file.get('published_date'),
+                            'last_modified': bam_file.get('last_modified'),
+                            'bwa_workflow_version': bam_file.get('alignment').get('workflow_version'),
+                            'is_train2_bam': is_train2_bam(donor, train2_freeze_bams, bam_file.get('bam_gnos_ao_id'), 'tumor'),
+                            'is_used_in_sanger_variant_call': is_used_in_sanger_variant_call(donor,
+                                    bam_file.get('bam_gnos_ao_id'))
+                        }
+                    )
+
+        for aliquot in duplicated_bwa_alignment_summary.get('_tmp_tumor'):
+            duplicated_bwa_alignment_summary.get('tumor').append(duplicated_bwa_alignment_summary.get('_tmp_tumor').get(aliquot))
+
+        del duplicated_bwa_alignment_summary['_tmp_tumor']
+
+        # TODO: scan through and populate the flags
+
+        donor['duplicated_bwa_alignment_summary'] = duplicated_bwa_alignment_summary
+
+
+def is_used_in_sanger_variant_call(donor, gnos_id):
+    if donor.get('variant_calling_results') and donor.get('variant_calling_results').get('sanger_variant_calling'):
+        for input_gnos_entry in donor.get('variant_calling_results').get('sanger_variant_calling') \
+                .get('workflow_details').get('variant_pipeline_input_info'):
+            if gnos_id == input_gnos_entry.get('attributes').get('analysis_id'): return True
+
+    return False
+
+
+def is_train2_bam(donor, train2_freeze_bams, gnos_id, specimen_type):
+    if donor.get('donor_unique_id') and train2_freeze_bams.get(donor.get('donor_unique_id')) \
+            and train2_freeze_bams.get(donor.get('donor_unique_id')).get(gnos_id):
+        if not specimen_type == train2_freeze_bams.get(donor.get('donor_unique_id')).get(gnos_id).get('specimen_type'):
+            logger.warning('This should never happen: specimen type mismatch in train2 list in donor {}'
+                    .format(donor.get('donor_unique_id')))
+        return True
+    return False
 
 
 def add_vcf_entry(donor, vcf_entry):
