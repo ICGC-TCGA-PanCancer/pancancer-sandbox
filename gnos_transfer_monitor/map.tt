@@ -42,20 +42,10 @@
 </script>
 <center>
 
-                 <div id="headere">
-                         <h1 style="float:left;margin-left:10px;font-size:25px;">PANCANCER.INFO</h1>
-                         <div id="inside">
-                 <ul class="tab-links">
- 					<!-- <li><a href="data_freeze">Data Freeze</a></li> -->
-					<li><a href="uploads.html">Uploads</a></li>
-					<li><a href="index.html">Alignments</a></li>
-					<li><a href="qc">QC Metrics</a></li> 
-					<!-- <li><a href="trajectory">Trajectory</a></li> -->
-					<li><a href="transfers.html">Transfers</a></li> 
-		</ul>
-                 </div>
-                 </div>
-
+  <div id="pancancer-header"></div>
+  <script type="text/javascript">
+    $("#pancancer-header").load("header.html");
+  </script>
 
 
   <h2>GNOS Transfer Speeds</h2>
@@ -254,7 +244,7 @@
 
 
 <p>
-<table name ="x1" id="rounded-corner" summary="">
+<br><table name ="x1" id="rounded-corner" summary="">
 <thead>
 <tr>
 <th>Site</th>
