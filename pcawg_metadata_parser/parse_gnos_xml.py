@@ -715,7 +715,7 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
         else:
             aliquots[bam_file.get('aliquot_id')] = [bam_file]
 
-    if duplicated_bwa:
+    if True or duplicated_bwa:  # Let's do this for all donors
         for aliquot in aliquots:
           for bam_file in aliquots.get(aliquot):
             if 'normal' in bam_file.get('dcc_specimen_type').lower():
@@ -782,23 +782,6 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
 
         del duplicated_bwa_alignment_summary['_tmp_tumor']
 
-        # TODO: scan through and populate the flags
-        """
-        'exists_md5sum_mismatch': False,
-        'exists_version_mismatch': False,
-        #'exists_md5sum_mismatch_in_normal': False,
-        #'exists_version_mismatch_in_normal': False,
-        'exists_md5sum_mismatch_in_tumor': False,
-        'exists_version_mismatch_in_tumor': False,
-        'exists_md5sum_mismatch_between_train2_marked_and_sanger_used': False,
-        'exists_version_mismatch_between_train2_marked_and_sanger_used': False,
-        'is_train2_freeze_bam_missing': False,
-        #'is_train2_freeze_normal_bam_missing': False,
-        'is_train2_freeze_tumor_bam_missing': False,
-        'is_bam_used_by_sanger_missing': False,
-        #'is_normal_bam_used_by_sanger_missing': False,
-        'is_tumor_bam_used_by_sanger_missing': False,
-        """
         # scan normal BAMs
         if duplicated_bwa_alignment_summary.get('normal'):
             b_md5sum = None
