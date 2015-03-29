@@ -776,6 +776,153 @@
                }
             }
          },
+         "duplicated_bwa_alignment_summary" : {
+           "properties" : {
+             "exists_md5sum_mismatch" : {
+               "type" : "boolean"
+             },
+             "exists_md5sum_mismatch_between_train2_marked_and_sanger_used" : {
+               "type" : "boolean"
+             },
+             "exists_md5sum_mismatch_in_normal" : {
+               "type" : "boolean"
+             },
+             "exists_md5sum_mismatch_in_tumor" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch_between_train2_marked_and_sanger_used" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch_in_normal" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch_in_tumor" : {
+               "type" : "boolean"
+             },
+             "is_bam_used_by_sanger_missing" : {
+               "type" : "boolean"
+             },
+             "is_normal_bam_used_by_sanger_missing" : {
+               "type" : "boolean"
+             },
+             "is_train2_freeze_bam_missing" : {
+               "type" : "boolean"
+             },
+             "is_train2_freeze_normal_bam_missing" : {
+               "type" : "boolean"
+             },
+             "is_train2_freeze_tumor_bam_missing" : {
+               "type" : "boolean"
+             },
+             "is_tumor_bam_used_by_sanger_missing" : {
+               "type" : "boolean"
+             },
+             "normal" : {
+               "properties" : {
+                 "aligned_bam" : {
+                   "properties" : {
+                     "bwa_workflow_version" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_id" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_repo" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "is_train2_bam" : {
+                       "type" : "boolean"
+                     },
+                     "is_used_in_sanger_variant_call" : {
+                       "type" : "boolean"
+                     },
+                     "last_modified" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "md5sum" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "published_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "upload_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     }
+                   }
+                 },
+                 "aliquot_id" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 },
+                 "dcc_specimen_type" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 }
+               }
+             },
+             "tumor" : {
+               "type":"nested",
+               "properties" : {
+                 "aligned_bam" : {
+                   "properties" : {
+                     "bwa_workflow_version" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_id" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_repo" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "is_train2_bam" : {
+                       "type" : "boolean"
+                     },
+                     "is_used_in_sanger_variant_call" : {
+                       "type" : "boolean"
+                     },
+                     "last_modified" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "md5sum" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "published_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "upload_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     }
+                   }
+                 },
+                 "aliquot_id" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 },
+                 "dcc_specimen_type" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 }
+               }
+             }
+           }
+         },
          "gnos_repos_with_alignment_result":{
             "type":"string",
             "index":"not_analyzed"
