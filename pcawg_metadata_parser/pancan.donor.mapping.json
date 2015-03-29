@@ -1,1265 +1,1483 @@
 {
-      "donor" : {
-        "dynamic" : "true",
-        "dynamic_templates" : [ {
-          "template_1" : {
-            "mapping" : {
-              "index" : "not_analyzed"
-            },
-            "match" : "*",
-            "match_mapping_type" : "string"
-          }
-        } ],
-        "_all" : {
-          "enabled" : true
-        },
-        "_source" : {
-          "compress" : true,
-          "excludes" : [ "__comment__" ]
-        },
-        "properties" : {
-          "aligned_tumor_specimen_aliquots" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "aligned_tumor_specimens" : {
-            "properties" : {
-              "alignment" : {
-                "properties" : {
-                  "data_train" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "input_bam_summary" : {
-                    "type" : "object"
-                  },
-                  "markduplicates_metrics" : {
-                    "properties" : {
-                      "library" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      },
-                      "metrics" : {
-                        "properties" : {
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "percent_duplication" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pair_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pair_optical_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pairs_examined" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unmapped_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unpaired_read_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unpaired_reads_examined" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "pipeline_input_info" : {
-                    "properties" : {
-                      "input_info" : {
-                        "properties" : {
-                          "analysis_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "analyzed_sample" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "bam_file" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "donor_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform_unit" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "specimen_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "target_sample_refname" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
-                        }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "qc_metrics" : {
-                    "properties" : {
-                      "metrics" : {
-                        "properties" : {
-                          "#_divergent_bases" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_divergent_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_divergent_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_duplicate_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_gc_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_gc_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_properly_paired" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "bam_filename" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "insert_size_sd" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "mean_insert_size" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "median_insert_size" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform_unit" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_length_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_length_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "readgroup" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "sample" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
-                        }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "timing_metrics" : {
-                    "properties" : {
-                      "metrics" : {
-                        "properties" : {
-                          "bwa_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "download_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "merge_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "qc_timing_seconds" : {
-                            "type" : "long"
-                          }
-                        }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "workflow_bundle_url" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_source_url" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_version" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              },
-              "aliquot_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_file_name" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_file_size" : {
-                "type" : "long"
-              },
-              "bam_gnos_ao_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "dcc_specimen_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_metadata_url" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_repo" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "is_aligned" : {
-                "type" : "boolean"
-              },
-              "last_modified" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "md5sum" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "published_date" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "refassem_short_name" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_sample_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_specimen_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "total_lanes" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "upload_date" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "use_cntl" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              }
+   "donor":{
+      "dynamic":"false",
+      "dynamic_templates":[
+         {
+            "template_1":{
+               "mapping":{
+                  "index":"not_analyzed"
+               },
+               "match":"*",
+               "match_mapping_type":"string"
             }
-          },
-          "all_tumor_specimen_aliquots" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "bam_files" : {
-            "properties" : {
-              "alignment" : {
-                "properties" : {
-                  "data_train" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "input_bam_summary" : {
-                    "type" : "object"
-                  },
-                  "markduplicates_metrics" : {
-                    "properties" : {
-                      "library" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      },
-                      "metrics" : {
-                        "properties" : {
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "percent_duplication" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pair_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pair_optical_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pairs_examined" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unmapped_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unpaired_read_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unpaired_reads_examined" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
+         }
+      ],
+      "_all":{
+         "enabled":false
+      },
+      "_source":{
+         "compress":true,
+         "excludes":[
+            "__comment__",
+            "variant_calling_results.sanger_variant_calling.workflow_details.variant_timing_metrics"
+         ]
+      },
+      "properties":{
+         "aligned_tumor_specimen_aliquots":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "aligned_tumor_specimens":{
+            "properties":{
+               "alignment":{
+                  "properties":{
+                     "data_train":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "input_bam_summary":{
+                        "type":"object"
+                     },
+                     "markduplicates_metrics":{
+                        "properties":{
+                           "library":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           },
+                           "metrics":{
+                              "properties":{
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "percent_duplication":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pair_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pair_optical_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pairs_examined":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unmapped_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unpaired_read_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unpaired_reads_examined":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           }
                         }
-                      }
-                    }
-                  },
-                  "pipeline_input_info" : {
-                    "properties" : {
-                      "input_info" : {
-                        "properties" : {
-                          "analysis_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "analyzed_sample" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "bam_file" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "donor_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform_unit" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "specimen_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "target_sample_refname" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
+                     },
+                     "pipeline_input_info":{
+                        "properties":{
+                           "input_info":{
+                              "properties":{
+                                 "analysis_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "analyzed_sample":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "bam_file":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "donor_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform_unit":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "specimen_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "target_sample_refname":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
                         }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "qc_metrics" : {
-                    "properties" : {
-                      "metrics" : {
-                        "properties" : {
-                          "#_divergent_bases" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_divergent_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_divergent_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_duplicate_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_gc_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_gc_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_properly_paired" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "bam_filename" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "insert_size_sd" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "mean_insert_size" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "median_insert_size" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform_unit" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_length_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_length_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "readgroup" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "sample" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
+                     },
+                     "qc_metrics":{
+                        "properties":{
+                           "metrics":{
+                              "properties":{
+                                 "#_divergent_bases":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_divergent_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_divergent_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_duplicate_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_gc_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_gc_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_properly_paired":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "bam_filename":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "insert_size_sd":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "mean_insert_size":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "median_insert_size":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform_unit":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_length_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_length_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "readgroup":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "sample":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
                         }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "timing_metrics" : {
-                    "properties" : {
-                      "metrics" : {
-                        "properties" : {
-                          "bwa_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "download_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "merge_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "qc_timing_seconds" : {
-                            "type" : "long"
-                          }
+                     },
+                     "timing_metrics":{
+                        "properties":{
+                           "metrics":{
+                              "properties":{
+                                 "bwa_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "download_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "merge_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "qc_timing_seconds":{
+                                    "type":"long"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
                         }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "workflow_bundle_url" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_source_url" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_version" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
+                     },
+                     "workflow_bundle_url":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_source_url":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_version":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
                   }
-                }
-              },
-              "aliquot_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_file_name" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_file_size" : {
-                "type" : "long"
-              },
-              "bam_gnos_ao_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "dcc_project_code" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "dcc_specimen_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "donor_unique_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_metadata_url" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_repo" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_study" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "is_aligned" : {
-                "type" : "boolean"
-              },
-              "last_modified" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "md5sum" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "published_date" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "refassem_short_name" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "sequencing_center" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_donor_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_sample_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_specimen_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "total_lanes" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "upload_date" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "use_cntl" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              }
+               },
+               "aliquot_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_file_name":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_file_size":{
+                  "type":"long"
+               },
+               "bam_gnos_ao_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "dcc_specimen_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_metadata_url":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_repo":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "is_aligned":{
+                  "type":"boolean"
+               },
+               "last_modified":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "md5sum":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "published_date":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "refassem_short_name":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_sample_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_specimen_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "total_lanes":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "upload_date":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "use_cntl":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               }
             }
-          },
-          "dcc_project_code" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "donor_unique_id" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "flags" : {
-            "properties" : {
-              "aligned_tumor_specimen_aliquot_counts" : {
-                "type" : "long"
-              },
-              "all_tumor_specimen_aliquot_counts" : {
-                "type" : "long"
-              },
-              "are_all_tumor_specimens_aligned" : {
-                "type" : "boolean"
-              },
-              "has_aligned_tumor_specimen" : {
-                "type" : "boolean"
-              },
-              "is_cell_line" : {
-                "type" : "boolean"
-              },
-              "is_donor_blacklisted" : {
-                "type" : "boolean"
-              },
-              "is_manual_qc_failed" : {
-                "type" : "boolean"
-              },
-              "is_normal_specimen_aligned" : {
-                "type" : "boolean"
-              },
-              "is_sanger_variant_calling_performed" : {
-                "type" : "boolean"
-              },
-              "is_test" : {
-                "type" : "boolean"
-              },
-              "is_train2_donor" : {
-                "type" : "boolean"
-              },
-              "is_train2_pilot" : {
-                "type" : "boolean"
-              }
-            }
-          },
-          "gnos_repos_with_alignment_result" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "gnos_repos_with_complete_alignment_set" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "gnos_study" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "normal_alignment_status" : {
-            "properties" : {
-              "aligned" : {
-                "type" : "boolean"
-              },
-              "aligned_bam" : {
-                "properties" : {
-                  "bam_file_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_id" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_repo" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              },
-              "aliquot_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_with_unmappable_reads" : {
-                "properties" : {
-                  "bam_file_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_id" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_repo" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              },
-              "dcc_specimen_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_sample_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_specimen_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "unaligned_bams" : {
-                "properties" : {
-                  "bam_file_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_id" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_repo" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              }
-            }
-          },
-          "normal_specimen" : {
-            "properties" : {
-              "alignment" : {
-                "properties" : {
-                  "data_train" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "input_bam_summary" : {
-                    "type" : "object"
-                  },
-                  "markduplicates_metrics" : {
-                    "properties" : {
-                      "library" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      },
-                      "metrics" : {
-                        "properties" : {
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "percent_duplication" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pair_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pair_optical_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_pairs_examined" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unmapped_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unpaired_read_duplicates" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "unpaired_reads_examined" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
+         },
+         "all_tumor_specimen_aliquots":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "bam_files":{
+            "properties":{
+               "alignment":{
+                  "properties":{
+                     "data_train":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "input_bam_summary":{
+                        "type":"object"
+                     },
+                     "markduplicates_metrics":{
+                        "properties":{
+                           "library":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           },
+                           "metrics":{
+                              "properties":{
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "percent_duplication":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pair_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pair_optical_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pairs_examined":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unmapped_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unpaired_read_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unpaired_reads_examined":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           }
                         }
-                      }
-                    }
-                  },
-                  "pipeline_input_info" : {
-                    "properties" : {
-                      "input_info" : {
-                        "properties" : {
-                          "analysis_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "analyzed_sample" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "bam_file" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "donor_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform_unit" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "specimen_id" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "target_sample_refname" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
+                     },
+                     "pipeline_input_info":{
+                        "properties":{
+                           "input_info":{
+                              "properties":{
+                                 "analysis_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "analyzed_sample":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "bam_file":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "donor_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform_unit":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "specimen_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "target_sample_refname":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
                         }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "qc_metrics" : {
-                    "properties" : {
-                      "metrics" : {
-                        "properties" : {
-                          "#_divergent_bases" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_divergent_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_divergent_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_duplicate_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_gc_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_gc_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_bases_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_properly_paired" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_mapped_reads_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "#_total_reads_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "bam_filename" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "insert_size_sd" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "library" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "mean_insert_size" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "median_insert_size" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "platform_unit" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_length_r1" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "read_length_r2" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "readgroup" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          },
-                          "sample" : {
-                            "type" : "string",
-                            "index" : "not_analyzed"
-                          }
+                     },
+                     "qc_metrics":{
+                        "properties":{
+                           "metrics":{
+                              "properties":{
+                                 "#_divergent_bases":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_divergent_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_divergent_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_duplicate_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_gc_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_gc_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_properly_paired":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "bam_filename":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "insert_size_sd":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "mean_insert_size":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "median_insert_size":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform_unit":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_length_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_length_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "readgroup":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "sample":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
                         }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "timing_metrics" : {
-                    "properties" : {
-                      "metrics" : {
-                        "properties" : {
-                          "bwa_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "download_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "merge_timing_seconds" : {
-                            "type" : "long"
-                          },
-                          "qc_timing_seconds" : {
-                            "type" : "long"
-                          }
+                     },
+                     "timing_metrics":{
+                        "properties":{
+                           "metrics":{
+                              "properties":{
+                                 "bwa_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "download_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "merge_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "qc_timing_seconds":{
+                                    "type":"long"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
                         }
-                      },
-                      "read_group_id" : {
-                        "type" : "string",
-                        "index" : "not_analyzed"
-                      }
-                    }
-                  },
-                  "workflow_bundle_url" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_source_url" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "workflow_version" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
+                     },
+                     "workflow_bundle_url":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_source_url":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_version":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
                   }
-                }
-              },
-              "aliquot_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_file_name" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_file_size" : {
-                "type" : "long"
-              },
-              "bam_gnos_ao_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "dcc_specimen_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_metadata_url" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "gnos_repo" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "is_aligned" : {
-                "type" : "boolean"
-              },
-              "last_modified" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "md5sum" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "published_date" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "refassem_short_name" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_sample_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_specimen_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "total_lanes" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "upload_date" : {
-                "type" : "date",
-                "format" : "dateOptionalTime"
-              },
-              "use_cntl" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              }
+               },
+               "aliquot_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_file_name":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_file_size":{
+                  "type":"long"
+               },
+               "bam_gnos_ao_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "dcc_project_code":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "dcc_specimen_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "donor_unique_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_metadata_url":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_repo":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_study":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "is_aligned":{
+                  "type":"boolean"
+               },
+               "last_modified":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "md5sum":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "published_date":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "refassem_short_name":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "sequencing_center":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_donor_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_sample_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_specimen_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "total_lanes":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "upload_date":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "use_cntl":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               }
             }
-          },
-          "original_gnos_assignment" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "sequencing_center" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "submitter_donor_id" : {
-            "type" : "string",
-            "index" : "not_analyzed"
-          },
-          "tumor_alignment_status" : {
-            "type": "nested",
-            "properties" : {
-              "aligned" : {
-                "type" : "boolean"
-              },
-              "aligned_bam" : {
-                "properties" : {
-                  "bam_file_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_id" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_repo" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              },
-              "aliquot_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "bam_with_unmappable_reads" : {
-                "properties" : {
-                  "bam_file_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_id" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_repo" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              },
-              "dcc_specimen_type" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_sample_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "submitter_specimen_id" : {
-                "type" : "string",
-                "index" : "not_analyzed"
-              },
-              "unaligned_bams" : {
-                "properties" : {
-                  "bam_file_name" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_id" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  },
-                  "gnos_repo" : {
-                    "type" : "string",
-                    "index" : "not_analyzed"
-                  }
-                }
-              }
+         },
+         "dcc_project_code":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "donor_unique_id":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "flags":{
+            "properties":{
+               "aligned_tumor_specimen_aliquot_counts":{
+                  "type":"long"
+               },
+               "all_tumor_specimen_aliquot_counts":{
+                  "type":"long"
+               },
+               "are_all_tumor_specimens_aligned":{
+                  "type":"boolean"
+               },
+               "has_aligned_tumor_specimen":{
+                  "type":"boolean"
+               },
+               "is_cell_line":{
+                  "type":"boolean"
+               },
+               "is_donor_blacklisted":{
+                  "type":"boolean"
+               },
+               "is_manual_qc_failed":{
+                  "type":"boolean"
+               },
+               "is_normal_specimen_aligned":{
+                  "type":"boolean"
+               },
+               "is_sanger_variant_calling_performed":{
+                  "type":"boolean"
+               },
+               "is_sanger_vcf_in_jamboree":{
+                  "type":"boolean"
+               },
+               "is_test":{
+                  "type":"boolean"
+               },
+               "is_train2_donor":{
+                  "type":"boolean"
+               },
+               "is_train2_pilot":{
+                  "type":"boolean"
+               },
+               "variant_calling_performed":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "vcf_in_jamboree":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               }
             }
-          }
-        }
+         },
+         "duplicated_bwa_alignment_summary" : {
+           "properties" : {
+             "exists_md5sum_mismatch" : {
+               "type" : "boolean"
+             },
+             "exists_md5sum_mismatch_between_train2_marked_and_sanger_used" : {
+               "type" : "boolean"
+             },
+             "exists_md5sum_mismatch_in_normal" : {
+               "type" : "boolean"
+             },
+             "exists_md5sum_mismatch_in_tumor" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch_between_train2_marked_and_sanger_used" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch_in_normal" : {
+               "type" : "boolean"
+             },
+             "exists_version_mismatch_in_tumor" : {
+               "type" : "boolean"
+             },
+             "is_bam_used_by_sanger_missing" : {
+               "type" : "boolean"
+             },
+             "is_normal_bam_used_by_sanger_missing" : {
+               "type" : "boolean"
+             },
+             "is_train2_freeze_bam_missing" : {
+               "type" : "boolean"
+             },
+             "is_train2_freeze_normal_bam_missing" : {
+               "type" : "boolean"
+             },
+             "is_train2_freeze_tumor_bam_missing" : {
+               "type" : "boolean"
+             },
+             "is_tumor_bam_used_by_sanger_missing" : {
+               "type" : "boolean"
+             },
+             "normal" : {
+               "properties" : {
+                 "aligned_bam" : {
+                   "properties" : {
+                     "bwa_workflow_version" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_id" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_repo" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "is_train2_bam" : {
+                       "type" : "boolean"
+                     },
+                     "is_used_in_sanger_variant_call" : {
+                       "type" : "boolean"
+                     },
+                     "last_modified" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "md5sum" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "published_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "upload_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     }
+                   }
+                 },
+                 "aliquot_id" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 },
+                 "dcc_specimen_type" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 }
+               }
+             },
+             "tumor" : {
+               "type":"nested",
+               "properties" : {
+                 "aligned_bam" : {
+                   "properties" : {
+                     "bwa_workflow_version" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_id" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "gnos_repo" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "is_train2_bam" : {
+                       "type" : "boolean"
+                     },
+                     "is_used_in_sanger_variant_call" : {
+                       "type" : "boolean"
+                     },
+                     "last_modified" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "md5sum" : {
+                       "type" : "string",
+                       "index" : "not_analyzed"
+                     },
+                     "published_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     },
+                     "upload_date" : {
+                       "type" : "date",
+                       "format" : "dateOptionalTime"
+                     }
+                   }
+                 },
+                 "aliquot_id" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 },
+                 "dcc_specimen_type" : {
+                   "type" : "string",
+                   "index" : "not_analyzed"
+                 }
+               }
+             }
+           }
+         },
+         "gnos_repos_with_alignment_result":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "gnos_repos_with_complete_alignment_set":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "gnos_study":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "normal_alignment_status":{
+            "properties":{
+               "aligned":{
+                  "type":"boolean"
+               },
+               "aligned_bam":{
+                  "properties":{
+                     "bam_file_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "bam_file_size":{
+                        "type":"long"
+                     },
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_last_modified":{
+                        "type":"date",
+                        "format":"dateOptionalTime"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               },
+               "aliquot_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_with_unmappable_reads":{
+                  "properties":{
+                     "bam_file_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "bam_file_size":{
+                        "type":"long"
+                     },
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               },
+               "dcc_specimen_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_sample_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_specimen_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "unaligned_bams":{
+                  "properties":{
+                     "bam_file_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               }
+            }
+         },
+         "normal_specimen":{
+            "properties":{
+               "alignment":{
+                  "properties":{
+                     "data_train":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "input_bam_summary":{
+                        "type":"object"
+                     },
+                     "markduplicates_metrics":{
+                        "properties":{
+                           "library":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           },
+                           "metrics":{
+                              "properties":{
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "percent_duplication":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pair_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pair_optical_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_pairs_examined":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unmapped_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unpaired_read_duplicates":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "unpaired_reads_examined":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "pipeline_input_info":{
+                        "properties":{
+                           "input_info":{
+                              "properties":{
+                                 "analysis_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "analyzed_sample":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "bam_file":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "donor_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform_unit":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "specimen_id":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "target_sample_refname":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
+                        }
+                     },
+                     "qc_metrics":{
+                        "properties":{
+                           "metrics":{
+                              "properties":{
+                                 "#_divergent_bases":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_divergent_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_divergent_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_duplicate_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_gc_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_gc_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_bases_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_properly_paired":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_mapped_reads_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "#_total_reads_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "bam_filename":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "insert_size_sd":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "library":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "mean_insert_size":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "median_insert_size":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "platform_unit":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_length_r1":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "read_length_r2":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "readgroup":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 },
+                                 "sample":{
+                                    "type":"string",
+                                    "index":"not_analyzed"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
+                        }
+                     },
+                     "timing_metrics":{
+                        "properties":{
+                           "metrics":{
+                              "properties":{
+                                 "bwa_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "download_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "merge_timing_seconds":{
+                                    "type":"long"
+                                 },
+                                 "qc_timing_seconds":{
+                                    "type":"long"
+                                 }
+                              }
+                           },
+                           "read_group_id":{
+                              "type":"string",
+                              "index":"not_analyzed"
+                           }
+                        }
+                     },
+                     "workflow_bundle_url":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_source_url":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_version":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               },
+               "aliquot_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_file_name":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_file_size":{
+                  "type":"long"
+               },
+               "bam_gnos_ao_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "dcc_specimen_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_metadata_url":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "gnos_repo":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "is_aligned":{
+                  "type":"boolean"
+               },
+               "last_modified":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "md5sum":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "published_date":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "refassem_short_name":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_sample_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_specimen_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "total_lanes":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "upload_date":{
+                  "type":"date",
+                  "format":"dateOptionalTime"
+               },
+               "use_cntl":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               }
+            }
+         },
+         "original_gnos_assignment":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "sequencing_center":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "submitter_donor_id":{
+            "type":"string",
+            "index":"not_analyzed"
+         },
+         "tumor_alignment_status":{
+            "type":"nested",
+            "properties":{
+               "aligned":{
+                  "type":"boolean"
+               },
+               "aligned_bam":{
+                  "properties":{
+                     "bam_file_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "bam_file_size":{
+                        "type":"long"
+                     },
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_last_modified":{
+                        "type":"date",
+                        "format":"dateOptionalTime"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               },
+               "aliquot_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "bam_with_unmappable_reads":{
+                  "properties":{
+                     "bam_file_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "bam_file_size":{
+                        "type":"long"
+                     },
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               },
+               "dcc_specimen_type":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_sample_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "submitter_specimen_id":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "unaligned_bams":{
+                  "properties":{
+                     "bam_file_name":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     }
+                  }
+               }
+            }
+         },
+         "variant_calling_results":{
+            "properties":{
+               "sanger_variant_calling":{
+                  "properties":{
+                     "gnos_id":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "gnos_last_modified":{
+                        "type":"date",
+                        "format":"dateOptionalTime"
+                     },
+                     "gnos_repo":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "is_output_and_tumour_specimen_counts_mismatch":{
+                        "type":"boolean"
+                     },
+                     "study":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "variant_calling_performed_at":{
+                        "type":"string",
+                        "index":"not_analyzed"
+                     },
+                     "workflow_details":{
+                        "type":"object",
+                        "index":"no"
+                     }
+                  }
+               }
+            }
+         }
       }
+   }
 }
