@@ -845,6 +845,53 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
                 if duplicated_bwa_alignment_summary['exists_version_mismatch']:
                     duplicated_bwa_alignment_summary['exists_version_mismatch_between_train2_marked_and_sanger_used'] = True
 
+        # scan tumor BAMs
+        if duplicated_bwa_alignment_summary.get('tumor'):
+            for aliquot in duplicated_bwa_alignment_summary.get('tumor'):
+                b_md5sum = None
+                b_version = None
+                has_train2_t_bam = False
+                has_sanger_t_bam = False
+                count_is_train2_not_sanger = 0
+                count_not_train2_is_sanger = 0
+                count_is_train2_is_sanger = 0
+                for bam in aliquot.get('aligned_bam'):
+                    is_train2_t_bam = bam.get('is_train2_bam')
+                    if is_train2_t_bam: has_train2_t_bam = True
+                    is_sanger_t_bam = bam.get('is_used_in_sanger_variant_call')
+                    if is_sanger_t_bam: has_sanger_t_bam = True
+
+                    if is_train2_t_bam and not is_sanger_t_bam: count_is_train2_not_sanger += 1
+                    if not is_train2_t_bam and is_sanger_t_bam: count_not_train2_is_sanger += 1
+                    if is_train2_t_bam and is_sanger_t_bam: count_is_train2_is_sanger += 1
+
+                    if not b_md5sum: b_md5sum = bam.get('md5sum')
+                    if b_md5sum and not b_md5sum == bam.get('md5sum'):
+                        duplicated_bwa_alignment_summary['exists_md5sum_mismatch'] = True
+                        duplicated_bwa_alignment_summary['exists_md5sum_mismatch_in_tumor'] = True
+
+                    if not b_version: b_version = bam.get('bwa_workflow_version')
+                    if b_version and not b_version == bam.get('bwa_workflow_version'):
+                        duplicated_bwa_alignment_summary['exists_version_mismatch'] = True
+                        duplicated_bwa_alignment_summary['exists_version_mismatch_in_tumor'] = True
+
+                if donor.get('flags').get('is_train2_donor') and not has_train2_t_bam:
+                    duplicated_bwa_alignment_summary['is_train2_freeze_bam_missing'] = True
+                    duplicated_bwa_alignment_summary['is_train2_freeze_tumor_bam_missing'] = True
+
+                if donor.get('flags').get('is_sanger_variant_calling_performed') and not has_sanger_t_bam:
+                    duplicated_bwa_alignment_summary['is_bam_used_by_sanger_missing'] = True
+                    duplicated_bwa_alignment_summary['is_tumor_bam_used_by_sanger_missing'] = True
+
+                if donor.get('flags').get('is_train2_donor') and \
+                        donor.get('flags').get('is_sanger_variant_calling_performed') and \
+                        not count_is_train2_is_sanger and \
+                        count_is_train2_not_sanger and count_not_train2_is_sanger:
+                    if duplicated_bwa_alignment_summary['exists_md5sum_mismatch']:
+                        duplicated_bwa_alignment_summary['exists_md5sum_mismatch_between_train2_marked_and_sanger_used'] = True
+                    if duplicated_bwa_alignment_summary['exists_version_mismatch']:
+                        duplicated_bwa_alignment_summary['exists_version_mismatch_between_train2_marked_and_sanger_used'] = True
+
         donor['duplicated_bwa_alignment_summary'] = duplicated_bwa_alignment_summary
 
 
