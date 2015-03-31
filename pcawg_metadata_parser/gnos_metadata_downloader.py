@@ -148,7 +148,7 @@ def sync_metadata_xml(gnos_repo, output_dir, manifest_file):
 def process_gnos_repo(gnos_repo, output_dir, mani_output_dir):
     logger.info('processing GNOS repo: {}'.format(gnos_repo.get('repo_code')))
 
-    manifest_file = False if gnos_repo.get('repo_code') == 'osdc-tcga' else download_manifest(gnos_repo, mani_output_dir, False)  # only set last param to True for testing
+    manifest_file = download_manifest(gnos_repo, mani_output_dir, False)  # only set last param to True for testing
     if not manifest_file:
         manifest_file = use_previous_manifest(gnos_repo, output_dir, mani_output_dir)
 
