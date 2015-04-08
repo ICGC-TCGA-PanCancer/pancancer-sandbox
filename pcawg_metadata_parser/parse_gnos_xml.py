@@ -685,6 +685,9 @@ def process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams):
 
 def check_bwa_duplicates(donor, train2_freeze_bams):
     duplicated_bwa_alignment_summary = {
+        'exists_mismatch_bwa_bams': False,
+        'exists_mismatch_bwa_bams_in_normal': False,
+        'exists_mismatch_bwa_bams_in_tumor': False,
         'exists_md5sum_mismatch': False,
         'exists_version_mismatch': False,
         'exists_md5sum_mismatch_in_normal': False,
@@ -784,6 +787,7 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
 
         # scan normal BAMs
         if duplicated_bwa_alignment_summary.get('normal'):
+            b_gnos_id = None
             b_md5sum = None
             b_version = None
             has_train2_n_bam = False
@@ -800,6 +804,11 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
                 if is_train2_n_bam and not is_sanger_n_bam: count_is_train2_not_sanger += 1
                 if not is_train2_n_bam and is_sanger_n_bam: count_not_train2_is_sanger += 1
                 if is_train2_n_bam and is_sanger_n_bam: count_is_train2_is_sanger += 1
+
+                if not b_gnos_id: b_gnos_id = bam.get('gnos_id')
+                if b_md5sum and not b_md5sum == bam.get('gnos_id'):
+                    duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams'] = True
+                    duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams_in_normal'] = True
 
                 if not b_md5sum: b_md5sum = bam.get('md5sum')
                 if b_md5sum and not b_md5sum == bam.get('md5sum'):
@@ -831,6 +840,7 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
         # scan tumor BAMs
         if duplicated_bwa_alignment_summary.get('tumor'):
             for aliquot in duplicated_bwa_alignment_summary.get('tumor'):
+                b_gnos_id = None
                 b_md5sum = None
                 b_version = None
                 has_train2_t_bam = False
@@ -847,6 +857,11 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
                     if is_train2_t_bam and not is_sanger_t_bam: count_is_train2_not_sanger += 1
                     if not is_train2_t_bam and is_sanger_t_bam: count_not_train2_is_sanger += 1
                     if is_train2_t_bam and is_sanger_t_bam: count_is_train2_is_sanger += 1
+
+                    if not b_gnos_id: b_gnos_id = bam.get('gnos_id')
+                    if b_md5sum and not b_md5sum == bam.get('gnos_id'):
+                        duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams'] = True
+                        duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams_in_tumor'] = True
 
                     if not b_md5sum: b_md5sum = bam.get('md5sum')
                     if b_md5sum and not b_md5sum == bam.get('md5sum'):
