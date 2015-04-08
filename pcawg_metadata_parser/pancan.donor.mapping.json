@@ -778,6 +778,15 @@
          },
          "duplicated_bwa_alignment_summary" : {
            "properties" : {
+             "exists_mismatch_bwa_bams" : {
+               "type" : "boolean"
+             },
+             "exists_mismatch_bwa_bams_in_normal" : {
+               "type" : "boolean"
+             },
+             "exists_mismatch_bwa_bams_in_tumor" : {
+               "type" : "boolean"
+             },
              "exists_md5sum_mismatch" : {
                "type" : "boolean"
              },

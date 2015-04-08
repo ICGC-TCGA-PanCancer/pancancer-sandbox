@@ -806,7 +806,7 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
                 if is_train2_n_bam and is_sanger_n_bam: count_is_train2_is_sanger += 1
 
                 if not b_gnos_id: b_gnos_id = bam.get('gnos_id')
-                if b_md5sum and not b_md5sum == bam.get('gnos_id'):
+                if b_gnos_id and not b_gnos_id == bam.get('gnos_id'):
                     duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams'] = True
                     duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams_in_normal'] = True
 
@@ -859,7 +859,7 @@ def check_bwa_duplicates(donor, train2_freeze_bams):
                     if is_train2_t_bam and is_sanger_t_bam: count_is_train2_is_sanger += 1
 
                     if not b_gnos_id: b_gnos_id = bam.get('gnos_id')
-                    if b_md5sum and not b_md5sum == bam.get('gnos_id'):
+                    if b_gnos_id and not b_gnos_id == bam.get('gnos_id'):
                         duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams'] = True
                         duplicated_bwa_alignment_summary['exists_mismatch_bwa_bams_in_tumor'] = True
 
