@@ -542,6 +542,13 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     donors = {}
     vcf_entries = {}
 
+    # update the pc_annotation-sanger_vcf_in_jamboree files using the jamboree subdirectory files
+    vcf_in_jamboree_dir = '../pcawg-operations/variant_calling/sanger_workflow/jamboree/'
+    
+    infiles = glob.glob(vcf_in_jamboree_dir+'/Sanger_jamboree_batch*.txt')
+    outfile = 'pc_annotation-sanger_vcf_in_jamboree.tsv' # hard-code file name
+    update_vcf_jamboree(infiles, outfile)    
+
     annotations = {}
     read_annotations(annotations, 'gnos_assignment', 'pc_annotation-gnos_assignment.yml')  # hard-code file name for now
     read_annotations(annotations, 'train2_donors', 'pc_annotation-train2_donors.tsv')  # hard-code file name for now
@@ -555,7 +562,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
 
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
-
+    
     for f in get_xml_files( metadata_dir, conf, repo ):
         f = conf.get('output_dir') + '/__all_metadata_xml/' + f
         gnos_analysis = get_gnos_analysis(f)
@@ -579,6 +586,24 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
 
     donor_fh.close()
     bam_fh.close()
+
+
+def update_vcf_jamboree(infilenames, outfilename):
+    seen = set() # just for checking in case there are duplicated lines in jamboree files
+
+    with open(outfilename, 'w') as fout:
+        for f_index in infilenames:
+            with open(f_index,'r') as fin:
+                for line in fin:
+                    if len(line.rstrip()) == 0: continue
+                    if line in seen:
+                        pass
+                    else:
+                        donor_unique_id, gnos_metadata_url, aliquot_id = str.split(line.rstrip(), '\t')
+                        repo, gnos_id = str.split(gnos_metadata_url, 'cghub/metadata/analysisFull/')
+                        fout. write(donor_unique_id+'\t'+gnos_id+'\n')
+                        seen.add(line)
+
 
 
 def read_train2_bams(filename):
@@ -624,7 +649,7 @@ def read_annotations(annotations, type, file_name):
                 if len(line.rstrip()) == 0: continue
                 donor_id, ao_id = str.split(line.rstrip(), '\t')
                 annotations[type][donor_id] = ao_id
-
+                
         elif type in ['train2_donors', 'train2_pilot', 'donor_blacklist', 'manual_qc_failed']:
             annotations[type] = set()
             for line in r:
