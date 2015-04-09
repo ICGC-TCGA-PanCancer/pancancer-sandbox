@@ -53,14 +53,7 @@ curl -XGET "http://pancancer.info/elasticsearch/pcawg_es/donor/_search?pretty=1"
                         },
                         {
                           "terms": {
-                            "flags.is_normal_specimen_aligned": [
-                              "T"
-                            ]
-                          }
-                        },
-                        {
-                          "terms": {
-                            "flags.are_all_tumor_specimens_aligned": [
+                            "duplicated_bwa_alignment_summary.exists_mismatch_bwa_bams": [
                               "T"
                             ]
                           }

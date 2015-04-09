@@ -787,6 +787,15 @@
              "exists_mismatch_bwa_bams_in_tumor" : {
                "type" : "boolean"
              },
+             "exists_gnos_id_mismatch": {
+               "type" : "boolean"
+             },
+             "exists_gnos_id_mismatch_in_normal": {
+               "type" : "boolean"
+             },
+             "exists_gnos_id_mismatch_in_tumor": {
+               "type" : "boolean"
+             },
              "exists_md5sum_mismatch" : {
                "type" : "boolean"
              },
@@ -873,6 +882,18 @@
                    "type" : "string",
                    "index" : "not_analyzed"
                  },
+                 "exists_mismatch_bwa_bams" : {
+                   "type" : "boolean"
+                 },
+                 "exists_gnos_id_mismatch" : {
+                   "type" : "boolean"
+                 },
+                 "exists_md5sum_mismatch" : {
+                   "type" : "boolean"
+                 },
+                 "exists_version_mismatch" : {
+                   "type" : "boolean"
+                 },
                  "dcc_specimen_type" : {
                    "type" : "string",
                    "index" : "not_analyzed"
@@ -923,6 +944,18 @@
                  "aliquot_id" : {
                    "type" : "string",
                    "index" : "not_analyzed"
+                 },
+                 "exists_mismatch_bwa_bams" : {
+                   "type" : "boolean"
+                 },
+                 "exists_gnos_id_mismatch" : {
+                   "type" : "boolean"
+                 },
+                 "exists_md5sum_mismatch" : {
+                   "type" : "boolean"
+                 },
+                 "exists_version_mismatch" : {
+                   "type" : "boolean"
                  },
                  "dcc_specimen_type" : {
                    "type" : "string",
