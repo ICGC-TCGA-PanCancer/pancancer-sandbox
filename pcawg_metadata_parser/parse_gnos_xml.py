@@ -538,7 +538,7 @@ def get_xml_files( metadata_dir, conf, repo ):
     return xml_files
 
 
-def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo):
+def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo, exclude_gnos_id_lists):
     donors = {}
     vcf_entries = {}
 
@@ -560,6 +560,14 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
     # hard-code the file name for now    
     train2_freeze_bams = read_train2_bams('../pcawg-operations/variant_calling/train2-lists/Data_Freeze_Train_2.0_GoogleDocs__2015_03_26_1637.tsv')
 
+    # pre-exclude gnos entries when this option is chosen
+    gnos_ids_to_be_excluded = set()
+    if exclude_gnos_id_lists:
+        files = glob.glob(exclude_gnos_id_lists)
+        for fname in files:
+            with open(fname) as f:
+                for d in f: gnos_ids_to_be_excluded.add(d.rstrip())
+
     donor_fh = open(donor_output_jsonl_file, 'w')
     bam_fh = open(bam_output_jsonl_file, 'w')
     
@@ -569,6 +577,11 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
         #print (json.dumps(gnos_analysis)) # debug
         if gnos_analysis:
             logger.info( 'processing xml file: {} ...'.format(f) )
+            if gnos_analysis.get('analysis_id') and gnos_analysis.get('analysis_id') in gnos_ids_to_be_excluded:
+                logger.warning( 'skipping xml file: {} with analysis_id: {}, as it\'s in the list to be excluded' \
+                    .format(f, gnos_analysis.get('analysis_id')) )
+                continue
+
             process_gnos_analysis( gnos_analysis, donors, vcf_entries, es_index, es, bam_fh, annotations )
         else:
             logger.warning( 'skipping invalid xml file: {}'.format(f) )
@@ -1268,11 +1281,18 @@ def main(argv=None):
              help="Directory containing metadata manifest files", required=False)
     parser.add_argument("-r", "--gnos_repo", dest="repo",
              help="Specify which GNOS repo to process, process all repos if none specified", required=False)
+    parser.add_argument("-x", "--exclude_gnos_id_lists", dest="exclude_gnos_id_lists", # don't use this option for daily cron job
+             help="File(s) containing GNOS IDs to be excluded, use filename pattern to specify the file(s)", required=False)
+    parser.add_argument("-s", "--es_index_suffix", dest="es_index_suffix", # don't use this option for daily cron job
+             help="Single letter suffix for ES index name", required=False)
 
     args = parser.parse_args()
     metadata_dir = args.metadata_dir
     conf_file = args.config
     repo = args.repo
+    exclude_gnos_id_lists = args.exclude_gnos_id_lists
+    es_index_suffix = args.es_index_suffix
+    if not es_index_suffix: es_index_suffix = ''
 
     with open(conf_file) as f:
         conf = yaml.safe_load(f)
@@ -1304,11 +1324,11 @@ def main(argv=None):
     logger.addHandler(ch)
 
     es_host = 'localhost:9200'
-    es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1)
+    es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1) + es_index_suffix
     es = init_es(es_host, es_index)
 
     logger.info('processing metadata list files in {} to build es index {}'.format(metadata_dir, es_index))
-    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl', repo)
+    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl', repo, exclude_gnos_id_lists)
 
     # now update kibana dashboard
     # donor
