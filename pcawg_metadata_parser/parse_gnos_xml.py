@@ -1020,22 +1020,28 @@ def add_vcf_entry(donor, vcf_entry):
             donor.get('variant_calling_results').get('sanger_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = False
 
         # add the flags of is_bam_used_by_sanger_missing, is_normal_bam_used_by_sanger_missing, is_tumor_bam_used_by_sanger_missing
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = True
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = True
+        donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = False
+        donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = False
+        donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = False
+        has_sanger_n_bam = False
+        has_sanger_t_bam = False
 
         # scan all the vcf input  under "variant_pipeline_input_info"
         for vcf_input in donor.get('variant_calling_results').get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_input_info'):
            if vcf_input.get('attributes').get('analysis_id') == donor.get('normal_alignment_status').get('aligned_bam').get('gnos_id'): #check normal alignment
-               donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = False
+               has_sanger_n_bam = True
            else: # check the tumor
                for tumor_alignment in donor.get('tumor_alignment_status'):
                    if vcf_input.get('attributes').get('analysis_id') == tumor_alignment.get('aligned_bam').get('gnos_id'):
-                       donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = False
-           
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = \
-               donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] \
-               or donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing']
+                       has_sanger_t_bam = True
+        
+        if not has_sanger_n_bam:
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = True
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
+
+        if not has_sanger_t_bam:
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = True
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
 
 def add_original_gnos_repo(donor, annotation):
     if donor.get('gnos_repo'):
