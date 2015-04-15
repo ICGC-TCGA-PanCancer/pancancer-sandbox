@@ -16,8 +16,7 @@ es_type = "donor"
 es = Elasticsearch([es_host])
 
 es_queries = [
-  # order of the queries is important
-  # query 0: bwa_bams_in_normal_used_by_sanger 
+  # query 0: bwa_bams_missing_used_by_sanger 
     {
      "fields":["dcc_project_code",
                 "donor_unique_id",
@@ -52,13 +51,6 @@ es_queries = [
                             ]
                           }
                         }
-#                        {
-#                          "terms": {
-#                            "flags.are_all_tumor_specimens_aligned": [
-#                              "T"
-#                            ]
-#                          }
-#                        }
                       ],
                       "must_not": [
                         {
@@ -93,14 +85,7 @@ def init_report_dir(metadata_dir, report_name, repo):
 
 
 def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, repo):
-    # we need to run several queries to get facet counts for different type of donors
-#    report = OrderedDict()
-#    count_types = [
-#        "mismatch_bwa_bams_in_normal",
-#        "mismatch_bwa_bams_in_tumor"
-#    ]
 
-#    for q_index in range(len(count_types)):
     q_index = 0
     report = []
     response = es.search(index=es_index, body=es_queries[q_index])
@@ -111,12 +96,14 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
         summary['donor_unique_id'] = p.get('fields').get('donor_unique_id')[0]
         summary['sanger_vcf_gnos_id'] = p.get('fields').get('variant_calling_results.sanger_variant_calling.gnos_id')[0]
         summary['is_bam_used_by_sanger_missing'] = p.get('fields').get('variant_calling_results.sanger_variant_calling.is_bam_used_by_sanger_missing')[0]
-        # find the index for normal
+        # all the information both in normal and tumor 
         specimen_type = p.get('fields').get('variant_calling_results.sanger_variant_calling.workflow_details.variant_pipeline_input_info.attributes.dcc_specimen_type')
-        index = [item for item in range(len(specimen_type)) if 'normal' in specimen_type[item].lower()]
         aliquot_id = p.get('fields').get('variant_calling_results.sanger_variant_calling.workflow_details.variant_pipeline_input_info.specimen')
         submitter_specimen = p.get('fields').get('variant_calling_results.sanger_variant_calling.workflow_details.variant_pipeline_input_info.attributes.submitter_specimen_id')
         bam_gnos_id = p.get('fields').get('variant_calling_results.sanger_variant_calling.workflow_details.variant_pipeline_input_info.attributes.analysis_id')
+
+        # find the index for normal
+        index = [item for item in range(len(specimen_type)) if 'normal' in specimen_type[item].lower()]
 
         summary['normal_aliquot_id'] = [aliquot_id[i] for i in index] 
         summary['normal_submitter_specimen'] = [submitter_specimen[i] for i in index]
