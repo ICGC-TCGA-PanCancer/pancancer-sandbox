@@ -1523,6 +1523,14 @@
                      },
                      "workflow_details":{
                          "properties":{
+                             "variant_pipeline_output_info":{
+                               "type":"object",
+                               "index":"no"
+                             },
+                             "variant_qc_metrics":{
+                               "type":"object",
+                               "index":"no"
+                             },
                              "variant_pipeline_input_info":{
                                  "properties":{
                                      "specimen":{
