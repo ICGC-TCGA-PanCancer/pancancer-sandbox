@@ -24,7 +24,7 @@ git pull
 
 echo
 echo synchronizing with GNOS repos
-./gnos_metadata_downloader.py -c settings.yml
+./gnos_metadata_downloader.py -c settings.yml -x gnos_ids_to_be_removed.tsv
 
 
 echo
