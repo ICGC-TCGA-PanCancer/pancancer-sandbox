@@ -1019,6 +1019,38 @@ def add_vcf_entry(donor, vcf_entry):
         else:
             donor.get('variant_calling_results').get('sanger_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = False
 
+        # add the flags of is_bam_used_by_sanger_missing, is_normal_bam_used_by_sanger_missing, is_tumor_bam_used_by_sanger_missing
+        donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = False
+        donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = False
+        donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = False
+        has_sanger_n_bam = False
+        vcf_sanger_input_t_bam = set()
+        tumor_alignment_bam = set()
+
+        # scan all the vcf input  under "variant_pipeline_input_info"
+        for vcf_input in donor.get('variant_calling_results').get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_input_info'):
+           if 'normal' in vcf_input.get('attributes').get('dcc_specimen_type').lower():
+               if vcf_input.get('attributes').get('analysis_id') == donor.get('normal_alignment_status').get('aligned_bam').get('gnos_id'): #check normal alignment
+                   has_sanger_n_bam = True
+           elif 'tumour' in vcf_input.get('attributes').get('dcc_specimen_type').lower(): # check the tumor
+               vcf_sanger_input_t_bam.add((vcf_input.get('specimen'), vcf_input.get('attributes').get('analysis_id'))) 
+
+           else:
+               logger.warning('invalid specimen type: {} in donor: {} with aliquot_id: {}'
+                    .format(vcf_input.get('attributes').get('dcc_specimen_type'), donor.get('donor_unique_id'), vcf_input.get('specimen'))
+                )
+
+        # scan all the bams in tumor_alignment_status
+        for tumor_alignment in donor.get('tumor_alignment_status'):
+            tumor_alignment_bam.add((tumor_alignment.get('aliquot_id'), tumor_alignment.get('aligned_bam').get('gnos_id')))
+
+        if not has_sanger_n_bam:
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = True
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
+
+        if vcf_sanger_input_t_bam != tumor_alignment_bam:
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = True
+            donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
 
 def add_original_gnos_repo(donor, annotation):
     if donor.get('gnos_repo'):

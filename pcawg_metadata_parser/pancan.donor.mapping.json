@@ -1504,6 +1504,15 @@
                      "is_output_and_tumour_specimen_counts_mismatch":{
                         "type":"boolean"
                      },
+                     "is_bam_used_by_sanger_missing":{
+                         "type":"boolean"
+                     },
+                     "is_normal_bam_used_by_sanger_missing":{
+                         "type":"boolean"
+                     },
+                     "is_tumor_bam_used_by_sanger_missing":{
+                         "type":"boolean"
+                     },
                      "study":{
                         "type":"string",
                         "index":"not_analyzed"
@@ -1513,8 +1522,68 @@
                         "index":"not_analyzed"
                      },
                      "workflow_details":{
-                        "type":"object",
-                        "index":"no"
+                         "properties":{
+                             "variant_pipeline_output_info":{
+                               "type":"object",
+                               "index":"no"
+                             },
+                             "variant_qc_metrics":{
+                               "type":"object",
+                               "index":"no"
+                             },
+                             "variant_pipeline_input_info":{
+                                 "properties":{
+                                     "specimen":{
+                                         "type":"string",
+                                         "index":"not_analyzed"
+                                     },
+                                     "attributes":{
+                                         "properties":{
+                                             "submitter_specimen_id":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "dcc_specimen_type":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "analysis_id":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "submitter_sample_id":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "center_name":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "use_cntl":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "study_ref":{
+                                                  "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "dcc_project_code":{
+                                                  "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "analysis_url":{
+                                                  "type":"string",
+                                                 "index":"not_analyzed"
+                                             },
+                                             "submitter_donor_id":{
+                                                 "type":"string",
+                                                 "index":"not_analyzed"
+                                             }
+                                         }
+                                     }
+                                 }
+                            }
+                        }
                      }
                   }
                }
