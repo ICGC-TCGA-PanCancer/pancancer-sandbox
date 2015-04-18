@@ -24,7 +24,7 @@ git pull
 
 echo
 echo synchronizing with GNOS repos
-./gnos_metadata_downloader.py -c settings.yml -x gnos_ids_to_be_removed.tsv
+./gnos_metadata_downloader.py -c settings.yml
 
 
 echo
@@ -39,7 +39,7 @@ echo
 echo parsing metadata xml, build ES index
 
 echo parsing all gnos
-./parse_gnos_xml.py -c settings.yml
+./parse_gnos_xml.py -c settings.yml -x gnos_ids_to_be_removed.tsv
 
 # update ES alias to point to the latest index
 echo 'delete old alias'
@@ -77,6 +77,7 @@ cd $DIR
 ./pc_report-donors_alignment_summary.py -m $M
 ./pc_report-gnos_repo_summary.py -m $M
 ./pc_report-summary_counts.py -m $M
+./pc_report-sanger_call_missing_input.py -m $M
 
 
 echo gzip all jsonl files under $M
