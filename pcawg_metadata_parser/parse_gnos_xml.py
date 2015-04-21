@@ -63,7 +63,11 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
 
         if annotations.get('sanger_vcf_in_jamboree').get(donor_unique_id): # the current donor has sanger variant calling result in jamboree
             if annotations.get('sanger_vcf_in_jamboree').get(donor_unique_id) == current_vcf_entry.get('gnos_id'): # this is the one expected
-                vcf_entries[donor_unique_id] = {'sanger_variant_calling': current_vcf_entry}
+                if not vcf_entries.get(donor_unique_id):
+                    vcf_entries[donor_unique_id] = {'sanger_variant_calling': current_vcf_entry}
+                else:
+                    vcf_entries.get(donor_unique_id).update({'sanger_variant_calling': current_vcf_entry})
+
                 logger.info('Sanger variant calling result for donor: {}. It is already saved in Jamboree, GNOS entry is {}'
                     .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
             else: # this is not the one expected, likely duplications
@@ -105,7 +109,32 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                     .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
         else:
-            vcf_entries[donor_unique_id] = {'sanger_variant_calling': current_vcf_entry}
+            if not vcf_entries.get(donor_unique_id):
+                vcf_entries[donor_unique_id] = {'sanger_variant_calling': current_vcf_entry}
+            else:
+                vcf_entries.get(donor_unique_id).update({'sanger_variant_calling': current_vcf_entry})
+
+    elif analysis_attrib.get('variant_workflow_name') == 'EmblPancancerStr' \
+        and  analysis_attrib.get('variant_workflow_version') in ['1.0.0']:
+        donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
+
+        logger.info('process EMBL variant call for donor: {}, in entry {}'
+            .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
+        current_vcf_entry = create_vcf_entry(analysis_attrib, gnos_analysis)
+
+        keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_vcf_entry, 'EMBL')
+
+    elif analysis_attrib.get('variant_workflow_name') == 'DKFZPancancerCnIndelSnv' \
+        and  analysis_attrib.get('variant_workflow_version') in ['1.0.131']:
+        donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
+
+        logger.info('process DKFZ variant call for donor: {}, in entry {}'
+            .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
+        current_vcf_entry = create_vcf_entry(analysis_attrib, gnos_analysis)
+
+        keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_vcf_entry, 'DKFZ')
 
     else:  # this is test for VCF upload
         logger.warning('ignore entry that is variant calling but likely is test entry, GNOS entry: {}'
@@ -282,6 +311,43 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
     bam_output_fh.write(json.dumps(bam_file, default=set_default) + '\n')
 
 
+def keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_vcf_entry, variant_workflow):
+        workflow_label = variant_workflow.lower() + '_variant_calling'
+
+        if not vcf_entries.get(donor_unique_id):
+            vcf_entries[donor_unique_id] = {workflow_label: current_vcf_entry}
+            return
+
+        elif not vcf_entries.get(donor_unique_id).get(workflow_label):
+            vcf_entries.get(donor_unique_id).update({workflow_label: current_vcf_entry})
+            return
+
+        else:
+            workflow_version_current = current_vcf_entry.get('workflow_details').get('variant_workflow_version')
+            workflow_version_previous = vcf_entries.get(donor_unique_id).get(workflow_label).get('workflow_details').get('variant_workflow_version')
+            gnos_updated_current = current_vcf_entry.get('gnos_last_modified')[0]
+            gnos_updated_previous = vcf_entries.get(donor_unique_id).get(workflow_label).get('gnos_last_modified')[0]
+
+            if LooseVersion(workflow_version_current) > LooseVersion(workflow_version_previous): # current is newer version
+                logger.info('Newer {} variant calling result with version: {} for donor: {}, in entry: {} replacing older GNOS entry {} in {}'
+                    .format(variant_workflow.upper(), workflow_version_current, donor_unique_id, \
+                        gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull'), \
+                        vcf_entries.get(donor_unique_id).get(workflow_label).get('gnos_id'), \
+                        vcf_entries.get(donor_unique_id).get(workflow_label).get('gnos_repo')[0]))
+                vcf_entries.get(donor_unique_id)[workflow_label] = current_vcf_entry
+            elif LooseVersion(workflow_version_current) == LooseVersion(workflow_version_previous) \
+                 and gnos_updated_current > gnos_updated_previous: # current is newer
+                logger.info('Newer {} variant calling result with last modified date: {} for donor: {}, in entry: {} replacing older GNOS entry {} in {}'
+                    .format(variant_workflow.upper(), gnos_updated_current, donor_unique_id, \
+                        gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull'), \
+                        vcf_entries.get(donor_unique_id).get(workflow_label).get('gnos_id'), \
+                        vcf_entries.get(donor_unique_id).get(workflow_label).get('gnos_repo')[0]))
+                vcf_entries.get(donor_unique_id)[workflow_label] = current_vcf_entry
+            else: # no need to replace
+                logger.warning('{} variant calling result already exist and is latest for donor: {}, ignoring entry {}'
+                    .format(variant_workflow.upper(), donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+
+
 def create_vcf_entry(analysis_attrib, gnos_analysis):
     vcf_entry = {
         #'analysis_attrib': analysis_attrib, # remove this later
@@ -297,8 +363,8 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
             "variant_workflow_version": analysis_attrib.get('variant_workflow_version'),
             "variant_pipeline_input_info": json.loads( analysis_attrib.get('variant_pipeline_input_info') ).get('workflow_inputs') if analysis_attrib.get('variant_pipeline_input_info') else [],
             "variant_pipeline_output_info": json.loads( analysis_attrib.get('variant_pipeline_output_info') ).get('workflow_outputs') if analysis_attrib.get('variant_pipeline_output_info') else [],
-            "variant_qc_metrics": json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics') if analysis_attrib.get('variant_qc_metrics') else [],
-            "variant_timing_metrics": json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') else [],
+            "variant_qc_metrics": json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics') if analysis_attrib.get('variant_qc_metrics') and isinstance(analysis_attrib.get('variant_qc_metrics'), dict) else {},
+            "variant_timing_metrics": json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') and isinstance(analysis_attrib.get('variant_timing_metrics'), dict) else {},
         }
     }
 
@@ -996,44 +1062,38 @@ def is_train2_bam(donor, train2_freeze_bams, gnos_id, specimen_type):
 def add_vcf_entry(donor, vcf_entry):
     if not vcf_entry:
         return
-    else:
-        if not donor.get('flags').get('all_tumor_specimen_aliquot_counts') + 1 == \
-            len(vcf_entry.get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_output_info')):
-            # not to add this variant call result since it missed tumor specimen(s)
-            logger.warning('sanger variant calling workflow may have missed tumour specimen for donor: {}, ignore variant calling result.'
-                    .format(donor.get('donor_unique_id')))
-            return
 
-    if not donor.get('variant_calling_results'):
-        donor['variant_calling_results'] = {}
+    if not donor.get('variant_calling_results'): donor['variant_calling_results'] = {}
+
     donor.get('variant_calling_results').update(vcf_entry)
 
-    if donor.get('variant_calling_results').get('sanger_variant_calling'):
-        donor.get('flags')['is_sanger_variant_calling_performed'] = True
-        donor.get('flags').get('variant_calling_performed').append('sanger')
+    for workflow in ['sanger', 'embl', 'dkfz']:
+      if donor.get('variant_calling_results').get(workflow + '_variant_calling'):
+        donor.get('flags')['is_' + workflow + '_variant_calling_performed'] = True
+        donor.get('flags').get('variant_calling_performed').append(workflow)
         if not donor.get('flags').get('all_tumor_specimen_aliquot_counts') + 1 == \
-                len(donor.get('variant_calling_results').get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_output_info')):
-            logger.warning('sanger variant calling workflow may have missed tumour specimen for donor: {}'
+                len(donor.get('variant_calling_results').get(workflow + '_variant_calling').get('workflow_details').get('variant_pipeline_output_info')):
+            logger.warning(workflow + ' variant calling workflow may have missed tumour specimen for donor: {}'
                     .format(donor.get('donor_unique_id')))
-            donor.get('variant_calling_results').get('sanger_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = True
+            donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = True
         else:
-            donor.get('variant_calling_results').get('sanger_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = False
+            donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_output_and_tumour_specimen_counts_mismatch'] = False
 
-        # add the flags of is_bam_used_by_sanger_missing, is_normal_bam_used_by_sanger_missing, is_tumor_bam_used_by_sanger_missing
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = False
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = False
-        donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = False
-        has_sanger_n_bam = False
-        vcf_sanger_input_t_bam = set()
+        # add the flags of is_bam_used_by_{{workflow}}_missing, is_normal_bam_used_by_{{workflow}}_missing, is_tumor_bam_used_by_{{workflow}}_missing
+        donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_bam_used_by_' + workflow + '_missing'] = False
+        donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_normal_bam_used_by_' + workflow + '_missing'] = False
+        donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_tumor_bam_used_by_' + workflow + '_missing'] = False
+        has_n_bam = False
+        vcf_input_t_bam = set()
         tumor_alignment_bam = set()
 
         # scan all the vcf input  under "variant_pipeline_input_info"
-        for vcf_input in donor.get('variant_calling_results').get('sanger_variant_calling').get('workflow_details').get('variant_pipeline_input_info'):
+        for vcf_input in donor.get('variant_calling_results').get(workflow + '_variant_calling').get('workflow_details').get('variant_pipeline_input_info'):
            if 'normal' in vcf_input.get('attributes').get('dcc_specimen_type').lower():
                if vcf_input.get('attributes').get('analysis_id') == donor.get('normal_alignment_status').get('aligned_bam').get('gnos_id'): #check normal alignment
-                   has_sanger_n_bam = True
+                   has_n_bam = True
            elif 'tumour' in vcf_input.get('attributes').get('dcc_specimen_type').lower(): # check the tumor
-               vcf_sanger_input_t_bam.add((vcf_input.get('specimen'), vcf_input.get('attributes').get('analysis_id'))) 
+               vcf_input_t_bam.add((vcf_input.get('specimen'), vcf_input.get('attributes').get('analysis_id'))) 
 
            else:
                logger.warning('invalid specimen type: {} in donor: {} with aliquot_id: {}'
@@ -1044,13 +1104,14 @@ def add_vcf_entry(donor, vcf_entry):
         for tumor_alignment in donor.get('tumor_alignment_status'):
             tumor_alignment_bam.add((tumor_alignment.get('aliquot_id'), tumor_alignment.get('aligned_bam').get('gnos_id')))
 
-        if not has_sanger_n_bam:
-            donor.get('variant_calling_results').get('sanger_variant_calling')['is_normal_bam_used_by_sanger_missing'] = True
-            donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
+        if not has_n_bam:
+            donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_normal_bam_used_by_' + workflow + '_missing'] = True
+            donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_bam_used_by_' + workflow + '_missing'] = True
 
-        if vcf_sanger_input_t_bam != tumor_alignment_bam:
-            donor.get('variant_calling_results').get('sanger_variant_calling')['is_tumor_bam_used_by_sanger_missing'] = True
-            donor.get('variant_calling_results').get('sanger_variant_calling')['is_bam_used_by_sanger_missing'] = True
+        if vcf_input_t_bam != tumor_alignment_bam:
+            donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_tumor_bam_used_by_' + workflow + '_missing'] = True
+            donor.get('variant_calling_results').get(workflow + '_variant_calling')['is_bam_used_by_' + workflow + '_missing'] = True
+
 
 def add_original_gnos_repo(donor, annotation):
     if donor.get('gnos_repo'):
