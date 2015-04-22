@@ -56,8 +56,6 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
             ):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
 
-        if '/' in donor_unique_id: return
-
         logger.info('process Sanger variant call for donor: {}, in entry {}'
             .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
 
@@ -176,8 +174,6 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         return
 
     donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
-
-    if '/' in donor_unique_id: return
 
     if is_in_donor_blacklist(donor_unique_id):
         logger.warning('ignore blacklisted donor: {} GNOS entry: {}'
