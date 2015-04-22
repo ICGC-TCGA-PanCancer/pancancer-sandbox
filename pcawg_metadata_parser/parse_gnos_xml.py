@@ -1523,7 +1523,7 @@ def bam_aggregation(bam_files):
                                         .format(
                                             bam['aliquot_id'],
                                             bam.get('alignment').get('workflow_name'),
-                                            alignment_status.get('star').get('aligned_bam').get('gnos_id'),
+                                            alignment_status.get('star').get('gnos_info').get('gnos_id'),
                                             bam['gnos_repo']) 
                                   )
                     else:
