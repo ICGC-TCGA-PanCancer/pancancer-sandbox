@@ -315,10 +315,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
     del bam_file['rna_seq']
 
     
-    donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )
-
-    if donor_unique_id =='LAML-US::66392380-a9fe-45b7-9191-60993f3f77f4':
-        logger.warning("Bam_file {}".format(bam_file))        
+    donors[donor_unique_id]['bam_files'].append( copy.deepcopy(bam_file) )       
 
     # push to Elasticsearch
     # Let's not worry about this index type, it seems not that useful
@@ -793,34 +790,30 @@ def process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams):
 
     # now build easy-to-use, specimen-level, gnos_repo-aware summary of bwa alignment status by iterating all collected bams
     aggregated_bam_info = bam_aggregation(donor['bam_files'])
-    #print donor.get('donor_unique_id')
-    #print len(donor['bam_files'])
     #print json.dumps(aggregated_bam_info, default=set_default)  # debug only
     
     # let's add this aggregated alignment information to donor object
-    if 'WGS' in aggregated_bam_info and len(aggregated_bam_info.get('WGS')) != 0:
+    if aggregated_bam_info.get('WGS'):
         add_alignment_status_to_donor(donor, aggregated_bam_info.get('WGS'))
+        
     #print json.dumps(donor.get('tumor_alignment_status'), default=set_default)  # debug only
     
     #print (json.dumps(aggregated_bam_info.get('RNA-Seq'), default=set_default))  # debug only
-    if 'RNA-Seq' in aggregated_bam_info and len(aggregated_bam_info.get('RNA-Seq')) != 0 :
+    if aggregated_bam_info.get('RNA-Seq'):
         add_rna_seq_status_to_donor(donor, aggregated_bam_info.get('RNA-Seq'))
         if len(donor.get('rna_seq').get('alignment').get('normal')) > 0:
             for aliquot in donor.get('rna_seq').get('alignment').get('normal'):
                 if aliquot.get('tophat'):
                     donor.get('flags')['is_normal_tophat_rna_seq_alignment_performed'] = True
-                elif aliquot.get('star'):
+                if aliquot.get('star'):
                     donor.get('flags')['is_normal_star_rna_seq_alignment_performed'] = True
-                else:
-                    logger.warning('RNA-Seq with unknown alignment workflow')
+
         if len(donor.get('rna_seq').get('alignment').get('tumor')) > 0:
             for aliquot in donor.get('rna_seq').get('alignment').get('tumor'):
                 if aliquot.get('tophat'):
                     donor.get('flags')['is_tumor_tophat_rna_seq_alignment_performed'] = True
-                elif aliquot.get('star'):
+                if aliquot.get('star'):
                     donor.get('flags')['is_tumor_star_rna_seq_alignment_performed'] = True
-                else:
-                    logger.warning('RNA-Seq with unknown alignment workflow')
 
         
 
@@ -850,8 +843,7 @@ def process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams):
         donor.get('flags')['is_sanger_vcf_in_jamboree'] = True
         donor.get('flags').get('vcf_in_jamboree').append('sanger')
 
-    if vcf_entries.get(donor.get('donor_unique_id')):
-        add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
+    add_vcf_entry(donor, vcf_entries.get(donor.get('donor_unique_id')))
 
     check_bwa_duplicates(donor, train2_freeze_bams)
 
@@ -1492,7 +1484,7 @@ def bam_aggregation(bam_files):
                                         .format(
                                             bam['aliquot_id'],
                                             bam.get('alignment').get('workflow_name'),
-                                            alignment_status.get('aligned_bam').get('gnos_id'),
+                                            alignment_status.get('tophat').get('gnos_info').get('gnos_id'),
                                             bam['gnos_repo']) 
                                   )
                     else:
@@ -1504,7 +1496,7 @@ def bam_aggregation(bam_files):
                                             bam['aliquot_id'],
                                             bam['donor_unique_id'],
                                             bam.get('alignment').get('workflow_name'),
-                                            alignment_status.get('gnos_info').get('gnos_id'),
+                                            alignment_status.get('tophat').get('gnos_info').get('gnos_id'),
                                             bam['gnos_metadata_url'])
                                   )
             elif 'star' in bam.get('alignment').get('workflow_name').lower():
@@ -1531,7 +1523,7 @@ def bam_aggregation(bam_files):
                                         .format(
                                             bam['aliquot_id'],
                                             bam.get('alignment').get('workflow_name'),
-                                            alignment_status.get('aligned_bam').get('gnos_id'),
+                                            alignment_status.get('star').get('aligned_bam').get('gnos_id'),
                                             bam['gnos_repo']) 
                                   )
                     else:
@@ -1543,7 +1535,7 @@ def bam_aggregation(bam_files):
                                             bam['aliquot_id'],
                                             bam['donor_unique_id'],
                                             bam.get('alignment').get('workflow_name'),
-                                            alignment_status.get('gnos_info').get('gnos_id'),
+                                            alignment_status.get('star').get('gnos_info').get('gnos_id'),
                                             bam['gnos_metadata_url'])
                                     )
             else: # other unknown alignment workflows
