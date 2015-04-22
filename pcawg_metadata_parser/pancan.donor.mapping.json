@@ -754,6 +754,12 @@
                "is_sanger_variant_calling_performed":{
                   "type":"boolean"
                },
+               "is_dkfz_variant_calling_performed":{
+                  "type":"boolean"
+               },
+               "is_embl_variant_calling_performed":{
+                  "type":"boolean"
+               },
                "is_sanger_vcf_in_jamboree":{
                   "type":"boolean"
                },
