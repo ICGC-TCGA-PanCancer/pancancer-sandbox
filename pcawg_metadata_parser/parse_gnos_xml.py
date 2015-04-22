@@ -184,6 +184,14 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         logger.warning('ignore test entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
         return # completely ignore test gnos entries for now, this is the quickest way to avoid test interferes real data 
 
+    if gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS'].get('TITLE') and gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['TITLE'].startswith('TCGA/ICGC PanCancer Specimen-Level Germline Variant Calling for Specimen'):
+        logger.warning('ignore Annai germaline call entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
+        return
+
+    if gnos_analysis.get('library_strategy') == 'RNA-Seq' and not analysis_attrib.get('workflow_name') in ('RNA-Seq_Alignment_SOP_STAR', 'Workflow_Bundle_TOPHAT2'):
+        logger.warning('ignore RNA-Seq entry that is not STAR or TOPHAT2 aligned, entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
+        return
+
     if (gnos_analysis.get('library_strategy') == 'WGS' and gnos_analysis.get('refassem_short_name') != 'unaligned'
               and not is_train_2_aligned(analysis_attrib, gnos_analysis)
             ):

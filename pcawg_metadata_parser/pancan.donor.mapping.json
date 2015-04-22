@@ -745,6 +745,18 @@
                "is_donor_blacklisted":{
                   "type":"boolean"
                },
+               "is_tumor_tophat_rna_seq_alignment_performed":{
+                  "type":"boolean"
+               },
+               "is_normal_tophat_rna_seq_alignment_performed":{
+                  "type":"boolean"
+               },
+               "is_tumor_star_rna_seq_alignment_performed":{
+                  "type":"boolean"
+               },
+               "is_normal_star_rna_seq_alignment_performed":{
+                  "type":"boolean"
+               },
                "is_manual_qc_failed":{
                   "type":"boolean"
                },
