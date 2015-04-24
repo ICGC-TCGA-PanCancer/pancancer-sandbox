@@ -78,7 +78,7 @@ cd $DIR
 ./pc_report-gnos_repo_summary.py -m $M
 ./pc_report-summary_counts.py -m $M
 ./pc_report-sanger_call_missing_input.py -m $M
-
+./pc_report-donors_RNA_Seq_alignment_summary.py -m $M
 
 echo gzip all jsonl files under $M
 gzip $M/*.jsonl
