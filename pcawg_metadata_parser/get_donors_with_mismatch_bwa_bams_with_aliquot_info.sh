@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl -XGET "http://pancancer.info/elasticsearch/pcawg_es/donor/_search?size=300&pretty" -d '
+curl -XGET "http://pancancer.info/elasticsearch/pcawg_es/donor/_search?size=5000&pretty" -d '
 {
    "fields":[
       "dcc_project_code",
