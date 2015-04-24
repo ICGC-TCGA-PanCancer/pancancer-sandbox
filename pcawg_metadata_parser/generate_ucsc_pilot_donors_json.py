@@ -128,10 +128,10 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
     wgs_tumor_sanger_vcf_info = es_json.get('variant_calling_results').get('sanger_variant_calling')
     sanger_vcf_files = wgs_tumor_sanger_vcf_info.get('files')
 
-    tumor_specimen_count = 0
+    tumor_wgs_specimen_count = 0
     aliquot_info = {}
     for aliquot in wgs_tumor_alignment_info:
-        tumor_specimen_count += 1
+        tumor_wgs_specimen_count += 1
     	aliquot_id = aliquot.get('aliquot_id')
 
     	aliquot_info = {
@@ -165,7 +165,7 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
         
         reorganized_donor.get('wgs').get('tumor_specimens').append(aliquot_info) 
 
-    reorganized_donor['tumor_specimen_count'] = tumor_specimen_count
+    reorganized_donor['tumor_wgs_specimen_count'] = tumor_wgs_specimen_count
 
 
 def add_rna_seq_info(reorganized_donor, es_json):
