@@ -555,6 +555,8 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
             'aligned_tumor_specimen_aliquot_counts': 0,
             'all_tumor_specimen_aliquot_counts': 0,
             'is_sanger_variant_calling_performed': False,
+            'is_dkfz_variant_calling_performed': False,
+            'is_embl_variant_calling_performed': False,
             'variant_calling_performed': [],
             'vcf_in_jamboree': [],
             'is_normal_star_rna_seq_alignment_performed': False,
