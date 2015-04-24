@@ -128,8 +128,10 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
     wgs_tumor_sanger_vcf_info = es_json.get('variant_calling_results').get('sanger_variant_calling')
     sanger_vcf_files = wgs_tumor_sanger_vcf_info.get('files')
 
+    tumor_specimen_count = 0
     aliquot_info = {}
     for aliquot in wgs_tumor_alignment_info:
+        tumor_specimen_count += 1
     	aliquot_id = aliquot.get('aliquot_id')
 
     	aliquot_info = {
@@ -163,8 +165,7 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
         
         reorganized_donor.get('wgs').get('tumor_specimens').append(aliquot_info) 
 
-    return reorganized_donor
-
+    reorganized_donor['tumor_specimen_count'] = tumor_specimen_count
 
 
 def add_rna_seq_info(reorganized_donor, es_json):
@@ -190,8 +191,6 @@ def add_rna_seq_info(reorganized_donor, es_json):
 			    	    ]
 			    	}
                 reorganized_donor.get('rna_seq')[specimen_type + '_specimens'].append(alignment_info) 
-
-    return reorganized_donor
 
 
 def get_donor_json(es, es_index, donor_unique_id):
@@ -231,12 +230,14 @@ def init_es(es_host, es_index):
 
     return es
 
+
 def set_default(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
     if isinstance(obj, set):
         return list(obj)
     raise TypeError
+
 
 def main(argv=None):
 
