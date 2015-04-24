@@ -267,91 +267,91 @@ es_queries = [
     },
     "size": 1000
   },
-  # query 3: aligned in normal
-  {
-    "aggs": {
-      "project_f": {
-        "aggs": {
-          "project": {
-            "terms": {
-              "field": "dcc_project_code",
-              "size": 1000
-            },
-            "aggs": {
-              "donor_id": {
-                "terms": {
-                  "field": "donor_unique_id",
-                  "size": 10000
-                }
-              }
-            }
-          }
-        },
-        "filter": {
-          "fquery": {
-            "query": {
-              "filtered": {
-                "query": {
-                  "bool": {
-                    "should": [
-                      {
-                        "query_string": {
-                          "query": "*"
-                        }
-                      }
-                    ]
-                  }
-                },
-                "filter": {
-                  "bool": {
-                    "must": 
-                      {
-                        "type": {
-                          "value": es_type
-                        }
-                      },
-                    "should": [
-                      {
-                        "terms": {
-                          "flags.is_normal_tophat_rna_seq_alignment_performed": [
-                            "T"
-                          ]
-                        }
-                      },
-                      {
-                        "terms": {
-                          "flags.is_normal_star_rna_seq_alignment_performed": [
-                            "T"
-                          ]
-                        }
-                      }
-                    ],
-                    "must_not": [
-                      {
-                        "terms": {
-                          "flags.is_manual_qc_failed": [
-                            "T"
-                          ]
-                        }
-                      },
-                      {
-                        "terms": {
-                          "flags.is_donor_blacklisted": [
-                            "T"
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "size": 1000
-  },
+  # # query 3: aligned in normal
+  # {
+  #   "aggs": {
+  #     "project_f": {
+  #       "aggs": {
+  #         "project": {
+  #           "terms": {
+  #             "field": "dcc_project_code",
+  #             "size": 1000
+  #           },
+  #           "aggs": {
+  #             "donor_id": {
+  #               "terms": {
+  #                 "field": "donor_unique_id",
+  #                 "size": 10000
+  #               }
+  #             }
+  #           }
+  #         }
+  #       },
+  #       "filter": {
+  #         "fquery": {
+  #           "query": {
+  #             "filtered": {
+  #               "query": {
+  #                 "bool": {
+  #                   "should": [
+  #                     {
+  #                       "query_string": {
+  #                         "query": "*"
+  #                       }
+  #                     }
+  #                   ]
+  #                 }
+  #               },
+  #               "filter": {
+  #                 "bool": {
+  #                   "must": 
+  #                     {
+  #                       "type": {
+  #                         "value": es_type
+  #                       }
+  #                     },
+  #                   "should": [
+  #                     {
+  #                       "terms": {
+  #                         "flags.is_normal_tophat_rna_seq_alignment_performed": [
+  #                           "T"
+  #                         ]
+  #                       }
+  #                     },
+  #                     {
+  #                       "terms": {
+  #                         "flags.is_normal_star_rna_seq_alignment_performed": [
+  #                           "T"
+  #                         ]
+  #                       }
+  #                     }
+  #                   ],
+  #                   "must_not": [
+  #                     {
+  #                       "terms": {
+  #                         "flags.is_manual_qc_failed": [
+  #                           "T"
+  #                         ]
+  #                       }
+  #                     },
+  #                     {
+  #                       "terms": {
+  #                         "flags.is_donor_blacklisted": [
+  #                           "T"
+  #                         ]
+  #                       }
+  #                     }
+  #                   ]
+  #                 }
+  #               }
+  #             }
+  #           }
+  #         }
+  #       }
+  #     }
+  #   },
+  #   "size": 1000
+  # },
   # # query 4: aligned both in normal and tumor
   {
     "aggs": {
@@ -507,6 +507,36 @@ es_queries = [
                         }
                       }
                     ],
+                    "should": [
+                      {
+                        "terms": {
+                          "flags.is_normal_tophat_rna_seq_alignment_performed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_normal_star_rna_seq_alignment_performed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_tumor_tophat_rna_seq_alignment_performed": [
+                            "T"
+                          ]
+                        }
+                      },
+                      {
+                        "terms": {
+                          "flags.is_tumor_star_rna_seq_alignment_performed": [
+                            "T"
+                          ]
+                        }
+                      }
+                    ],
                     "must_not": [
                       {
                         "terms": {
@@ -550,9 +580,9 @@ def generate_report(es_index, es_queries, metadata_dir, report_name, timestamp, 
         "both_tophat_and_star_aligned_in_tumor",
         "tophat_aligned_star_not_in_tumor",
         "star_aligned_tophat_not_in_tumor",
-        "aligned_in_normal",
-        "aligned_both_in_normal_and_tumor",
-        "number_of_donors_in_project"
+#        "aligned_in_normal",
+        "donors_with_both_normal_and_tumor_alignment",
+        "donors_with_RNA_Seq_alignment"
     ]
 
     for q_index in range(len(count_types)):
