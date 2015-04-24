@@ -97,6 +97,7 @@ def create_reorganized_donor(donor_unique_id, es_json):
                 'bwa_alignment': {
                     'submitter_specimen_id': es_json.get('normal_alignment_status').get('submitter_specimen_id'),
                     'submitter_sample_id': es_json.get('normal_alignment_status').get('submitter_sample_id'),
+                    'specimen_type': es_json.get('normal_alignment_status').get('dcc_specimen_type'),
                     'aliquot_id': es_json.get('normal_alignment_status').get('aliquot_id'),
                     'gnos_repo': es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_repo'),
                     'gnos_id': es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_id'),
@@ -138,6 +139,7 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
     	    'bwa_alignment':{
                 'submitter_specimen_id': aliquot.get('submitter_specimen_id'),
                 'submitter_sample_id': aliquot.get('submitter_sample_id'),
+                'specimen_type': aliquot.get('dcc_specimen_type'),
                 'aliquot_id': aliquot.get('aliquot_id'),
                 'gnos_repo': aliquot.get('aligned_bam').get('gnos_repo'),
                 'gnos_id': aliquot.get('aligned_bam').get('gnos_id'),
@@ -151,6 +153,7 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
     	    'sanger_variant_calling':{
                 'submitter_specimen_id': aliquot.get('submitter_specimen_id'),
                 'submitter_sample_id': aliquot.get('submitter_sample_id'),
+                'specimen_type': aliquot.get('dcc_specimen_type'),
                 'aliquot_id': aliquot.get('aliquot_id'),
                 'gnos_repo': wgs_tumor_sanger_vcf_info.get('gnos_repo'),
                 'gnos_id': wgs_tumor_sanger_vcf_info.get('gnos_id'),
@@ -180,6 +183,7 @@ def add_rna_seq_info(reorganized_donor, es_json):
                     alignment_info[workflow_type] = {
 			    	    'submitter_specimen_id': aliquot.get(workflow_type).get('submitter_specimen_id'),
 			    	    'submitter_sample_id': aliquot.get(workflow_type).get('submitter_sample_id'),
+                        'specimen_type': aliquot.get(workflow_type).get('dcc_specimen_type'),
 			    	    'aliquot_id': aliquot.get(workflow_type).get('aliquot_id'),
 			    	    'gnos_repo': aliquot.get(workflow_type).get('gnos_info').get('gnos_repo'),
 			    	    'gnos_id': aliquot.get(workflow_type).get('gnos_info').get('gnos_id'),
