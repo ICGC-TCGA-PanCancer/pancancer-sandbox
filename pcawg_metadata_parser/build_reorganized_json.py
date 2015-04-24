@@ -261,9 +261,9 @@ def main(argv=None):
     es_host = 'localhost:9200'
 
     es = Elasticsearch([es_host])
-    es_reorganized = init_es(es_host, es_index_reorganize)
+    #es_reorganized = init_es(es_host, es_index_reorganize)
 
-    donor_fh = open(metadata_dir+'/reorganized_donor_'+es_index_reorganize+'.jsonl', 'w')
+    donor_fh = open(metadata_dir+'/ucsc_polit_donor_'+es_index_reorganize+'.jsonl', 'w')
 
 	# get the list of donors whose sanger_vcf without missing bams
     donors_list = get_donors_list(es, es_index, es_queries)
@@ -276,9 +276,9 @@ def main(argv=None):
         reorganized_donor = create_reorganized_donor(donor_unique_id, es_json)
 
 
-        # push to Elasticsearch
-        es_reorganized.index(index=es_index_reorganize, doc_type='donor', id=reorganized_donor['donor_unique_id'], \
-            body=json.loads(json.dumps(reorganized_donor, default=set_default)), timeout=90 )
+        # DO NOT NEED THIS YET: push to Elasticsearch
+        #es_reorganized.index(index=es_index_reorganize, doc_type='donor', id=reorganized_donor['donor_unique_id'], \
+        #    body=json.loads(json.dumps(reorganized_donor, default=set_default)), timeout=90 )
 
         donor_fh.write(json.dumps(reorganized_donor, default=set_default) + '\n')
 
