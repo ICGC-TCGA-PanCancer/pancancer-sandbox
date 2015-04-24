@@ -665,14 +665,13 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
 
     annotations = {}
     read_annotations(annotations, 'gnos_assignment', 'pc_annotation-gnos_assignment.yml')  # hard-code file name for now
-    read_annotations(annotations, 'train2_donors', 'pc_annotation-train2_donors.tsv')  # hard-code file name for now
     read_annotations(annotations, 'train2_pilot', 'pc_annotation-train2_pilot.tsv')  # hard-code file name for now
     read_annotations(annotations, 'donor_blacklist', 'pc_annotation-donor_blacklist.tsv')  # hard-code file name for now
     read_annotations(annotations, 'manual_qc_failed', 'pc_annotation-manual_qc_failed.tsv')  # hard-code file name for now
     read_annotations(annotations, 'sanger_vcf_in_jamboree', 'pc_annotation-sanger_vcf_in_jamboree.tsv')  # hard-code file name for now
 
     # hard-code the file name for now    
-    train2_freeze_bams = read_train2_bams('../pcawg-operations/variant_calling/train2-lists/Data_Freeze_Train_2.0_GoogleDocs__2015_03_26_1637.tsv')
+    train2_freeze_bams = read_train2_bams('../pcawg-operations/variant_calling/train2-lists/Data_Freeze_Train_2.0_GoogleDocs__2015_04_10_1150.tsv')
 
     # pre-exclude gnos entries when this option is chosen
     gnos_ids_to_be_excluded = set()
@@ -732,7 +731,6 @@ def update_vcf_jamboree(infilenames, outfilename):
                         seen.add(line)
 
 
-
 def read_train2_bams(filename):
     train2_bams = {}
 
@@ -740,19 +738,21 @@ def read_train2_bams(filename):
         for line in r:
             if line.startswith('dcc_project_code'): continue
             if len(line.rstrip()) == 0: continue
-            dcc_project_code, donor_submitter_id, normal_aligned_bam_gnos_url,\
-                num_tumor_samples, tumour_aligned_bam_gnos_url = str.split(line.rstrip(), '\t')
+            dcc_project_code, donor_submitter_id, normal_aliquot_id, normal_aligned_bam_gnos_url,\
+                num_tumor_samples, tumor_aliquot_id, tumor_aligned_bam_gnos_urls = str.split(line.rstrip(), '\t')
 
             normal_repo, normal_gnos_id = str.split(normal_aligned_bam_gnos_url, 'cghub/metadata/analysisFull/')
 
             train2_bams[dcc_project_code + "::" + donor_submitter_id] = {}
             train2_bams.get(dcc_project_code + "::" + donor_submitter_id)[normal_gnos_id] = \
-                {"repo": normal_repo, "specimen_type": "normal"}
+                {"repo": normal_repo, "aliquot_id": normal_aliquot_id, "specimen_type": "normal"}
 
-            for tumor_url in str.split(tumour_aligned_bam_gnos_url, ','):
+            tumor_aliquots = str.split(tumor_aliquot_id, ',')
+            tumor_urls = str.split(tumor_aligned_bam_gnos_urls, ',')
+            for tumor_aliquot_id, tumor_url in zip(tumor_aliquots, tumor_urls):
                 tumor_repo, tumor_gnos_id = str.split(tumor_url, 'cghub/metadata/analysisFull/')
                 train2_bams.get(dcc_project_code + "::" + donor_submitter_id)[tumor_gnos_id] = \
-                    {"repo": tumor_repo, "specimen_type": "tumor"}
+                    {"repo": tumor_repo, "aliquot_id": tumor_aliquot_id, "specimen_type": "tumor"}
 
     return train2_bams
 
@@ -841,7 +841,7 @@ def process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams):
             .format(donor.get('donor_unique_id'), conf.get(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')[0])))
         # it should be pretty safe to assign it automatically for this freshly aligned normal specimen
         donor['original_gnos_assignment'] = conf.get(donor.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')[0])
-    add_train2_donor_flag(donor, annotations['train2_donors'])
+    add_train2_donor_flag(donor, train2_freeze_bams)
     add_train2_pilot_flag(donor, annotations['train2_pilot'])
     add_donor_blacklist_flag(donor, annotations['donor_blacklist'])
     add_manual_qc_failed_flag(donor, annotations['manual_qc_failed'])
@@ -1197,8 +1197,8 @@ def add_original_gnos_repo(donor, annotation):
         donor['original_gnos_assignment'] = None
 
 
-def add_train2_donor_flag(donor, annotation):
-    if donor.get('donor_unique_id') in annotation:
+def add_train2_donor_flag(donor, train2_freeze_bams):
+    if train2_freeze_bams.get(donor.get('donor_unique_id')):
         donor.get('flags')['is_train2_donor'] = True
     else:
         donor.get('flags')['is_train2_donor'] = False
