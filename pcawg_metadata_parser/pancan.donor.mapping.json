@@ -1602,7 +1602,22 @@
                                  }
                             }
                         }
-                     }
+                     },
+                     "files":{
+                        "properties":{
+                           "md5sum":{
+                                        "type":"string",
+                                        "index":"not_analyzed"
+                                     },
+                           "file_name":{
+                                        "type":"string",
+                                        "index":"not_analyzed"
+                                     },
+                           "file_size":{
+                                        "type":"long"
+                                     }
+                                  }
+                        }
                   }
                }
             }
