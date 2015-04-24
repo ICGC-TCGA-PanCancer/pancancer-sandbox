@@ -92,6 +92,7 @@ def create_reorganized_donor(donor_unique_id, es_json):
         'submitter_donor_id': es_json['submitter_donor_id'],
         'dcc_project_code': es_json['dcc_project_code'],
         'data_train': 'train2' if es_json.get('flags').get('is_train2_donor') else 'train3',
+        'train2_pilot': True if es_json.get('flags').get('is_train2_pilot') else False,
         'wgs': {
             'normal_specimen': {
                 'bwa_alignment': {
