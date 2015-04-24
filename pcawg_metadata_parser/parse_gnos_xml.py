@@ -368,7 +368,7 @@ def keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_v
 def create_vcf_entry(analysis_attrib, gnos_analysis):
     files = []
     for f in gnos_analysis.get('files').get('file'):
-        files.append({'file_name': f.get('filename'), 'file_size': f.get('filesize'), 'md5sum': f.get('checksum').get('#text')})
+        files.append({'file_name': f.get('filename'), 'file_size': f.get('filesize')})
 
     vcf_entry = {
         #'analysis_attrib': analysis_attrib, # remove this later
