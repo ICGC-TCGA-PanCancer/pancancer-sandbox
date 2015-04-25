@@ -19,6 +19,11 @@ cd $DIR
 echo update the code
 git pull
 
+echo update pcawg-operations git submodule where white lists are maintained
+cd ../pcawg-operations/
+git pull
+cd $DIR
+
 # this is just for running individual reports, does not affect downloader download from all gnos repos
 #gnos_repos=(ebi bsc dkfz)
 
@@ -69,11 +74,6 @@ echo running alignment summary report for $M
 #done
 
 # now report on compute site
-echo update pcawg-operations git submodule where white lists are maintained
-cd ../pcawg-operations/
-git pull
-cd $DIR
-
 ./pc_report-donors_alignment_summary.py -m $M
 ./pc_report-gnos_repo_summary.py -m $M
 ./pc_report-summary_counts.py -m $M
