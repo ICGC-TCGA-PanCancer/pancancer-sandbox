@@ -113,7 +113,7 @@ def create_reorganized_donor(donor_unique_id, es_json):
             'tumor_specimens': []
         },
         'rna_seq': {
-             'normal_specimens': [],
+             'normal_specimens': {},
              'tumor_specimens': []
         }
     }
@@ -177,6 +177,25 @@ def add_rna_seq_info(reorganized_donor, es_json):
     for specimen_type in rna_seq_info.keys():
         if not rna_seq_info.get(specimen_type): # the specimen_type has no alignment result
 		    continue
+        if 'normal' in specimen_type:
+            aliquot = rna_seq_info.get(specimen_type)
+            alignment_info = {}
+            for workflow_type in aliquot.keys():
+                alignment_info[workflow_type] = {
+                    'submitter_specimen_id': aliquot.get(workflow_type).get('submitter_specimen_id'),
+                    'submitter_sample_id': aliquot.get(workflow_type).get('submitter_sample_id'),
+                    'specimen_type': aliquot.get(workflow_type).get('dcc_specimen_type'),
+                    'aliquot_id': aliquot.get(workflow_type).get('aliquot_id'),
+                    'gnos_repo': aliquot.get(workflow_type).get('gnos_info').get('gnos_repo'),
+                    'gnos_id': aliquot.get(workflow_type).get('gnos_info').get('gnos_id'),
+                    'files': [
+                        {
+                            'bam_file_name': aliquot.get(workflow_type).get('gnos_info').get('bam_file_name'),
+                            'bam_file_size': aliquot.get(workflow_type).get('gnos_info').get('bam_file_size')                           
+                        }
+                    ]
+                }
+            reorganized_donor.get('rna_seq')[specimen_type + '_specimens'] = alignment_info
         else:
             for aliquot in rna_seq_info.get(specimen_type):
                 alignment_info = {}
@@ -195,6 +214,7 @@ def add_rna_seq_info(reorganized_donor, es_json):
 			                }
 			    	    ]
 			    	}
+
                 reorganized_donor.get('rna_seq')[specimen_type + '_specimens'].append(alignment_info) 
 
 
@@ -243,6 +263,109 @@ def set_default(obj):
         return list(obj)
     raise TypeError
 
+def generate_json_for_tsv_file(reorganized_donor):
+    pilot_tsv_json = OrderedDict()
+    pilot_tsv_json['dcc_project_code'] = reorganized_donor.get('dcc_project_code')
+    pilot_tsv_json['submitter_donor_id'] = reorganized_donor.get('submitter_donor_id')
+    pilot_tsv_json['data_train'] = reorganized_donor.get('data_train')
+    pilot_tsv_json['train2_pilot'] = reorganized_donor.get('train2_pilot')
+    # wgs normal specimen 
+    pilot_tsv_json['normal_wgs_submitter_specimen_id'] = reorganized_donor.get('wgs').get('normal_specimen').get('bwa_alignment').get('submitter_specimen_id')
+    pilot_tsv_json['normal_wgs_submitter_sample_id'] = reorganized_donor.get('wgs').get('normal_specimen').get('bwa_alignment').get('submitter_sample_id')
+    pilot_tsv_json['normal_wgs_aliquot_id'] = reorganized_donor.get('wgs').get('normal_specimen').get('bwa_alignment').get('aliquot_id')
+    pilot_tsv_json['normal_wgs_alignment_gnos_repo'] = [reorganized_donor.get('wgs').get('normal_specimen').get('bwa_alignment').get('gnos_repo')]
+    pilot_tsv_json['normal_wgs_alignment_gnos_id'] = reorganized_donor.get('wgs').get('normal_specimen').get('bwa_alignment').get('gnos_id')
+    pilot_tsv_json['normal_wgs_alignment_bam_file_name'] = reorganized_donor.get('wgs').get('normal_specimen').get('bwa_alignment').get('files')[0].get('bam_file_name')
+    # wgs tumor specimen
+    wgs_tumor_speciments = reorganized_donor.get('wgs').get('tumor_specimens')
+    pilot_tsv_json['tumor_wgs_specimen_count'] = reorganized_donor.get('tumor_wgs_specimen_count')
+    pilot_tsv_json['tumor_wgs_submitter_specimen_id'] = [] 
+    pilot_tsv_json['tumor_wgs_submitter_sample_id'] = []
+    pilot_tsv_json['tumor_wgs_aliquot_id'] = []
+    pilot_tsv_json['tumor_wgs_alignment_gnos_repo'] = []
+    pilot_tsv_json['tumor_wgs_alignment_gnos_id'] = []
+    pilot_tsv_json['tumor_wgs_alignment_bam_file_name'] = []
+    # wgs tumor sanger vcf
+    pilot_tsv_json['sanger_variant_calling_repo'] = []
+    pilot_tsv_json['sanger_variant_calling_gnos_id'] = wgs_tumor_speciments[0].get('sanger_variant_calling').get('gnos_id')
+    pilot_tsv_json['sanger_variant_calling_file_name_prefix'] = []
+    for specimen in wgs_tumor_speciments:
+        pilot_tsv_json['tumor_wgs_submitter_specimen_id'].append(specimen.get('bwa_alignment').get('submitter_specimen_id'))
+        pilot_tsv_json['tumor_wgs_submitter_sample_id'].append(specimen.get('bwa_alignment').get('submitter_sample_id'))
+        pilot_tsv_json['tumor_wgs_aliquot_id'].append(specimen.get('bwa_alignment').get('aliquot_id'))
+        pilot_tsv_json['tumor_wgs_alignment_gnos_repo'].append(specimen.get('bwa_alignment').get('gnos_repo'))
+        pilot_tsv_json['tumor_wgs_alignment_gnos_id'].append(specimen.get('bwa_alignment').get('gnos_id'))
+        pilot_tsv_json['tumor_wgs_alignment_bam_file_name'].append(specimen.get('bwa_alignment').get('files')[0].get('bam_file_name'))
+        # wgs tumor sanger vcf
+        pilot_tsv_json['sanger_variant_calling_repo'].append(specimen.get('sanger_variant_calling').get('gnos_repo'))
+        pilot_tsv_json['sanger_variant_calling_file_name_prefix'].append(specimen.get('sanger_variant_calling').get('aliquot_id'))
+    
+    # rna_seq normal specimen
+    pilot_tsv_json['normal_rna_seq_submitter_specimen_id'] = None
+    pilot_tsv_json['normal_rna_seq_submitter_sample_id'] = None
+    pilot_tsv_json['normal_rna_seq_aliquot_id'] = None
+    pilot_tsv_json['normal_rna_seq_STAR_alignment_gnos_repo'] = None
+    pilot_tsv_json['normal_rna_seq_STAR_alignment_gnos_id'] = None
+    pilot_tsv_json['normal_rna_seq_STAR_alignment_bam_file_name'] = None
+    pilot_tsv_json['normal_rna_seq_TOPHAT2_alignment_gnos_repo'] = None
+    pilot_tsv_json['normal_rna_seq_TOPHAT2_alignment_gnos_id'] = None
+    pilot_tsv_json['normal_rna_seq_TOPHAT2_alignment_bam_file_name'] = None
+
+    rna_seq_normal = reorganized_donor.get('rna_seq').get('normal_specimen')
+    if rna_seq_normal and rna_seq_normal.get('tophat'):
+        pilot_tsv_json['normal_rna_seq_submitter_specimen_id'] = rna_seq_normal.get('tophat').get('submitter_specimen_id')
+        pilot_tsv_json['normal_rna_seq_submitter_sample_id'] = rna_seq_normal.get('tophat').get('submitter_sample_id')
+        pilot_tsv_json['normal_rna_seq_aliquot_id'] = rna_seq_normal.get('tophat').get('aliquot_id')
+        pilot_tsv_json['normal_rna_seq_TOPHAT2_alignment_gnos_repo'] = [rna_seq_normal.get('tophat').get('gnos_repo')]
+        pilot_tsv_json['normal_rna_seq_TOPHAT2_alignment_gnos_id'] = rna_seq_normal.get('tophat').get('gnos_id')
+        pilot_tsv_json['normal_rna_seq_TOPHAT2_alignment_bam_file_name'] = rna_seq_normal.get('tophat').get('files')[0].get('bam_file_name')
+    if rna_seq_normal and rna_seq_normal.get('star'):
+        pilot_tsv_json['normal_rna_seq_submitter_specimen_id'] = rna_seq_normal.get('star').get('submitter_specimen_id')
+        pilot_tsv_json['normal_rna_seq_submitter_sample_id'] = rna_seq_normal.get('star').get('submitter_sample_id')
+        pilot_tsv_json['normal_rna_seq_aliquot_id'] = rna_seq_normal.get('star').get('aliquot_id')
+        pilot_tsv_json['normal_rna_seq_STAR_alignment_gnos_repo'] = rna_seq_normal.get('star').get('gnos_repo')
+        pilot_tsv_json['normal_rna_seq_STAR_alignment_gnos_id'] = rna_seq_normal.get('star').get('gnos_id')
+        pilot_tsv_json['normal_rna_seq_STAR_alignment_bam_file_name'] = rna_seq_normal.get('star').get('files')[0].get('bam_file_name')
+       
+    # rna_seq tumor specimens
+    pilot_tsv_json['tumor_rna_seq_submitter_specimen_id'] = []
+    pilot_tsv_json['tumor_rna_seq_submitter_sample_id'] = []
+    pilot_tsv_json['tumor_rna_seq_aliquot_id'] = []
+    pilot_tsv_json['tumor_rna_seq_STAR_alignment_gnos_repo'] = []
+    pilot_tsv_json['tumor_rna_seq_STAR_alignment_gnos_id'] = []
+    pilot_tsv_json['tumor_rna_seq_STAR_alignment_bam_file_name'] = []
+    pilot_tsv_json['tumor_rna_seq_TOPHAT2_alignment_gnos_repo'] = []
+    pilot_tsv_json['tumor_rna_seq_TOPHAT2_alignment_gnos_id'] = []
+    pilot_tsv_json['tumor_rna_seq_TOPHAT2_alignment_bam_file_name'] = []
+
+    rna_seq_tumor = reorganized_donor.get('rna_seq').get('tumor_specimens')
+    rna_seq_tumor_specimen_id = []
+    rna_seq_tumor_sample_id = []
+    rna_seq_tumor_aliquot_id = []
+    if rna_seq_tumor:
+        for rna_seq_tumor_specimen in rna_seq_tumor:
+            if rna_seq_tumor_specimen.get('tophat'):
+                rna_seq_tumor_specimen_id_tmp = rna_seq_tumor_specimen.get('tophat').get('submitter_specimen_id')
+                rna_seq_tumor_sample_id_tmp = rna_seq_tumor_specimen.get('tophat').get('submitter_sample_id')
+                rna_seq_tumor_aliquot_id_tmp = rna_seq_tumor_specimen.get('tophat').get('aliquot_id')
+                pilot_tsv_json['tumor_rna_seq_TOPHAT2_alignment_gnos_repo'].append(rna_seq_tumor_specimen.get('tophat').get('gnos_repo'))
+                pilot_tsv_json['tumor_rna_seq_TOPHAT2_alignment_gnos_id'].append(rna_seq_tumor_specimen.get('tophat').get('gnos_id'))
+                pilot_tsv_json['tumor_rna_seq_TOPHAT2_alignment_bam_file_name'].append(rna_seq_tumor_specimen.get('tophat').get('files')[0].get('bam_file_name'))
+            if rna_seq_tumor_specimen.get('star'):
+                rna_seq_tumor_specimen_id_tmp = rna_seq_tumor_specimen.get('star').get('submitter_specimen_id')
+                rna_seq_tumor_sample_id_tmp = rna_seq_tumor_specimen.get('star').get('submitter_sample_id')
+                rna_seq_tumor_aliquot_id_tmp = rna_seq_tumor_specimen.get('star').get('aliquot_id')
+                pilot_tsv_json['tumor_rna_seq_STAR_alignment_gnos_repo'].append(rna_seq_tumor_specimen.get('star').get('gnos_repo'))
+                pilot_tsv_json['tumor_rna_seq_STAR_alignment_gnos_id'].append(rna_seq_tumor_specimen.get('star').get('gnos_id'))
+                pilot_tsv_json['tumor_rna_seq_STAR_alignment_bam_file_name'].append(rna_seq_tumor_specimen.get('star').get('files')[0].get('bam_file_name'))
+            rna_seq_tumor_specimen_id.append(rna_seq_tumor_specimen_id_tmp)
+            rna_seq_tumor_sample_id.append(rna_seq_tumor_sample_id_tmp)
+            rna_seq_tumor_aliquot_id.append(rna_seq_tumor_aliquot_id_tmp)
+        pilot_tsv_json['tumor_rna_seq_submitter_specimen_id'] = rna_seq_tumor_specimen_id
+        pilot_tsv_json['tumor_rna_seq_submitter_sample_id'] = rna_seq_tumor_sample_id
+        pilot_tsv_json['tumor_rna_seq_aliquot_id'] = rna_seq_tumor_aliquot_id
+    
+    return pilot_tsv_json
 
 def main(argv=None):
 
@@ -271,6 +394,16 @@ def main(argv=None):
 
     donor_fh = open(metadata_dir+'/ucsc_polit_donor_'+es_index_reorganize+'.jsonl', 'w')
 
+    pilot_tsv_fh = open(metadata_dir + '/ucsc_polit_donor_' + es_index_reorganize + '.tsv', 'w')
+    
+    # read the tsv fields file and write to the pilot donor tsv file
+    tsv_fields = 'ucsc_pilot_donor_tsv_fields.txt'
+    with open(tsv_fields, 'r') as t:
+        for line in t:
+            pilot_tsv_fh.write(line.rstrip() + '\t')
+        pilot_tsv_fh.write('\n')        
+
+
 	# get the list of donors whose sanger_vcf without missing bams
     donors_list = get_donors_list(es, es_index, es_queries)
     
@@ -287,6 +420,38 @@ def main(argv=None):
         #    body=json.loads(json.dumps(reorganized_donor, default=set_default)), timeout=90 )
 
         donor_fh.write(json.dumps(reorganized_donor, default=set_default) + '\n')
+
+        # generate json for tsv file from reorganized donor
+        pilot_tsv_json = generate_json_for_tsv_file(reorganized_donor)
+        # write to the tsv file
+        for p in pilot_tsv_json.keys():
+            if isinstance(pilot_tsv_json.get(p), list):
+                if pilot_tsv_json.get(p):
+                    count0 = 0
+                    for q in pilot_tsv_json.get(p):
+                        if isinstance(q, list):
+                            if q:
+                                count = 0
+                                for r in q:
+                                    count = count + 1
+                                    pilot_tsv_fh.write(str(r))
+                                    if count < len(q):
+                                        pilot_tsv_fh.write(' | ')
+                            else:
+                                pilot_tsv_fh.write('')
+                        else:
+                            pilot_tsv_fh.write(str(q))
+                        count0 = count0 + 1
+                        if count0 < len(pilot_tsv_json.get(p)):
+                            pilot_tsv_fh.write(' , ')
+                else:
+                    pilot_tsv_fh.write(str(None))
+            else:
+                pilot_tsv_fh.write(str(pilot_tsv_json.get(p)))
+            pilot_tsv_fh.write('\t')
+        pilot_tsv_fh.write('\n')    
+        
+    pilot_tsv_fh.close()
 
     donor_fh.close()
 
