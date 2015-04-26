@@ -578,7 +578,7 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
         'bam_files': [],
         'rna_seq': {
             'alignment': {
-                'normal': [],
+                'normal': {},
                 'tumor': []
             }
         }
@@ -818,12 +818,12 @@ def process_donor(donor, annotations, vcf_entries, conf, train2_freeze_bams):
     #print (json.dumps(aggregated_bam_info.get('RNA-Seq'), default=set_default))  # debug only
     if aggregated_bam_info.get('RNA-Seq'):
         add_rna_seq_status_to_donor(donor, aggregated_bam_info.get('RNA-Seq'))
-        if len(donor.get('rna_seq').get('alignment').get('normal')) > 0:
-            for aliquot in donor.get('rna_seq').get('alignment').get('normal'):
-                if aliquot.get('tophat'):
-                    donor.get('flags')['is_normal_tophat_rna_seq_alignment_performed'] = True
-                if aliquot.get('star'):
-                    donor.get('flags')['is_normal_star_rna_seq_alignment_performed'] = True
+        if donor.get('rna_seq').get('alignment').get('normal'):
+            aliquot = donor.get('rna_seq').get('alignment').get('normal')
+            if aliquot.get('tophat'):
+                donor.get('flags')['is_normal_tophat_rna_seq_alignment_performed'] = True
+            if aliquot.get('star'):
+                donor.get('flags')['is_normal_star_rna_seq_alignment_performed'] = True
 
         if len(donor.get('rna_seq').get('alignment').get('tumor')) > 0:
             for aliquot in donor.get('rna_seq').get('alignment').get('tumor'):
@@ -1279,8 +1279,8 @@ def add_rna_seq_status_to_donor(donor, aggregated_bam_info):
         if (alignment_status.get('tophat') and 'normal' in alignment_status.get('tophat').get('dcc_specimen_type').lower()) or \
            (alignment_status.get('star') and 'normal' in alignment_status.get('star').get('dcc_specimen_type').lower()): # normal specimen
             if not donor.get('rna_seq').get('alignment').get('normal'): #no normal yet in RNA-Seq alignment of this donor
-                donor.get('rna_seq').get('alignment')['normal'] = []
-            donor.get('rna_seq').get('alignment')['normal'].append(alignment_status)
+                donor.get('rna_seq').get('alignment')['normal'] = {}
+            donor.get('rna_seq').get('alignment')['normal'] = alignment_status
 
         elif (alignment_status.get('tophat') and 'tumour' in alignment_status.get('tophat').get('dcc_specimen_type').lower()) or \
            (alignment_status.get('star') and 'tumour' in alignment_status.get('star').get('dcc_specimen_type').lower()): 
