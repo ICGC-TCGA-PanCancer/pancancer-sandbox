@@ -442,14 +442,14 @@ def main(argv=None):
                             else:
                                 line += ''
                         else:
-                            line += str(q)
+                            line += str(q) if q else ''
                         count0 = count0 + 1
                         if count0 < len(pilot_tsv_json.get(p)):
                             line += ','
                 else:
                     line += '' # None as empty string
             else:
-                line += str(pilot_tsv_json.get(p))
+                line += str(pilot_tsv_json.get(p)) if pilot_tsv_json.get(p) else ''
             line += '\t' # field ends
         line = line[:-1] # remove the last unwanted '\t'
         pilot_tsv_fh.write(line + '\n')    
