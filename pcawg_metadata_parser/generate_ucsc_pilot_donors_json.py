@@ -113,7 +113,7 @@ def create_reorganized_donor(donor_unique_id, es_json):
             'tumor_specimens': []
         },
         'rna_seq': {
-             'normal_specimens': {},
+             'normal_specimen': {},
              'tumor_specimens': []
         }
     }
