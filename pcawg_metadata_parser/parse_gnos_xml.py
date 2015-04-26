@@ -1279,8 +1279,9 @@ def add_rna_seq_status_to_donor(donor, aggregated_bam_info):
         if (alignment_status.get('tophat') and 'normal' in alignment_status.get('tophat').get('dcc_specimen_type').lower()) or \
            (alignment_status.get('star') and 'normal' in alignment_status.get('star').get('dcc_specimen_type').lower()): # normal specimen
             if not donor.get('rna_seq').get('alignment').get('normal'): #no normal yet in RNA-Seq alignment of this donor
-                donor.get('rna_seq').get('alignment')['normal'] = {}
-            donor.get('rna_seq').get('alignment')['normal'] = alignment_status
+                donor.get('rna_seq').get('alignment')['normal'] = alignment_status
+            else:
+                logger.warning('more than one RNA-Seq normal aliquot found in donor: {}'.format(donor.get('donor_unique_id')))
 
         elif (alignment_status.get('tophat') and 'tumour' in alignment_status.get('tophat').get('dcc_specimen_type').lower()) or \
            (alignment_status.get('star') and 'tumour' in alignment_status.get('star').get('dcc_specimen_type').lower()): 
