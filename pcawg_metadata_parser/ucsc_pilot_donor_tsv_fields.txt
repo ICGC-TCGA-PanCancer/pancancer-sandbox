@@ -1,0 +1,38 @@
+Project code
+Submitter donor ID
+Data train
+Train2 pilot
+Normal WGS submitter specimen ID
+Normal WGS submitter sample ID
+Normal WGS aliquot ID
+Normal WGS alignment GNOS repo(s)
+Normal WGS alignment GNOS analysis ID
+Normal WGS alignment BAM file name
+Tumour WGS Specimen Count
+Tumour WGS submitter specimen ID(s)
+Tumour WGS submitter sample ID(s)
+Tumour WGS aliquot ID(s)
+Tumour WGS alignment GNOS repo(s)
+Tumour WGS alignment GNOS analysis ID(s)
+Tumour WGS alignment BAM file name(s)
+Sanger variant call GNOS repo(s)
+Sanger variant call GNOS analysis ID(s)
+Sanger variant call GNOS file name prefix
+Normal RNA-Seq submitter specimen ID
+Normal RNA-Seq submitter sample ID
+Normal RNA-Seq aliquot ID
+Normal RNA-Seq STAR alignment GNOS repo(s)
+Normal RNA-Seq STAR alignment GNOS analysis ID
+Normal RNA-Seq STAR alignment BAM file name
+Normal RNA-Seq TopHat2 alignment GNOS repo(s)
+Normal RNA-Seq TopHat2 alignment GNOS analysis ID
+Normal RNA-Seq TopHat2 alignment BAM file name
+Tumour RNA-Seq submitter specimen ID
+Tumour RNA-Seq submitter sample ID
+Tumour RNA-Seq aliquot ID
+Tumour RNA-Seq STAR alignment GNOS repo(s)
+Tumour RNA-Seq STAR alignment GNOS analysis ID
+Tumour RNA-Seq STAR alignment BAM file name
+Tumour RNA-Seq TopHat2 alignment GNOS repo(s)
+Tumour RNA-Seq TopHat2 alignment GNOS analysis ID
+Tumour RNA-Seq TopHat2 alignment BAM file name
