@@ -195,7 +195,7 @@ def add_rna_seq_info(reorganized_donor, es_json):
                         }
                     ]
                 }
-            reorganized_donor.get('rna_seq')[specimen_type + '_specimens'] = alignment_info
+            reorganized_donor.get('rna_seq')[specimen_type + ('_specimens' if specimen_type == 'tumor' else '_specimen')] = alignment_info
         else:
             for aliquot in rna_seq_info.get(specimen_type):
                 alignment_info = {}
