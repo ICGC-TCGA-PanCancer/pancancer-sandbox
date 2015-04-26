@@ -399,9 +399,10 @@ def main(argv=None):
     # read the tsv fields file and write to the pilot donor tsv file
     tsv_fields = 'ucsc_pilot_donor_tsv_fields.txt'
     with open(tsv_fields, 'r') as t:
+        fields = []
         for line in t:
-            pilot_tsv_fh.write(line.rstrip() + '\t')
-        pilot_tsv_fh.write('\n')        
+            fields.append(line.rstrip())
+        pilot_tsv_fh.write('\t'.join(fields) + '\n')
 
 
 	# get the list of donors whose sanger_vcf without missing bams
@@ -424,6 +425,7 @@ def main(argv=None):
         # generate json for tsv file from reorganized donor
         pilot_tsv_json = generate_json_for_tsv_file(reorganized_donor)
         # write to the tsv file
+        line = ""
         for p in pilot_tsv_json.keys():
             if isinstance(pilot_tsv_json.get(p), list):
                 if pilot_tsv_json.get(p):
@@ -434,22 +436,23 @@ def main(argv=None):
                                 count = 0
                                 for r in q:
                                     count = count + 1
-                                    pilot_tsv_fh.write(str(r))
+                                    line += str(r)
                                     if count < len(q):
-                                        pilot_tsv_fh.write(' | ')
+                                        line += '|'
                             else:
-                                pilot_tsv_fh.write('')
+                                line += ''
                         else:
-                            pilot_tsv_fh.write(str(q))
+                            line += str(q)
                         count0 = count0 + 1
                         if count0 < len(pilot_tsv_json.get(p)):
-                            pilot_tsv_fh.write(' , ')
+                            line += ','
                 else:
-                    pilot_tsv_fh.write(str(None))
+                    line += '' # None as empty string
             else:
-                pilot_tsv_fh.write(str(pilot_tsv_json.get(p)))
-            pilot_tsv_fh.write('\t')
-        pilot_tsv_fh.write('\n')    
+                line += str(pilot_tsv_json.get(p))
+            line += '\t' # field ends
+        line = line[:-1] # remove the last unwanted '\t'
+        pilot_tsv_fh.write(line + '\n')    
         
     pilot_tsv_fh.close()
 
