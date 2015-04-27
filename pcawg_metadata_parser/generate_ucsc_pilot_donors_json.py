@@ -173,6 +173,10 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
 
 
 def add_rna_seq_info(reorganized_donor, es_json):
+    # to build pcawg santa cruz pilot dataset, this is a temporary walkaround to exclude the 130 RNA-Seq bad
+    # entries from MALY-DE and CLLE-ES projects
+    if reorganized_donor.get('dcc_project_code') in ('MALY-DE', 'CLLE-ES'): return
+
     rna_seq_info = es_json.get('rna_seq').get('alignment')
     for specimen_type in rna_seq_info.keys():
         if not rna_seq_info.get(specimen_type): # the specimen_type has no alignment result
