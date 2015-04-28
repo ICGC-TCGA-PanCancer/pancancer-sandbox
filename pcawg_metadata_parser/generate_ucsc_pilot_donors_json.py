@@ -100,7 +100,7 @@ def create_reorganized_donor(donor_unique_id, es_json):
                     'submitter_sample_id': es_json.get('normal_alignment_status').get('submitter_sample_id'),
                     'specimen_type': es_json.get('normal_alignment_status').get('dcc_specimen_type'),
                     'aliquot_id': es_json.get('normal_alignment_status').get('aliquot_id'),
-                    'gnos_repo': es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_repo'),
+                    'gnos_repo': filter_liri_jp(es_json.get('dcc_project_code'), es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')),
                     'gnos_id': es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_id'),
                     'files': [
                         {
@@ -142,7 +142,7 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
                 'submitter_sample_id': aliquot.get('submitter_sample_id'),
                 'specimen_type': aliquot.get('dcc_specimen_type'),
                 'aliquot_id': aliquot.get('aliquot_id'),
-                'gnos_repo': aliquot.get('aligned_bam').get('gnos_repo'),
+                'gnos_repo': filter_liri_jp(es_json.get('dcc_project_code'), aliquot.get('aligned_bam').get('gnos_repo')),
                 'gnos_id': aliquot.get('aligned_bam').get('gnos_id'),
                 'files':[
                     {
@@ -170,6 +170,16 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
         reorganized_donor.get('wgs').get('tumor_specimens').append(aliquot_info) 
 
     reorganized_donor['tumor_wgs_specimen_count'] = tumor_wgs_specimen_count
+
+
+def filter_liri_jp(project, gnos_repo):
+    if not project == 'LIRI-JP':
+        return gnos_repo
+    elif "https://gtrepo-riken.annailabs.com/" in gnos_repo:
+        return ["https://gtrepo-riken.annailabs.com/"]
+    else:
+        print "This should never happen: alignment for LIRI-JP is not available at Riken repo"
+        sys.exit(1)
 
 
 def add_rna_seq_info(reorganized_donor, es_json):
