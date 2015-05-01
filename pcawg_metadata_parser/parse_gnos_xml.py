@@ -114,7 +114,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
             else:
                 vcf_entries.get(donor_unique_id).update({'sanger_variant_calling': current_vcf_entry})
 
-    elif analysis_attrib.get('variant_workflow_name') == 'EmblPancancerStr' \
+    elif analysis_attrib.get('variant_workflow_name').startswith('EMBLPancancer') \
         and  analysis_attrib.get('variant_workflow_version') in ['1.0.0']:
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
 
@@ -126,7 +126,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_vcf_entry, 'EMBL')
 
     elif analysis_attrib.get('variant_workflow_name') == 'DKFZPancancerCnIndelSnv' \
-        and  analysis_attrib.get('variant_workflow_version') in ['1.0.131']:
+        and  analysis_attrib.get('variant_workflow_version') in ['1.0.0']:
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
 
         logger.info('process DKFZ variant call for donor: {}, in entry {}'
