@@ -34,7 +34,7 @@ echo synchronizing with GNOS repos
 
 echo
 echo cleaning up older ES indexes
-for f in `curl 'localhost:9200/_cat/indices?v' |awk '{print $3}' |grep p_ |grep -v p_150210030103 |grep -v p_150425022553 |sort -r |tail -n +3`;
+for f in `curl 'localhost:9200/_cat/indices?v' |awk '{print $3}' |grep p_ |grep -v p_150210030103 |grep -v p_150425022553 |grep -v p_150504020204 |sort -r |tail -n +3`;
   do echo deleting index $f ;
   curl -XDELETE localhost:9200/$f ;
 done
