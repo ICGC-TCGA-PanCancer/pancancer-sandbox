@@ -61,7 +61,9 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
         "pdc1_1": set(),
         "pdc2_0": set(),
         "tokyo": set(),
-        "ucsc": set()
+        "ucsc": set(),
+        "sanger": set(),
+        "idash": set()        
     }
 
     get_whitelists(compute_sites)
