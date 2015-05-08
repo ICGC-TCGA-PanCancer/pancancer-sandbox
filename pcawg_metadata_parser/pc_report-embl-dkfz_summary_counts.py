@@ -18,12 +18,12 @@ def init_report_dir(metadata_dir, report_name):
 
 def generate_report(metadata_dir, report_name):
     count_types = [
-        "live_aligned_sanger_variant_not_called_donors",
-        "live_sanger_variant_called_donors", # don't switch order
+        "live_aligned_embl-dkfz_variant_not_called_donors",
+        "live_embl-dkfz_variant_called_donors", # don't switch order
     ]
 
     report_dir = init_report_dir(metadata_dir, report_name)
-    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir)
+    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-05-07')
 
     data = [["Date", "To be called", "Called"]]
     counts = []
@@ -93,11 +93,11 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
     with open(report_dir + '/summary_site_counts.json', 'w') as o: o.write(json.dumps(site_summary))
 
     # get all previous days counts
-    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-03-07')
+    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-05-07')
 
     site_summary_report = []
     for i, md in reversed(list(enumerate(metadata_dirs))):
-        summary_site_count_file = md + '/reports/summary_counts/summary_site_counts.json'
+        summary_site_count_file = md + '/reports/embl-dkfz_summary_counts/summary_site_counts.json'
         if not os.path.isfile(summary_site_count_file): continue
 
         site_counts = json.load(open(summary_site_count_file))
@@ -106,7 +106,7 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
 
 
 def get_whitelists(compute_sites):
-    whitelist_dir = '../pcawg-operations/variant_calling/sanger_workflow/whitelists/'
+    whitelist_dir = '../pcawg-operations/variant_calling/dkfz_embl_workflow/whitelists/'
 
     for c in compute_sites:
         files = glob.glob(whitelist_dir + '/' + c + '/' + c + '.*.txt')

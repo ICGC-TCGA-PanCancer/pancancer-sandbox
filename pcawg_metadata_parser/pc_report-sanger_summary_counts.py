@@ -63,7 +63,7 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
         "tokyo": set(),
         "ucsc": set(),
         "sanger": set(),
-        "idash": set()        
+        "idash": set()
     }
 
     get_whitelists(compute_sites)
@@ -97,7 +97,7 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
 
     site_summary_report = []
     for i, md in reversed(list(enumerate(metadata_dirs))):
-        summary_site_count_file = md + '/reports/summary_counts/summary_site_counts.json'
+        summary_site_count_file = md + '/reports/sanger_summary_counts/summary_site_counts.json'
         if not os.path.isfile(summary_site_count_file): continue
 
         site_counts = json.load(open(summary_site_count_file))
