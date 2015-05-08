@@ -1316,6 +1316,14 @@ def add_alignment_status_to_donor(donor, aggregated_bam_info):
                 )
 
 
+def add_lane_count_to_specimen(alignment_status):
+    if len(alignment_status.get('lane_count_unaligned')) == 1:
+        alignment_status['do_lane_counts_in_every_bam_entry_match'] = True
+        if str(len(alignment_status.get('unaligned_bams'))) in alignment_status.get('lane_count_unaligned'):
+            alignment_status['do_lane_count_and_bam_count_match'] = True
+    return alignment_status
+
+
 def reorganize_unaligned_bam_info(alignment_status):
     unaligned_bams = []
     for gnos_id in alignment_status.get('unaligned_bams').keys():
@@ -1327,6 +1335,7 @@ def reorganize_unaligned_bam_info(alignment_status):
             }
         )
     alignment_status['unaligned_bams'] = unaligned_bams
+    add_lane_count_to_specimen(alignment_status)
     return alignment_status
 
 
@@ -1348,6 +1357,9 @@ def bam_aggregation(bam_files):
                 "submitter_sample_id": bam['submitter_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": True,
+                "lane_count_unaligned": set(),
+                "do_lane_counts_in_every_bam_entry_match": False,
+                "do_lane_count_and_bam_count_match": False,
                 "aligned_bam": {
                     "gnos_id": bam['bam_gnos_ao_id'],
                     "bam_file_name": bam['bam_file_name'],
@@ -1420,6 +1432,9 @@ def bam_aggregation(bam_files):
                 "submitter_sample_id": bam['submitter_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": False,
+                "lane_count_unaligned": set(bam['total_lanes']),
+                "do_lane_counts_in_every_bam_entry_match": False,
+                "do_lane_count_and_bam_count_match": False,                
                 "aligned_bam": {},
                 "bam_with_unmappable_reads": {},
                 "unaligned_bams": {
@@ -1431,6 +1446,8 @@ def bam_aggregation(bam_files):
             }
         else: # aliquot already exists
             alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
+            alignment_status.get('lane_count_unaligned').add(bam['total_lanes'])
+
             if alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']): # this unaligned bam was encountered before
                 alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo').add(bam['gnos_repo'])
             else:
@@ -1438,6 +1455,7 @@ def bam_aggregation(bam_files):
                         "bam_file_name": bam['bam_file_name'],
                         "gnos_repo": set([bam['gnos_repo']])
                 }
+                
 
     aggregated_bam_info_new['WGS'] = aggregated_bam_info
     
