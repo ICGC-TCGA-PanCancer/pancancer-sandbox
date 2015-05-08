@@ -1050,6 +1050,16 @@
                   "type":"string",
                   "index":"not_analyzed"
                },
+               "lane_count_unaligned":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "do_lane_count_and_bam_count_match":{
+                  "type":"boolean"
+               },
+               "do_lane_counts_in_every_bam_entry_match":{
+                  "type":"boolean"
+               },                                              
                "submitter_sample_id":{
                   "type":"string",
                   "index":"not_analyzed"
@@ -1477,6 +1487,16 @@
                   "type":"string",
                   "index":"not_analyzed"
                },
+               "lane_count_unaligned":{
+                  "type":"string",
+                  "index":"not_analyzed"
+               },
+               "do_lane_count_and_bam_count_match":{
+                  "type":"boolean"
+               },
+               "do_lane_counts_in_every_bam_entry_match":{
+                  "type":"boolean"
+               },                
                "submitter_sample_id":{
                   "type":"string",
                   "index":"not_analyzed"
