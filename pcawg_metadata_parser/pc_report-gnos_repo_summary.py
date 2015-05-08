@@ -581,23 +581,27 @@ es_queries = [
                               "T"
                             ]
                           }
-                        }
-                      ],
-                      "should":[
-                        {
-                          "terms": {
-                            "flags.is_dkfz_variant_calling_performed": [
-                              "F"
-                            ]
-                          }
                         },
                         {
-                          "terms": {
-                            "flags.is_embl_variant_calling_performed": [
-                              "F"
+                          "bool": {
+                            "should":[
+                              {
+                                "terms": {
+                                  "flags.is_dkfz_variant_calling_performed": [
+                                    "F"
+                                  ]
+                                }
+                              },
+                              {
+                                "terms": {
+                                  "flags.is_embl_variant_calling_performed": [
+                                    "F"
+                                  ]
+                                }
+                              }                        
                             ]
                           }
-                        }                        
+                        }
                       ],
                       "must_not": [
                         {
@@ -694,23 +698,27 @@ es_queries = [
                               "T"
                             ]
                           }
-                        }
-                      ],
-                      "should": [
-                        {
-                          "terms": {
-                            "flags.is_dkfz_variant_calling_performed": [
-                              "F"
-                            ]
-                          }
                         },
                         {
-                          "terms": {
-                            "flags.is_embl_variant_calling_performed": [
-                              "F"
+                          "bool": {
+                            "should":[
+                              {
+                                "terms": {
+                                  "flags.is_dkfz_variant_calling_performed": [
+                                    "F"
+                                  ]
+                                }
+                              },
+                              {
+                                "terms": {
+                                  "flags.is_embl_variant_calling_performed": [
+                                    "F"
+                                  ]
+                                }
+                              }                        
                             ]
                           }
-                        }                        
+                        }
                       ],
                       "must_not": [
                         {
