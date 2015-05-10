@@ -416,6 +416,8 @@ def prepare_aggregated_specimen_level_info(bam_file):
 
 def is_in_donor_blacklist(donor_unique_id):
     donor_blacklist = set([
+            "PACA-CA::PCSI_0449",
+            "PACA-CA::PCSI_0309",
             "LIHC-US::G1551",
             "LIHC-US::G15512",
             "TCGA_MUT_BENCHMARK_4::G15511",
