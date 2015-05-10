@@ -47,6 +47,13 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
   analysis_attrib = get_analysis_attrib(gnos_analysis)
 
   if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
+    donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
+
+    if is_in_donor_blacklist(donor_unique_id):
+        logger.warning('ignore blacklisted donor: {} GNOS entry: {}'
+                         .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
+
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
         and (
