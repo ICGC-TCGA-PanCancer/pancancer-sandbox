@@ -1331,6 +1331,7 @@ def reorganize_unaligned_bam_info(alignment_status):
             {
                 "gnos_id": gnos_id,
                 "bam_file_name": alignment_status.get('unaligned_bams').get(gnos_id).get('bam_file_name'),
+                "md5sum": alignment_status.get('unaligned_bams').get(gnos_id).get('md5sum'),
                 "gnos_repo": alignment_status.get('unaligned_bams').get(gnos_id).get('gnos_repo'),
             }
         )
@@ -1440,6 +1441,7 @@ def bam_aggregation(bam_files):
                 "unaligned_bams": {
                     bam['bam_gnos_ao_id']: {
                         "bam_file_name": bam['bam_file_name'],
+                        "md5sum": bam['md5sum'],
                         "gnos_repo": set([bam['gnos_repo']])
                     }
                 }
@@ -1449,10 +1451,20 @@ def bam_aggregation(bam_files):
             alignment_status.get('lane_count_unaligned').add(bam['total_lanes'])
 
             if alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']): # this unaligned bam was encountered before
-                alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo').add(bam['gnos_repo'])
+                if alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('md5sum') == bam['md5sum']: # this unaligned bam has the same md5sum with encountered one
+                    alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo').add(bam['gnos_repo'])
+                else:
+                    logger.warning( 'Unaligend bams with same gnos_id: {} have multiple different md5sum, in use md5sum: {}, additional md5sum: {}'
+                                    .format(
+                                        bam['bam_gnos_ao_id'],
+                                        alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('md5sum'),
+                                        bam['md5sum'])
+                                )
+
             else:
                 alignment_status.get('unaligned_bams')[bam['bam_gnos_ao_id']] = {
                         "bam_file_name": bam['bam_file_name'],
+                        "md5sum": bam['md5sum'],
                         "gnos_repo": set([bam['gnos_repo']])
                 }
                 
