@@ -1,8 +1,0 @@
-donor_unique_id
-submitter_donor_id
-dcc_project_code
-aliquot_id
-submitter_specimen_id
-submitter_sample_id
-dcc_specimen_type
-library_strategy
