@@ -81,6 +81,7 @@ echo running alignment summary report for $M
 ./pc_report-embl-dkfz_summary_counts.py -m $M
 ./pc_report-sanger_call_missing_input.py -m $M
 ./pc_report-donors_RNA_Seq_alignment_summary.py -m $M
+./generate_ucsc_pilot_donors_json.py -m $M
 
 echo gzip all jsonl files under $M
 gzip $M/*.jsonl
