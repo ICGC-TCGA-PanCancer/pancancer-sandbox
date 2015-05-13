@@ -1325,6 +1325,14 @@ def add_alignment_status_to_donor(donor, aggregated_bam_info):
                 )
 
 
+def update_lane_count_flags(alignment_status):
+    if len(alignment_status.get('lane_count')) == 1:
+        alignment_status['do_lane_counts_in_every_bam_entry_match'] = True
+        if str(len(alignment_status.get('unaligned_bams'))) in alignment_status.get('lane_count'):
+            alignment_status['do_lane_count_and_bam_count_match'] = True
+    return alignment_status
+
+
 def reorganize_unaligned_bam_info(alignment_status):
     unaligned_bams = []
     for gnos_id in alignment_status.get('unaligned_bams').keys():
@@ -1332,10 +1340,12 @@ def reorganize_unaligned_bam_info(alignment_status):
             {
                 "gnos_id": gnos_id,
                 "bam_file_name": alignment_status.get('unaligned_bams').get(gnos_id).get('bam_file_name'),
+                "md5sum": alignment_status.get('unaligned_bams').get(gnos_id).get('md5sum'),
                 "gnos_repo": alignment_status.get('unaligned_bams').get(gnos_id).get('gnos_repo'),
             }
         )
     alignment_status['unaligned_bams'] = unaligned_bams
+    update_lane_count_flags(alignment_status)
     return alignment_status
 
 
@@ -1357,6 +1367,9 @@ def bam_aggregation(bam_files):
                 "submitter_sample_id": bam['submitter_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": True,
+                "lane_count": set(),
+                "do_lane_counts_in_every_bam_entry_match": False,
+                "do_lane_count_and_bam_count_match": False,
                 "aligned_bam": {
                     "gnos_id": bam['bam_gnos_ao_id'],
                     "bam_file_name": bam['bam_file_name'],
@@ -1430,24 +1443,41 @@ def bam_aggregation(bam_files):
                 "submitter_sample_id": bam['submitter_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": False,
+                "lane_count": set(bam['total_lanes']),
+                "do_lane_counts_in_every_bam_entry_match": False,
+                "do_lane_count_and_bam_count_match": False,                
                 "aligned_bam": {},
                 "bam_with_unmappable_reads": {},
                 "unaligned_bams": {
                     bam['bam_gnos_ao_id']: {
                         "bam_file_name": bam['bam_file_name'],
+                        "md5sum": bam['md5sum'],
                         "gnos_repo": set([bam['gnos_repo']])
                     }
                 }
             }
         else: # aliquot already exists
             alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
+            alignment_status.get('lane_count').add(bam['total_lanes'])
+
             if alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']): # this unaligned bam was encountered before
-                alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo').add(bam['gnos_repo'])
+                if alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('md5sum') == bam['md5sum']: # this unaligned bam has the same md5sum with encountered one
+                    alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo').add(bam['gnos_repo'])
+                else:
+                    logger.warning( 'Unaligend lane-level BAMs with same gnos_id: {} have different md5sum, in use entry at gnos repo: {}, additional entry at gnos repo: {}'
+                                    .format(
+                                        bam['bam_gnos_ao_id'],
+                                        alignment_status.get('unaligned_bams').get(bam['bam_gnos_ao_id']).get('gnos_repo')[-1],
+                                        bam['gnos_repo'])
+                                )
+
             else:
                 alignment_status.get('unaligned_bams')[bam['bam_gnos_ao_id']] = {
                         "bam_file_name": bam['bam_file_name'],
+                        "md5sum": bam['md5sum'],
                         "gnos_repo": set([bam['gnos_repo']])
                 }
+                
 
     aggregated_bam_info_new['WGS'] = aggregated_bam_info
     
