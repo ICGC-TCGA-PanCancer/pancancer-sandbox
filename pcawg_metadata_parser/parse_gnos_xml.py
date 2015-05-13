@@ -1501,6 +1501,7 @@ def bam_aggregation(bam_files):
                         "gnos_repo": [bam['gnos_repo']],
                         "gnos_id": bam['bam_gnos_ao_id'],
                         "bam_file_name": bam['bam_file_name'],
+                        "bam_file_md5sum": bam['md5sum'],
                         "bam_file_size": bam['bam_file_size'],
                         "gnos_last_modified": [bam['last_modified']]
                     }
@@ -1530,6 +1531,7 @@ def bam_aggregation(bam_files):
                             "gnos_repo": [bam['gnos_repo']],
                             "gnos_id": bam['bam_gnos_ao_id'],
                             "bam_file_name": bam['bam_file_name'],
+                            "bam_file_md5sum": bam['md5sum'],
                             "bam_file_size": bam['bam_file_size'],
                             "gnos_last_modified": [bam['last_modified']]
                             }
@@ -1569,6 +1571,7 @@ def bam_aggregation(bam_files):
                             "gnos_repo": [bam['gnos_repo']],
                             "gnos_id": bam['bam_gnos_ao_id'],
                             "bam_file_name": bam['bam_file_name'],
+                            "bam_file_md5sum": bam['md5sum'],
                             "bam_file_size": bam['bam_file_size'],
                             "gnos_last_modified": [bam['last_modified']]
                             }
