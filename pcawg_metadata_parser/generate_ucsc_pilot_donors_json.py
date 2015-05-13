@@ -102,9 +102,11 @@ def create_reorganized_donor(donor_unique_id, es_json):
                     'aliquot_id': es_json.get('normal_alignment_status').get('aliquot_id'),
                     'gnos_repo': filter_liri_jp(es_json.get('dcc_project_code'), es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_repo')),
                     'gnos_id': es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_id'),
+                    'gnos_last_modified': es_json.get('normal_alignment_status').get('aligned_bam').get('gnos_last_modified')[-1],
                     'files': [
                         {
-	                        'bam_file_name': es_json.get('normal_alignment_status').get('aligned_bam').get('bam_file_name'),
+                            'bam_file_name': es_json.get('normal_alignment_status').get('aligned_bam').get('bam_file_name'),
+                            'bam_file_md5sum': es_json.get('normal_alignment_status').get('aligned_bam').get('bam_file_md5sum'),
 	                        'bam_file_size': es_json.get('normal_alignment_status').get('aligned_bam').get('bam_file_size')                        
 	                    }
                     ]
@@ -144,9 +146,11 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
                 'aliquot_id': aliquot.get('aliquot_id'),
                 'gnos_repo': filter_liri_jp(es_json.get('dcc_project_code'), aliquot.get('aligned_bam').get('gnos_repo')),
                 'gnos_id': aliquot.get('aligned_bam').get('gnos_id'),
+                'gnos_last_modified': aliquot.get('aligned_bam').get('gnos_last_modified')[-1],
                 'files':[
                     {
                         'bam_file_name': aliquot.get('aligned_bam').get('bam_file_name'),
+                        'bam_file_md5sum': aliquot.get('aligned_bam').get('bam_file_md5sum'),
                         'bam_file_size': aliquot.get('aligned_bam').get('bam_file_size')
                     }
                 ]
@@ -158,6 +162,7 @@ def add_wgs_tumor_specimens(reorganized_donor, es_json):
                 'aliquot_id': aliquot.get('aliquot_id'),
                 'gnos_repo': wgs_tumor_sanger_vcf_info.get('gnos_repo'),
                 'gnos_id': wgs_tumor_sanger_vcf_info.get('gnos_id'),
+                'gnos_last_modified': wgs_tumor_sanger_vcf_info.get('gnos_last_modified')[-1],
                 'files':[]
     	    }
     	}
@@ -185,7 +190,7 @@ def filter_liri_jp(project, gnos_repo):
 def add_rna_seq_info(reorganized_donor, es_json):
     # to build pcawg santa cruz pilot dataset, this is a temporary walkaround to exclude the 130 RNA-Seq bad
     # entries from MALY-DE and CLLE-ES projects
-    if reorganized_donor.get('dcc_project_code') in ('MALY-DE', 'CLLE-ES'): return
+    #if reorganized_donor.get('dcc_project_code') in ('MALY-DE', 'CLLE-ES'): return
 
     rna_seq_info = es_json.get('rna_seq').get('alignment')
     for specimen_type in rna_seq_info.keys():
@@ -202,9 +207,11 @@ def add_rna_seq_info(reorganized_donor, es_json):
                     'aliquot_id': aliquot.get(workflow_type).get('aliquot_id'),
                     'gnos_repo': aliquot.get(workflow_type).get('gnos_info').get('gnos_repo'),
                     'gnos_id': aliquot.get(workflow_type).get('gnos_info').get('gnos_id'),
+                    'gnos_last_modified': aliquot.get(workflow_type).get('gnos_info').get('gnos_last_modified')[-1],
                     'files': [
                         {
                             'bam_file_name': aliquot.get(workflow_type).get('gnos_info').get('bam_file_name'),
+                            'bam_file_md5sum': aliquot.get(workflow_type).get('gnos_info').get('bam_file_md5sum'),
                             'bam_file_size': aliquot.get(workflow_type).get('gnos_info').get('bam_file_size')                           
                         }
                     ]
@@ -221,10 +228,12 @@ def add_rna_seq_info(reorganized_donor, es_json):
 			    	    'aliquot_id': aliquot.get(workflow_type).get('aliquot_id'),
 			    	    'gnos_repo': aliquot.get(workflow_type).get('gnos_info').get('gnos_repo'),
 			    	    'gnos_id': aliquot.get(workflow_type).get('gnos_info').get('gnos_id'),
+                        'gnos_last_modified': aliquot.get(workflow_type).get('gnos_info').get('gnos_last_modified')[-1],
 			    	    'files': [
 			    	        {
-				    	        'bam_file_name': aliquot.get(workflow_type).get('gnos_info').get('bam_file_name'),
-			                    'bam_file_size': aliquot.get(workflow_type).get('gnos_info').get('bam_file_size')			    	        
+                                'bam_file_name': aliquot.get(workflow_type).get('gnos_info').get('bam_file_name'),
+                                'bam_file_md5sum': aliquot.get(workflow_type).get('gnos_info').get('bam_file_md5sum'),
+                                'bam_file_size': aliquot.get(workflow_type).get('gnos_info').get('bam_file_size')			    	        
 			                }
 			    	    ]
 			    	}
@@ -406,9 +415,9 @@ def main(argv=None):
     es = Elasticsearch([es_host])
     #es_reorganized = init_es(es_host, es_index_reorganize)
 
-    donor_fh = open(metadata_dir+'/ucsc_polit_donor_'+es_index_reorganize+'.jsonl', 'w')
+    donor_fh = open(metadata_dir+'/reports/sanger_variant_called_donor_' + es_index_reorganize + '.jsonl', 'w')
 
-    pilot_tsv_fh = open(metadata_dir + '/ucsc_polit_donor_' + es_index_reorganize + '.tsv', 'w')
+    pilot_tsv_fh = open(metadata_dir + '/reports/sanger_variant_called_donor_' + es_index_reorganize + '.tsv', 'w')
     
     # read the tsv fields file and write to the pilot donor tsv file
     tsv_fields = 'ucsc_pilot_donor_tsv_fields.txt'

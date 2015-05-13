@@ -382,7 +382,7 @@ def keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_v
 def create_vcf_entry(analysis_attrib, gnos_analysis):
     files = []
     for f in gnos_analysis.get('files').get('file'):
-        files.append({'file_name': f.get('filename'), 'file_size': f.get('filesize')})
+        files.append({'file_name': f.get('filename'), 'file_size': f.get('filesize'), 'file_md5sum': f.get('checksum').get('#text')})
 
     vcf_entry = {
         #'analysis_attrib': analysis_attrib, # remove this later
@@ -1361,6 +1361,7 @@ def bam_aggregation(bam_files):
                     "gnos_id": bam['bam_gnos_ao_id'],
                     "bam_file_name": bam['bam_file_name'],
                     "bam_file_size": bam['bam_file_size'],
+                    "bam_file_md5sum": bam['md5sum'],
                     "gnos_last_modified": [bam['last_modified']],
                     "gnos_repo": [bam['gnos_repo']]
                  },
