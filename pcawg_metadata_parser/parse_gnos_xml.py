@@ -1444,7 +1444,7 @@ def bam_aggregation(bam_files):
                 "submitter_sample_id": bam['submitter_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": False,
-                "lane_count": set(bam['total_lanes']),
+                "lane_count": set([bam['total_lanes']]),
                 "do_lane_counts_in_every_bam_entry_match": False,
                 "do_lane_count_and_bam_count_match": False,                
                 "aligned_bam": {},
