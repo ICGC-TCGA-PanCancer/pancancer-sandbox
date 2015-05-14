@@ -223,7 +223,7 @@ def main(argv=None):
         specimen_info_list = create_specimen_info(donor_unique_id, es_json)
         
         for specimen in specimen_info_list: 
-            PCAWG_specimen_fh.write(json.dumps(specimen, default=set_default) + '\n')
+            #PCAWG_specimen_fh.write(json.dumps(specimen, default=set_default) + '\n')
             # write to the tsv file
             for p in specimen.keys():
                 if isinstance(specimen.get(p), set):
@@ -234,7 +234,7 @@ def main(argv=None):
         
     PCAWG_specimen_tsv_fh.close()
 
-    PCAWG_specimen_fh.close()
+    #PCAWG_specimen_fh.close()
 
     return 0
 
