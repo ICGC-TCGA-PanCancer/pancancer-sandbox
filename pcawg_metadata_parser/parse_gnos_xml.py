@@ -199,7 +199,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         return # completely ignore test gnos entries for now, this is the quickest way to avoid test interferes real data 
 
     if gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS'].get('TITLE') and gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['TITLE'].startswith('TCGA/ICGC PanCancer Specimen-Level Germline Variant Calling for Specimen'):
-        logger.warning('ignore Annai germaline call entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
+        logger.warning('ignore Annai germline call entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
         return
 
     if gnos_analysis.get('library_strategy') == 'RNA-Seq' and not analysis_attrib.get('workflow_name') in ('RNA-Seq_Alignment_SOP_STAR', 'Workflow_Bundle_TOPHAT2'):
@@ -476,7 +476,8 @@ def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
         bam_file['is_aligned'] = True
         bam_file['bam_type'] = 'Specimen level aligned BAM'
         bam_file['alignment'] = get_alignment_detail(analysis_attrib, gnos_analysis)
-    elif 'star' in gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower() or 'tophat' in gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower():
+    elif gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower().startswith('star ') \
+            or gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower().startswith('tophat2 '):
         bam_file['is_aligned'] = True
         bam_file['bam_type'] = 'RNA-Seq aligned BAM'
         bam_file['alignment'] = get_rna_seq_alignment_detail(analysis_attrib, gnos_analysis)
