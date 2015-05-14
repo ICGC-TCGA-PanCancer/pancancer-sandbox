@@ -207,13 +207,10 @@ def main(argv=None):
     PCAWG_specimen_tsv_fh = open(metadata_dir + '/PCAWG_Full_List_In_Specimen_Level_' + es_index + '.tsv', 'w')
     
     # read the tsv fields file and write to the pilot donor tsv file
-    tsv_fields = 'PCAWG_Full_List_In_Specimen_Level_tsv_fields.txt'
-    with open(tsv_fields, 'r') as t:
-        fields = []
-        for line in t:
-            fields.append(line.rstrip())
-        PCAWG_specimen_tsv_fh.write('\t'.join(fields) + '\n')
-
+    tsv_fields = ["donor_unique_id", "submitter_donor_id", "dcc_project_code", "aliquot_id", "submitter_specimen_id", \
+    "submitter_sample_id", "dcc_specimen_type", "library_strategy" 
+    ]
+    PCAWG_specimen_tsv_fh.write('\t'.join(tsv_fields) + '\n')
 
 	# get the full list of donors in PCAWG
     donors_list = get_donors_list(es, es_index, es_queries)
