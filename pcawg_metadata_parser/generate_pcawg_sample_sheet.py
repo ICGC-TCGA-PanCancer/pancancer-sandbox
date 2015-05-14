@@ -202,9 +202,9 @@ def main(argv=None):
 
     es = Elasticsearch([es_host])
 
-    PCAWG_specimen_fh = open(metadata_dir+'/PCAWG_Full_List_In_Specimen_Level_'+es_index+'.jsonl', 'w')
+    #PCAWG_specimen_fh = open(metadata_dir+'/reports/pcawg_sample_sheet.jsonl', 'w')
 
-    PCAWG_specimen_tsv_fh = open(metadata_dir + '/PCAWG_Full_List_In_Specimen_Level_' + es_index + '.tsv', 'w')
+    PCAWG_specimen_tsv_fh = open(metadata_dir + '/reports/pcawg_sample_sheet.tsv', 'w')
     
     # read the tsv fields file and write to the pilot donor tsv file
     tsv_fields = ["donor_unique_id", "submitter_donor_id", "dcc_project_code", "aliquot_id", "submitter_specimen_id", \

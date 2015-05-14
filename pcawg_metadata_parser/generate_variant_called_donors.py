@@ -415,17 +415,15 @@ def main(argv=None):
     es = Elasticsearch([es_host])
     #es_reorganized = init_es(es_host, es_index_reorganize)
 
-    donor_fh = open(metadata_dir+'/reports/sanger_variant_called_donor_' + es_index_reorganize + '.jsonl', 'w')
+    donor_fh = open(metadata_dir+'/reports/sanger_variant_called_donors.jsonl', 'w')
 
-    pilot_tsv_fh = open(metadata_dir + '/reports/sanger_variant_called_donor_' + es_index_reorganize + '.tsv', 'w')
+    pilot_tsv_fh = open(metadata_dir + '/reports/sanger_variant_called_donors.tsv', 'w')
     
     # read the tsv fields file and write to the pilot donor tsv file
-    tsv_fields = 'ucsc_pilot_donor_tsv_fields.txt'
-    with open(tsv_fields, 'r') as t:
-        fields = []
-        for line in t:
-            fields.append(line.rstrip())
-        pilot_tsv_fh.write('\t'.join(fields) + '\n')
+    tsv_fields = ["donor_unique_id", "submitter_donor_id", "dcc_project_code", "aliquot_id", "submitter_specimen_id", \
+    "submitter_sample_id", "dcc_specimen_type", "library_strategy" 
+    ]
+    pilot_tsv_fh.write('\t'.join(tsv_fields) + '\n')
 
 
 	# get the list of donors whose sanger_vcf without missing bams
