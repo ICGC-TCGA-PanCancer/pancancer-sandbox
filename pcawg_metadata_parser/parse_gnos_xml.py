@@ -54,6 +54,26 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                          .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
 
+    # ignore vcf entries with study field ends with _test, but temporarily we need 
+    # to protect some donors from be excluded as they are actual real result (not test),
+    # such exception will eventually be removed when these donors are fixed
+    if gnos_analysis.get('study').endswith('_test') and \
+            not donor_unique_id in [
+                "CLLE-ES::125",
+                "CLLE-ES::3",
+                "CLLE-ES::176",
+                "CLLE-ES::157",
+                "CLLE-ES::177",
+                "CLLE-ES::122",
+                "CLLE-ES::27",
+                "CLLE-ES::166",
+                "CLLE-ES::16",
+                "CLLE-ES::294",
+                "STAD-US::09587f1c-5c99-4102-bc49-84d50fa8d0ce"
+            ]:
+        logger.warning('ignore entry with study ending with _test, donor: {} GNOS entry: {}'
+                         .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
 
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
         and (
