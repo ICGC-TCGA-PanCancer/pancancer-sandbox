@@ -1341,7 +1341,7 @@ def add_alignment_status_to_donor(donor, aggregated_bam_info):
                 _tmp_sample_id.append(alignment_status.get('submitter_sample_id'))
             else:
                 index = _tmp_sample_id.index(alignment_status.get('submitter_sample_id'))
-                logger.warning('donor: {} has more than one aliquot_ids with the same submitter_sample_id: {}, in use aliquot_id: {}, additional aliquot_id found: {}'
+                logger.warning('donor: {} has more than one aliquot_ids in tumour with the same submitter_sample_id: {}, in use aliquot_id: {}, additional aliquot_id found: {}'
                         .format(donor.get('donor_unique_id'),
                                 alignment_status.get('submitter_sample_id'),
                                 donor.get('tumor_alignment_status')[index].get('aliquot_id'),
