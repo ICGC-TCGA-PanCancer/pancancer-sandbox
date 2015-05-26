@@ -327,8 +327,8 @@ def main(argv=None):
     
     # read the tsv fields file and write to the pilot donor tsv file
     tsv_fields = ["donor_unique_id", "submitter_donor_id", "dcc_project_code", "aliquot_id", "submitter_specimen_id", \
-    "submitter_sample_id", "dcc_specimen_type", "library_strategy", 'aligned', 'has_bam_been_transferred',\
-    'gnos_id', 'computer_site' 
+    "submitter_sample_id", "dcc_specimen_type", "library_strategy", "aligned", "workflow_type", "has_bam_been_transferred",\
+    "gnos_id", "computer_site" 
     ]
     report_tsv_fh.write('\t'.join(tsv_fields) + '\n')
 
@@ -370,6 +370,8 @@ def main(argv=None):
             for p in specimen.keys():
                 if isinstance(specimen.get(p), list):
                     line += '|'.join(specimen.get(p))
+                elif isinstance(specimen.get(p), set):
+                    line += '|'.join(list(specimen.get(p)))
                 else:
                     line += str(specimen.get(p)) if specimen.get(p) is not None else ''
                 line += '\t'
