@@ -75,7 +75,7 @@ def create_specimen_info(donor_unique_id, es_json, compute_sites):
     
     add_wgs_specimens(specimen_info_list, specimen_info, es_json, compute_sites)
 
-    # add_rna_seq_specimens(specimen_info_list, specimen_info, es_json)
+    add_rna_seq_specimens(specimen_info_list, specimen_info, es_json)
 
     return specimen_info_list
 
@@ -84,24 +84,25 @@ def add_wgs_specimens(specimen_info_list, specimen_info, es_json, compute_sites)
 
     if es_json.get('normal_alignment_status'):
         aliquot = es_json.get('normal_alignment_status')
-        get_aliquot_fields(aliquot, specimen_info, compute_sites)
+        get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites)
         specimen_info_list.append(copy.deepcopy(specimen_info))
 
     if es_json.get('tumor_alignment_status'):
         for aliquot in es_json.get('tumor_alignment_status'):
-            get_aliquot_fields(aliquot, specimen_info, compute_sites)
+            get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites)
             specimen_info_list.append(copy.deepcopy(specimen_info))
 
     return specimen_info_list
 
-def get_aliquot_fields(aliquot, specimen_info, compute_sites):
+def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites):
     specimen_info['aliquot_id'] = aliquot.get('aliquot_id')
     specimen_info['submitter_specimen_id'] = aliquot.get('submitter_specimen_id')
     specimen_info['submitter_sample_id'] = aliquot.get('submitter_sample_id')
     specimen_info['dcc_specimen_type'] = aliquot.get('dcc_specimen_type')
     specimen_info['library_strategy'] = 'WGS'
     specimen_info['aligned'] = aliquot.get('aligned')
-    specimen_info['has_bam_been_transferred'] = aliquot.get('has_bwa_bam_been_transferred')
+    specimen_info['workflow_type'] = 'BWA'
+    specimen_info['has_bam_been_transferred'] = aliquot.get('has_bam_been_transferred')
     specimen_info['bam_gnos_id'] = aliquot.get('aligned_bam').get('gnos_id') if specimen_info['aligned'] else None
     specimen_info['computer_site'] = []    
     if get_compute_site(specimen_info['donor_unique_id'], compute_sites):
@@ -201,34 +202,32 @@ def add_rna_seq_specimens(specimen_info_list, specimen_info, es_json):
 		    continue
         if 'normal' in specimen_type:
             aliquot = rna_seq_info.get(specimen_type)
-            specimen_info['aliquot_id'] = set()
-            specimen_info['submitter_specimen_id'] = set()
-            specimen_info['submitter_sample_id'] = set()
-            specimen_info['dcc_specimen_type'] = set()
-            for workflow_type in aliquot.keys():
-                specimen_info['aliquot_id'].add(aliquot.get(workflow_type).get('aliquot_id'))
-                specimen_info['submitter_specimen_id'].add(aliquot.get(workflow_type).get('submitter_specimen_id'))
-                specimen_info['submitter_sample_id'].add(aliquot.get(workflow_type).get('submitter_sample_id'))
-                specimen_info['dcc_specimen_type'].add(aliquot.get(workflow_type).get('dcc_specimen_type'))
-                specimen_info['library_strategy'] = 'RNA-Seq'
-            specimen_info_list.append(copy.deepcopy(specimen_info))
+            get_rna_seq_aliquot_fields(aliquot, specimen_info, specimen_info_list)
 
         else:
             for aliquot in rna_seq_info.get(specimen_type):
-                specimen_info['aliquot_id'] = set()
-                specimen_info['submitter_specimen_id'] = set()
-                specimen_info['submitter_sample_id'] = set()
-                specimen_info['dcc_specimen_type'] = set()
-                for workflow_type in aliquot.keys():
-                    specimen_info['aliquot_id'].add(aliquot.get(workflow_type).get('aliquot_id'))
-                    specimen_info['submitter_specimen_id'].add(aliquot.get(workflow_type).get('submitter_specimen_id'))
-                    specimen_info['submitter_sample_id'].add(aliquot.get(workflow_type).get('submitter_sample_id'))
-                    specimen_info['dcc_specimen_type'].add(aliquot.get(workflow_type).get('dcc_specimen_type'))
-                    specimen_info['library_strategy'] = 'RNA-Seq'
-                specimen_info_list.append(copy.deepcopy(specimen_info))
+                get_rna_seq_aliquot_fields(aliquot, specimen_info, specimen_info_list)
 
     return specimen_info_list
 
+def get_rna_seq_aliquot_fields(aliquot, specimen_info, specimen_info_list):
+    specimen_info['aliquot_id'] = set()
+    specimen_info['submitter_specimen_id'] = set()
+    specimen_info['submitter_sample_id'] = set()
+    specimen_info['dcc_specimen_type'] = set()
+    specimen_info['library_strategy'] = 'RNA-Seq'
+    specimen_info['aligned'] = True
+    for workflow_type in aliquot.keys():
+        specimen_info['aliquot_id'].add(aliquot.get(workflow_type).get('aliquot_id'))
+        specimen_info['submitter_specimen_id'].add(aliquot.get(workflow_type).get('submitter_specimen_id'))
+        specimen_info['submitter_sample_id'].add(aliquot.get(workflow_type).get('submitter_sample_id'))
+        specimen_info['dcc_specimen_type'].add(aliquot.get(workflow_type).get('dcc_specimen_type'))
+        specimen_info['workflow_type'] = workflow_type.upper()
+        specimen_info['has_bam_been_transferred'] = False
+        #specimen_info['has_bam_been_transferred'] = aliquot.get(workflow_type).get('has_bam_been_transferred')       
+        specimen_info['bam_gnos_id'] = aliquot.get(workflow_type).get('gnos_info').get('gnos_id')
+        specimen_info['computer_site'] = []
+        specimen_info_list.append(copy.deepcopy(specimen_info))
 
 def get_donor_json(es, es_index, donor_unique_id):
     es_query_donor = {
