@@ -106,8 +106,10 @@ def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites, specimen_info_
     specimen_info['computer_site'] = []    
     if get_compute_site(specimen_info['donor_unique_id'], compute_sites):
         specimen_info['computer_site'] = get_compute_site(specimen_info['donor_unique_id'], compute_sites)
-    else:
-        specimen_info['computer_site'] = [get_formal_repo_name(aliquot.get('aligned_bam').get('gnos_repo')[0])] if specimen_info['aligned'] else []
+    #leave the compute site to be blank if the donor is not in the whitelist whether it is aligned or not
+    #since we do not have the history info for the aligned ones
+    #else:
+    #    specimen_info['computer_site'] = [get_formal_repo_name(aliquot.get('aligned_bam').get('gnos_repo')[0])] if specimen_info['aligned'] else []
 
     specimen_info_list.append(copy.deepcopy(specimen_info))
     return specimen_info_list
