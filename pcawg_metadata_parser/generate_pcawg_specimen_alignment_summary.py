@@ -284,7 +284,15 @@ def compute_site_count(specimen, site_counts):
         if specimen.get('aligned'):
             site_counts[c]['aligned'] += 1 
         else:
-            site_counts[c]['unaligned'] += 1 
+            site_counts[c]['unaligned'] += 1
+    elif not c:
+        site_counts['unassigned']['total'] +=1
+        if specimen.get('aligned'):
+            site_counts['unassigned']['aligned'] += 1 
+        else:
+            site_counts['unassigned']['unaligned'] += 1        
+        
+
     
 def get_metadata_dirs(metadata_dir, start_date='2015-01-11'):
     dirs = sorted(glob.glob(metadata_dir + '/../20*_???'))
@@ -363,6 +371,11 @@ def main(argv=None):
     get_whitelists(compute_sites)
 
     site_counts = {}
+    site_counts['unassigned'] = {
+                    'total': 0,
+                    'aligned': 0,
+                    'unaligned': 0
+                    }
 
     # get json doc for each donor 
     for donor_unique_id in donors_list:     
