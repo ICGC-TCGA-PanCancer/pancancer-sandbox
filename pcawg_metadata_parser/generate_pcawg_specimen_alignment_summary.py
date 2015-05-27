@@ -84,17 +84,15 @@ def add_wgs_specimens(specimen_info_list, specimen_info, es_json, compute_sites)
 
     if es_json.get('normal_alignment_status'):
         aliquot = es_json.get('normal_alignment_status')
-        get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites)
-        specimen_info_list.append(copy.deepcopy(specimen_info))
+        get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites, specimen_info_list)
 
     if es_json.get('tumor_alignment_status'):
         for aliquot in es_json.get('tumor_alignment_status'):
-            get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites)
-            specimen_info_list.append(copy.deepcopy(specimen_info))
+            get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites, specimen_info_list)
 
     return specimen_info_list
 
-def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites):
+def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites, specimen_info_list):
     specimen_info['aliquot_id'] = aliquot.get('aliquot_id')
     specimen_info['submitter_specimen_id'] = aliquot.get('submitter_specimen_id')
     specimen_info['submitter_sample_id'] = aliquot.get('submitter_sample_id')
@@ -102,7 +100,7 @@ def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites):
     specimen_info['library_strategy'] = 'WGS'
     specimen_info['aligned'] = aliquot.get('aligned')
     specimen_info['workflow_type'] = 'BWA'
-    specimen_info['has_bam_been_transferred'] = aliquot.get('has_bam_been_transferred')
+    specimen_info['has_bam_been_transferred'] = aliquot.get('has_bwa_bam_been_transferred')
     specimen_info['bam_gnos_id'] = aliquot.get('aligned_bam').get('gnos_id') if specimen_info['aligned'] else None
     specimen_info['computer_site'] = []    
     if get_compute_site(specimen_info['donor_unique_id'], compute_sites):
@@ -110,7 +108,9 @@ def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites):
     else:
         specimen_info['computer_site'] = [get_formal_repo_name(aliquot.get('aligned_bam').get('gnos_repo')[0])] if specimen_info['aligned'] else []
 
-    return specimen_info
+    specimen_info_list.append(copy.deepcopy(specimen_info))
+    return specimen_info_list
+
 
 def compute_site_report(metadata_dir, report_dir, report_name, site_counts):
 
@@ -129,6 +129,7 @@ def compute_site_report(metadata_dir, report_dir, report_name, site_counts):
         site_summary_report.append([dates[i], site_counts_tmp])
     with open(report_dir + '/hist_summary_site_counts.json', 'w') as o: o.write(json.dumps(site_summary_report))
 
+
 def get_compute_site(donor_unique_id, compute_sites):
     compute_site = []
 
@@ -143,6 +144,7 @@ def get_compute_site(donor_unique_id, compute_sites):
             compute_site.append(c)
     
     return(compute_site)
+
     
 def get_whitelists(compute_sites):
     whitelist_dir = '../pcawg-operations/bwa_alignment/'
@@ -151,12 +153,14 @@ def get_whitelists(compute_sites):
         files = glob.glob(whitelist_dir + '/' + c + '/' + c + '.*.txt')
         for f in files: compute_sites.get(c).update(get_donors(f))
 
+
 def get_donors(fname):
     donors = []
     with open(fname) as f:
         for d in f:
             donors.append(d.rstrip())
     return donors
+
 
 def get_formal_repo_name(repo):
     repo_url_to_repo = {
