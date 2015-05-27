@@ -11,7 +11,7 @@ gnos_repos:
   - 
     repo_location: London
     repo_code: ebi
-    base_url: https://gtrepo-ebi.annailabs.com
+    base_url: https://gtrepo-ebi.annailabs.com/
     cgquery_para: study=*
   - 
     repo_location: Barcelona
