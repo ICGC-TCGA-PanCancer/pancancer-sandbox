@@ -75,7 +75,8 @@ def create_specimen_info(donor_unique_id, es_json, compute_sites):
     
     add_wgs_specimens(specimen_info_list, specimen_info, es_json, compute_sites)
 
-    add_rna_seq_specimens(specimen_info_list, specimen_info, es_json)
+    #comment it for now not considering the rna-seq alignments 
+    #add_rna_seq_specimens(specimen_info_list, specimen_info, es_json)
 
     return specimen_info_list
 
@@ -228,7 +229,8 @@ def get_rna_seq_aliquot_fields(aliquot, specimen_info, specimen_info_list):
         specimen_info['dcc_specimen_type'].add(aliquot.get(workflow_type).get('dcc_specimen_type'))
         specimen_info['workflow_type'] = workflow_type.upper()
         specimen_info['has_bam_been_transferred'] = False
-        #specimen_info['has_bam_been_transferred'] = aliquot.get(workflow_type).get('has_bam_been_transferred')       
+        #for later possible use
+        #specimen_info['has_bam_been_transferred'] = aliquot.get(workflow_type).get('has_' + workflow_type.lower() + '_bam_been_transferred')       
         specimen_info['bam_gnos_id'] = aliquot.get(workflow_type).get('gnos_info').get('gnos_id')
         specimen_info['computer_site'] = []
         specimen_info_list.append(copy.deepcopy(specimen_info))
