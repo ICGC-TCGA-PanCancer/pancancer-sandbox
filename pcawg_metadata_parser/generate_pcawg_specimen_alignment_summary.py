@@ -365,7 +365,8 @@ def main(argv=None):
         "tokyo": set(),
         "ucsc": set(),
         "sanger": set(),
-        "idash": set()
+        "idash": set(),
+        "riken": set()
     }
 
     get_whitelists(compute_sites)
