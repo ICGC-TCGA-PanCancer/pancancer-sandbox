@@ -453,35 +453,36 @@ def main(argv=None):
         #    body=json.loads(json.dumps(reorganized_donor, default=set_default)), timeout=90 )
 
         donor_fh.write(json.dumps(reorganized_donor, default=set_default) + '\n')
-
-    #     # generate json for tsv file from reorganized donor
-    #     pilot_tsv_json = generate_json_for_tsv_file(reorganized_donor)
-    #     # write to the tsv file
-    #     line = ""
-    #     for p in pilot_tsv_json.keys():
-    #         if isinstance(pilot_tsv_json.get(p), list):
-    #             if pilot_tsv_json.get(p):
-    #                 count0 = 0
-    #                 for q in pilot_tsv_json.get(p):
-    #                     if isinstance(q, list):
-    #                         if q:
-    #                             line += '|'.join(q)
-    #                         else:
-    #                             line += ''
-    #                     else:
-    #                         line += str(q) if q else ''
-    #                     count0 = count0 + 1
-    #                     if count0 < len(pilot_tsv_json.get(p)):
-    #                         line += ','
-    #             else:
-    #                 line += '' # None as empty string
-    #         else:
-    #             line += str(pilot_tsv_json.get(p)) if pilot_tsv_json.get(p) is not None else ''
-    #         line += '\t' # field ends
-    #     line = line[:-1] # remove the last unwanted '\t'
-    #     pilot_tsv_fh.write(line + '\n')    
+        '''
+        # generate json for tsv file from reorganized donor
+        pilot_tsv_json = generate_json_for_tsv_file(reorganized_donor)
+        # write to the tsv file
+        line = ""
+        for p in pilot_tsv_json.keys():
+            if isinstance(pilot_tsv_json.get(p), list):
+                if pilot_tsv_json.get(p):
+                    count0 = 0
+                    for q in pilot_tsv_json.get(p):
+                        if isinstance(q, list):
+                            if q:
+                                line += '|'.join(q)
+                            else:
+                                line += ''
+                        else:
+                            line += str(q) if q else ''
+                        count0 = count0 + 1
+                        if count0 < len(pilot_tsv_json.get(p)):
+                            line += ','
+                else:
+                    line += '' # None as empty string
+            else:
+                line += str(pilot_tsv_json.get(p)) if pilot_tsv_json.get(p) is not None else ''
+            line += '\t' # field ends
+        line = line[:-1] # remove the last unwanted '\t'
+        pilot_tsv_fh.write(line + '\n')    
+        '''
         
-    # pilot_tsv_fh.close()
+    pilot_tsv_fh.close()
 
     donor_fh.close()
 
