@@ -482,7 +482,7 @@ def main(argv=None):
         pilot_tsv_fh.write(line + '\n')    
         '''
         
-    pilot_tsv_fh.close()
+    #pilot_tsv_fh.close()
 
     donor_fh.close()
 
