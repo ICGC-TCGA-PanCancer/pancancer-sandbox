@@ -417,13 +417,24 @@ def main(argv=None):
 
     donor_fh = open(metadata_dir+'/reports/sanger_variant_called_donors.jsonl', 'w')
 
-    pilot_tsv_fh = open(metadata_dir + '/reports/sanger_variant_called_donors.tsv', 'w')
+    # pilot_tsv_fh = open(metadata_dir + '/reports/sanger_variant_called_donors.tsv', 'w')
     
-    # read the tsv fields file and write to the pilot donor tsv file
-    tsv_fields = ["donor_unique_id", "submitter_donor_id", "dcc_project_code", "aliquot_id", "submitter_specimen_id", \
-    "submitter_sample_id", "dcc_specimen_type", "library_strategy" 
-    ]
-    pilot_tsv_fh.write('\t'.join(tsv_fields) + '\n')
+    # # read the tsv fields file and write to the pilot donor tsv file
+    # tsv_fields = ["Project code", "Submitter donor ID", "Data train", "Train2 pilot", "Normal WGS submitter specimen ID", \
+    # "Normal WGS submitter sample ID", "Normal WGS aliquot ID", "Normal WGS alignment GNOS repo(s)", "Normal WGS alignment GNOS analysis ID", \
+    # "Normal WGS alignment BAM file name", "Tumour WGS Specimen Count", "Tumour WGS submitter specimen ID(s)", \
+    # "Tumour WGS submitter sample ID(s)", "Tumour WGS aliquot ID(s)", "Tumour WGS alignment GNOS repo(s)", \
+    # "Tumour WGS alignment GNOS analysis ID(s)", "Tumour WGS alignment BAM file name(s)", "Sanger variant call GNOS repo(s)", \
+    # "Sanger variant call GNOS analysis ID(s)", "Sanger variant call GNOS file name prefix", "Normal RNA-Seq submitter specimen ID", \
+    # "Normal RNA-Seq submitter sample ID", "Normal RNA-Seq aliquot ID", "Normal RNA-Seq STAR alignment GNOS repo(s)", \
+    # "Normal RNA-Seq STAR alignment GNOS analysis ID", "Normal RNA-Seq STAR alignment BAM file name", \
+    # "Normal RNA-Seq TopHat2 alignment GNOS repo(s)", "Normal RNA-Seq TopHat2 alignment GNOS analysis ID", \
+    # "Normal RNA-Seq TopHat2 alignment BAM file name", "Tumour RNA-Seq submitter specimen ID", "Tumour RNA-Seq submitter sample ID", \
+    # "Tumour RNA-Seq aliquot ID", "Tumour RNA-Seq STAR alignment GNOS repo(s)", "Tumour RNA-Seq STAR alignment GNOS analysis ID", \
+    # "Tumour RNA-Seq STAR alignment BAM file name", "Tumour RNA-Seq TopHat2 alignment GNOS repo(s)", \
+    # "Tumour RNA-Seq TopHat2 alignment GNOS analysis ID", "Tumour RNA-Seq TopHat2 alignment BAM file name" 
+    # ]
+    # pilot_tsv_fh.write('\t'.join(tsv_fields) + '\n')
 
 
 	# get the list of donors whose sanger_vcf without missing bams
@@ -442,7 +453,7 @@ def main(argv=None):
         #    body=json.loads(json.dumps(reorganized_donor, default=set_default)), timeout=90 )
 
         donor_fh.write(json.dumps(reorganized_donor, default=set_default) + '\n')
-
+        '''
         # generate json for tsv file from reorganized donor
         pilot_tsv_json = generate_json_for_tsv_file(reorganized_donor)
         # write to the tsv file
@@ -454,12 +465,7 @@ def main(argv=None):
                     for q in pilot_tsv_json.get(p):
                         if isinstance(q, list):
                             if q:
-                                count = 0
-                                for r in q:
-                                    count = count + 1
-                                    line += str(r)
-                                    if count < len(q):
-                                        line += '|'
+                                line += '|'.join(q)
                             else:
                                 line += ''
                         else:
@@ -470,10 +476,11 @@ def main(argv=None):
                 else:
                     line += '' # None as empty string
             else:
-                line += str(pilot_tsv_json.get(p)) if pilot_tsv_json.get(p) else ''
+                line += str(pilot_tsv_json.get(p)) if pilot_tsv_json.get(p) is not None else ''
             line += '\t' # field ends
         line = line[:-1] # remove the last unwanted '\t'
         pilot_tsv_fh.write(line + '\n')    
+        '''
         
     pilot_tsv_fh.close()
 
