@@ -10,7 +10,6 @@ import json
 import yaml
 import copy
 import logging
-import pandas as pd
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 from elasticsearch import Elasticsearch
