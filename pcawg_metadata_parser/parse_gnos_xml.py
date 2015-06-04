@@ -477,25 +477,32 @@ def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
     }
 
     # much more TODO for bam file info and alignment details
-    if bam_file.get('refassem_short_name') == 'unaligned':
+    if bam_file.get('refassem_short_name') == 'unaligned' and \
+            gnos_analysis.get('library_strategy') == 'WGS' :
         bam_file['is_aligned'] = False
         bam_file['bam_type'] = 'Unaligned BAM'
         bam_file['alignment'] = None  # or initiate as empty object {}, depending on how ES searches it
     elif (analysis_attrib.get('workflow_output_bam_contents') == 'unaligned'
             or gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].startswith('The BAM file includes unmapped reads extracted from specimen-level BAM with the reference alignment')
-         ): # this is actually BAM with unmapped reads
+         ) and gnos_analysis.get('library_strategy') == 'WGS' : # this is actually BAM with unmapped reads
         bam_file['is_aligned'] = False
         bam_file['bam_type'] = 'Specimen level unmapped reads after BWA alignment'
         bam_file['alignment'] = None
-    elif gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].startswith('Specimen-level BAM from the reference alignment'):
+    elif gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].startswith('Specimen-level BAM from the reference alignment') \
+             and gnos_analysis.get('library_strategy') == 'WGS' :
         bam_file['is_aligned'] = True
         bam_file['bam_type'] = 'Specimen level aligned BAM'
         bam_file['alignment'] = get_alignment_detail(analysis_attrib, gnos_analysis)
-    elif gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower().startswith('star ') \
-            or gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower().startswith('tophat2 '):
+    elif (gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower().startswith('star ') \
+            or gnos_analysis['analysis_xml']['ANALYSIS_SET']['ANALYSIS']['DESCRIPTION'].lower().startswith('tophat2 ')) \
+            and gnos_analysis.get('library_strategy') == 'RNA-Seq' :
         bam_file['is_aligned'] = True
         bam_file['bam_type'] = 'RNA-Seq aligned BAM'
         bam_file['alignment'] = get_rna_seq_alignment_detail(analysis_attrib, gnos_analysis)
+    elif (bam_file.get('refassem_short_name') == 'unaligned' and gnos_analysis.get('library_strategy') == 'RNA-Seq'):
+        bam_file['is_aligned'] = False
+        bam_file['bam_type'] = 'RNA-Seq unaligned BAM'
+        bam_file['alignment'] = None
 
     else:
         bam_file['is_aligned'] = False
