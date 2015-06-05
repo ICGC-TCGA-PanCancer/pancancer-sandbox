@@ -413,10 +413,22 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
             "variant_workflow_version": analysis_attrib.get('variant_workflow_version'),
             "variant_pipeline_input_info": json.loads( analysis_attrib.get('variant_pipeline_input_info') ).get('workflow_inputs') if analysis_attrib.get('variant_pipeline_input_info') else [],
             "variant_pipeline_output_info": json.loads( analysis_attrib.get('variant_pipeline_output_info') ).get('workflow_outputs') if analysis_attrib.get('variant_pipeline_output_info') else [],
-            "variant_qc_metrics": json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics') if analysis_attrib.get('variant_qc_metrics') and isinstance(analysis_attrib.get('variant_qc_metrics'), dict) else {},
-            "variant_timing_metrics": json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') and isinstance(analysis_attrib.get('variant_timing_metrics'), dict) else {},
+            "variant_qc_metrics": {},
+            "variant_timing_metrics": {}
         }
     }
+
+    qc = {}
+    try:
+        qc = json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics')
+    except:
+        logger.warning('variant_qc_metrics format incorrect: {}'.format(gnos_analysis.get('variant_qc_metrics')))
+
+    if isinstance(qc, dict): vcf_entry.get('workflow_details')['variant_qc_metrics'] = qc
+
+    # DO NOT KEEP timing metrics, it's way too verbose
+    #timing = json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') else {}
+    #if isinstance(timing, dict): vcf_entry.get('workflow_details')['variant_timing_metrics'] = timing
 
     #print json.dumps(vcf_entry)  # debugging only
     return vcf_entry
