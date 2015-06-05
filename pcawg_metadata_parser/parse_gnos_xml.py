@@ -418,11 +418,17 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
         }
     }
 
-    qc = json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics') if analysis_attrib.get('variant_qc_metrics') else {}
+    qc = {}
+    try:
+        qc = json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics')
+    except:
+        logger.warning('variant_qc_metrics format incorrect: {}'.format(gnos_analysis.get('variant_qc_metrics')))
+
     if isinstance(qc, dict): vcf_entry.get('workflow_details')['variant_qc_metrics'] = qc
 
-    timing = json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') else {}
-    if isinstance(timing, dict): vcf_entry.get('workflow_details')['variant_timing_metrics'] = timing
+    # DO NOT KEEP timing metrics, it's way too verbose
+    #timing = json.loads( analysis_attrib.get('variant_timing_metrics') ).get('timing_metrics') if analysis_attrib.get('variant_timing_metrics') else {}
+    #if isinstance(timing, dict): vcf_entry.get('workflow_details')['variant_timing_metrics'] = timing
 
     #print json.dumps(vcf_entry)  # debugging only
     return vcf_entry
