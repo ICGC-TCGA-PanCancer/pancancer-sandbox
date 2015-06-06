@@ -103,6 +103,7 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
     # today's counts
     with open(report_dir + '/summary_compute_site_counts.json', 'w') as o: o.write(json.dumps(site_summary))
 
+    """
     # get all previous days counts
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-05-07')
 
@@ -114,6 +115,8 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
         site_counts = json.load(open(summary_site_count_file))
         site_summary_report.append([dates[i], site_counts])
     with open(report_dir + '/hist_summary_compute_site_counts.json', 'w') as o: o.write(json.dumps(site_summary_report))
+    """
+
 
 def compute_site_report(metadata_dir, report_dir, today_donors):
     compute_sites = {
@@ -159,7 +162,6 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
     # today's counts
     with open(report_dir + '/summary_site_counts.json', 'w') as o: o.write(json.dumps(site_summary))
 
-    """
     # get all previous days counts
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-05-07')
 
@@ -171,7 +173,6 @@ def compute_site_report(metadata_dir, report_dir, today_donors):
         site_counts = json.load(open(summary_site_count_file))
         site_summary_report.append([dates[i], site_counts])
     with open(report_dir + '/hist_summary_site_counts.json', 'w') as o: o.write(json.dumps(site_summary_report))
-    """
 
 
 def get_whitelists(compute_sites):
