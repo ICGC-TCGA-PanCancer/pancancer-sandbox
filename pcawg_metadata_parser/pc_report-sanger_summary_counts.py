@@ -104,6 +104,7 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
     # get all previous days counts
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-03-07')
 
+    """
     site_summary_report = []
     for i, md in reversed(list(enumerate(metadata_dirs))):
         summary_site_count_file = md + '/reports/sanger_summary_counts/summary_compute_site_counts.json'
@@ -111,7 +112,9 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
 
         site_counts = json.load(open(summary_site_count_file))
         site_summary_report.append([dates[i], site_counts])
+
     with open(report_dir + '/hist_summary_compute_site_counts.json', 'w') as o: o.write(json.dumps(site_summary_report))
+    """
 
 def compute_site_report(metadata_dir, report_dir, today_donors):
     compute_sites = {

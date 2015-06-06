@@ -422,7 +422,7 @@ def create_vcf_entry(analysis_attrib, gnos_analysis):
     try:
         qc = json.loads( analysis_attrib.get('variant_qc_metrics') ).get('qc_metrics')
     except:
-        logger.warning('variant_qc_metrics format incorrect: {}'.format(gnos_analysis.get('variant_qc_metrics')))
+        logger.warning('variant_qc_metrics format incorrect: {}'.format(analysis_attrib.get('variant_qc_metrics')))
 
     if isinstance(qc, dict): vcf_entry.get('workflow_details')['variant_qc_metrics'] = qc
 
