@@ -121,9 +121,8 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                 vcf_entries.get(donor_unique_id).update({'sanger_variant_calling': current_vcf_entry})
 
     elif analysis_attrib.get('variant_workflow_name').startswith('EMBLPancancer') \
-        and  analysis_attrib.get('variant_workflow_version') in ['1.0.0']:
+        and  LooseVersion(analysis_attrib.get('variant_workflow_version')) >= LooseVersion('1.0.0'):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
-
         # ignore vcf entries with study field ends with _test, but temporarily we need 
         # to protect some donors from be excluded as they are actual real result (not test),
         # such exception will eventually be removed when these donors are fixed
@@ -140,7 +139,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         keep_latest_vcf_entry(donor_unique_id, gnos_analysis, vcf_entries, current_vcf_entry, 'EMBL')
 
     elif analysis_attrib.get('variant_workflow_name') == 'DKFZPancancerCnIndelSnv' \
-        and  analysis_attrib.get('variant_workflow_version') in ['1.0.0']:
+        and  LooseVersion(analysis_attrib.get('variant_workflow_version')) >= LooseVersion('1.0.0'):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
 
         # ignore vcf entries with study field ends with _test, but temporarily we need 
