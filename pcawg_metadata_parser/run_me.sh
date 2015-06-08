@@ -82,6 +82,7 @@ echo running alignment summary report for $M
 ./pc_report-sanger_call_missing_input.py -m $M
 ./pc_report-donors_RNA_Seq_alignment_summary.py -m $M
 ./generate_variant_called_donors.py -m $M
+./generate_aligned_donors.py -m $M
 ./generate_pcawg_sample_sheet.py -m $M
 ./generate_pcawg_specimen_alignment_summary.py -m $M
 
