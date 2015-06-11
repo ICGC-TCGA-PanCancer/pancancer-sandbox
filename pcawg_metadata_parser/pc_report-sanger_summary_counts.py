@@ -112,7 +112,7 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
 
     """
     # get all previous days counts
-    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-04-01')
+    [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-03-07')
 
     site_summary_report = []
     for i, md in reversed(list(enumerate(metadata_dirs))):
