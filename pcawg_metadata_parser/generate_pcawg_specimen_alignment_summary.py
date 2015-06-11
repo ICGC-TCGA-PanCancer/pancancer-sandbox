@@ -114,10 +114,15 @@ def get_wgs_aliquot_fields(aliquot, specimen_info, compute_sites, specimen_info_
     return specimen_info_list
 
 
-def compute_site_report(metadata_dir, report_dir, report_name, site_counts):
+def compute_site_report(metadata_dir, report_dir, report_name, site_counts, unassigned_unaligned_donors):
 
     # today's counts
     with open(report_dir + '/summary_site_counts.json', 'w') as o: o.write(json.dumps(site_counts))
+
+    with open(report_dir + '/unassigned_unaligned_donors.txt', 'w') as o: 
+        o.write('# Unassigned and unaligned donors\n')
+        o.write('# dcc_project_code' + '\t' + 'submitter_donor_id' + '\n')
+        o.write('\n'.join(unassigned_unaligned_donors) + '\n')
 
     # get all previous days counts
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-05-26')
@@ -269,7 +274,7 @@ def set_default(obj):
         return list(obj)
     raise TypeError
 
-def compute_site_count(specimen, site_counts):
+def compute_site_count(specimen, site_counts, unassigned_unaligned_donors):
     c = specimen.get('computer_site')
     if len(c) == 1:
         c = c[0]
@@ -278,7 +283,7 @@ def compute_site_count(specimen, site_counts):
                 'total': 0,
                 'aligned': 0,
                 'unaligned': 0
-                }
+            }
         site_counts[c]['total'] += 1
         if specimen.get('aligned'):
             site_counts[c]['aligned'] += 1 
@@ -289,7 +294,8 @@ def compute_site_count(specimen, site_counts):
         if specimen.get('aligned'):
             site_counts['unassigned']['aligned'] += 1 
         else:
-            site_counts['unassigned']['unaligned'] += 1        
+            site_counts['unassigned']['unaligned'] += 1
+            unassigned_unaligned_donors.add(specimen.get('donor_unique_id').replace('::', '\t'))        
         
 
     
@@ -329,7 +335,13 @@ def main(argv=None):
     es_type = "donor"
     es_host = 'localhost:9200'
 
-    es = Elasticsearch([es_host])
+    es = Elasticsearch([es_host],
+                        # sniff before doing anything
+                        sniff_on_start=True,
+                        # refresh nodes after a node fails to respond
+                        sniff_on_connection_fail=True,
+                        # and also every 60 seconds
+                        sniffer_timeout=60)
 
     report_name = re.sub(r'^generate_pcawg_', '', os.path.basename(__file__))
     report_name = re.sub(r'\.py$', '', report_name)
@@ -375,7 +387,9 @@ def main(argv=None):
                     'total': 0,
                     'aligned': 0,
                     'unaligned': 0
-                    }
+    }
+    
+    unassigned_unaligned_donors = set()
 
     # get json doc for each donor 
     for donor_unique_id in donors_list:     
@@ -400,13 +414,13 @@ def main(argv=None):
             report_tsv_fh.write(line + '\n')
 
             # report for computer site
-            compute_site_count(specimen, site_counts)
+            compute_site_count(specimen, site_counts, unassigned_unaligned_donors)
         
     report_tsv_fh.close()
     #report_jsonl_fh.close()
 
     # report for each computer site and history
-    compute_site_report(metadata_dir, report_dir, report_name, site_counts)
+    compute_site_report(metadata_dir, report_dir, report_name, site_counts, unassigned_unaligned_donors)
 
     return 0
 

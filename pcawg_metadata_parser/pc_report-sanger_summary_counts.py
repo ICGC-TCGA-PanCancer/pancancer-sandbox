@@ -72,6 +72,7 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
 
     site_assigned_donors = set()
     site_summary = {}
+    unassigned_uncalled_donors = set()
 
     for c in compute_sites:
         for d in compute_sites:
@@ -86,6 +87,7 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
                 'To_be_called': len(compute_sites.get(c).intersection(today_donors[0])),
                 'Total': len(compute_sites.get(c))    
             }
+
         site_assigned_donors.update(compute_sites.get(c))
         # report WARN if the sum of Called and To_be_called not equal Total in site_summary
         if not site_summary[c]['Called'] + site_summary[c]['To_be_called'] == site_summary[c]['Total']:
@@ -98,13 +100,20 @@ def compute_site_report_new(metadata_dir, report_dir, today_donors):
         'Total': len(today_donors[0].union(today_donors[1]).difference(site_assigned_donors))
     }
 
+    unassigned_uncalled_donors = today_donors[0].difference(site_assigned_donors)
+
     # today's counts
     with open(report_dir + '/summary_compute_site_counts.json', 'w') as o: o.write(json.dumps(site_summary))
 
+    with open(report_dir + '/unassigned_uncalled_donors.txt', 'w') as o:
+        o.write('# Unassigned and uncalled donors\n')
+        o.write('# dcc_project_code' + '\t' + 'submitter_donor_id' + '\n')
+        o.write('\n'.join(unassigned_uncalled_donors) + '\n') 
+
+    """
     # get all previous days counts
     [dates, metadata_dirs] = get_metadata_dirs(metadata_dir, '2015-03-07')
 
-    """
     site_summary_report = []
     for i, md in reversed(list(enumerate(metadata_dirs))):
         summary_site_count_file = md + '/reports/sanger_summary_counts/summary_compute_site_counts.json'
