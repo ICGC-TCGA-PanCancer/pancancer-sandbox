@@ -165,7 +165,7 @@ def get_donors(fname):
     donors = []
     with open(fname) as f:
         for d in f:
-            donors.append(d.rstrip())
+            if d.rstrip(): donors.append(d.rstrip())
     return donors
 
 
@@ -243,7 +243,7 @@ def get_rna_seq_aliquot_fields(aliquot, specimen_info, specimen_info_list):
 
 def get_donor_json(es, es_index, donor_unique_id):
     es_query_donor = {
-        "query": {
+        "filter": {
             "term": {
                 "donor_unique_id": donor_unique_id
             }
