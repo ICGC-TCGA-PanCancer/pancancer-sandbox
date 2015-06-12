@@ -161,7 +161,7 @@ def get_donors(fname):
     donors = []
     with open(fname) as f:
         for d in f:
-            donors.append(d.rstrip())
+            if d.rstrip(): donors.append(d.rstrip())
     return donors
 
 
