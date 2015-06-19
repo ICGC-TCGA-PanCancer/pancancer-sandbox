@@ -1,0 +1,35 @@
+---
+
+- name: Confirm docker is installed
+  sudo: True
+  command: docker ps
+
+- name: Create Git Repo Root
+  sudo: "{{ user_name }}"
+  file: dest=/home/{{ user_name }}/gitroot mode=755 owner={{ user_name }} group={{ user_name }} state=directory
+
+- name: Install Required Packages
+  sudo: True
+  apt: name={{ item }} state=latest update_cache=yes
+  with_items:
+        - git
+
+- name: Install the Git Repo for pcawg-operations
+  sudo: "{{ user_name }}"
+  command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pcawg-operations.git
+
+- name: Install Orchestra Service File
+  sudo: True
+  copy: src=/home/{{ user_name }}/gitroot/pcawg-operations/ops_scripts/orchestra/webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
+
+- name: Update rc links for Orchestra service
+  sudo: True
+  command: chdir=/home/{{ user_name }}/gitroot update-rc.d orchestra defaults
+
+- name: Start Orchestra Service
+  sudo: True
+  command: chdir=/home/{{ user_name }}/gitroot service orchestra Start
+
+- name: Confirm service is up
+  sudo: "{{ user_name }}"
+  command: curl http://127.0.0.1:9009/healthy
