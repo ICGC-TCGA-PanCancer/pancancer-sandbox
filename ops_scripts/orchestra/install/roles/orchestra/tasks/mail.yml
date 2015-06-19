@@ -16,11 +16,11 @@
 
 - name: Install the Git Repo for pcawg-operations
   sudo: "{{ user_name }}"
-  command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pcawg-operations.git
+  command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pancancer-sandbox.git -b niall-ops_code
 
 - name: Install Orchestra Service File
   sudo: True
-  copy: src=/home/{{ user_name }}/gitroot/pcawg-operations/ops_scripts/orchestra/webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
+  copy: src=/home/{{ user_name }}/gitroot/pancancer-sandbox/ops_scripts/orchestra/webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
 
 - name: Update rc links for Orchestra service
   sudo: True
