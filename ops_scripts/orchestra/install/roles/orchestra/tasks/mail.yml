@@ -16,7 +16,7 @@
 
 - name: Install the Git Repo for pcawg-operations
   sudo: "{{ user_name }}"
-  command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pancancer-sandbox.git
+  command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pancancer-sandbox.git -b niall-ops_code
 
 - name: Install Orchestra Service File
   sudo: True
