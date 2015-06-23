@@ -16,7 +16,7 @@ GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnostest.pem"
 WORKFLOW_ACCESSION = "3"
 
 # Turn on to enable debugging
-DEBUG=False
+DEBUG = False
 
 # CONSTANTS
 IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
