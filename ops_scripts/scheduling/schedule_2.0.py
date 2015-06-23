@@ -24,8 +24,8 @@ CRONTAB += "#Ansible: status cron\n"
 CRONTAB += "* * * * * ~seqware/crons/status.cron >> ~seqware/logs/status.log\n"
 CRONTAB += "#Ansible: file provenance\n"
 CRONTAB += "@hourly ~seqware/crons/file_provenance.cron >> ~seqware/logs/file_provenance.log\n"
-CRONTAB += "#SCHEDULER: check for a runner script and execute it"
-CRONTAB += "#* * * * * [ -e /mnt/home/seqware/ini/runner.sh ] && bash /mnt/home/seqware/ini/runner.sh 2>&1 > ~/.scheduler.txt && rm /mnt/home/seqware/ini/runner.sh\n\n"
+CRONTAB += "#SCHEDULER: check for a runner script and execute it\n"
+CRONTAB += "* * * * * [ -e /mnt/home/seqware/ini/runner.sh ] && bash /mnt/home/seqware/ini/runner.sh 2>&1 > ~/.scheduler.txt && mv /mnt/home/seqware/ini/runner.sh /mnt/home/seqware/ini/runner.ran\n\n"
 
 
 def RunCommand(cmd):
@@ -38,7 +38,7 @@ def RunCommand(cmd):
         errcode:    The error code returned by the system call.
     """
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE, shell=False)
     out, err = p.communicate()
     errcode = p.returncode
     if DEBUG:
@@ -73,6 +73,16 @@ def GetMachines():
             machines.append(match.group(1))
     return machines
 
+def DoubleSchedulingCheck(ini):
+    """ Very hacky way to avoid double scheduling samples. """
+    # Check for redundant scheduling - VERY HACKY
+    all_files = []
+    for root, dirs, files in os.walk("."):
+        for name in files:
+            all_files.append(name)
+    if all_files.count(ini) > 1:
+        print "Duplicate scheduling is being avoided for %s" % ini
+        sys.exit()
 
 def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKEY_LOCATION):
     """ Send an ini file to a machine and execute it. """
@@ -80,6 +90,8 @@ def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKE
         gnoskey = f.read()
     for ip in ips:
         ini = ini_files.pop()
+        # Check for redundant scheduling - VERY HACKY
+        DoubleSchedulingCheck(ini)
         print "Scheduling on %s ... " % (ip)
         print "\t1) Creating remote directory ... "
         out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"mkdir ini\"" % (key, ip))
@@ -91,7 +103,8 @@ def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKE
         # Custom workflow launcher (Needs to be heavily customized to your environment)
         with open("monitor.sh", "w") as f:
             f.write("#!/bin/bash\n")
-            f.write("watch -n 5 \"seqware workflow-run report --accession $1; qstat -f\"\n")
+            f.write("id=$(cat /mnt/home/seqware/.scheduler.txt | awk '{ print $6 }')\n")
+            f.write("watch -n 5 \"seqware workflow-run report --accession ${id}; qstat -f\"\n")
         with open ("runner.sh", "w") as f:
             f.write("cd /mnt/home/seqware\n")
             f.write("/mnt/home/seqware/bin/seqware workflow schedule --accession 3 --host master --ini ini/%s\n" % (ini))
