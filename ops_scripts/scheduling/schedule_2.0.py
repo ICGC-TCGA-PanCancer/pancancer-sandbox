@@ -10,14 +10,16 @@ import shutil
 import subprocess
 import sys
 
-# Constants
+# Customize
+SSHKEY_LOCATION = "/home/ubuntu/.ssh/niall-oicr-1.pem"
+GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnostest.pem"
+WORKFLOW_ACCESSION = "3"
 
 # Turn on to enable debugging
 DEBUG=False
 
+# CONSTANTS
 IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
-SSHKEY_LOCATION = "/home/ubuntu/.ssh/niall-oicr-1.pem"
-GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnostest.pem"
 
 CRONTAB = ""
 CRONTAB += "#Ansible: status cron\n"
@@ -107,7 +109,8 @@ def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKE
             f.write("watch -n 5 \"seqware workflow-run report --accession ${id}; qstat -f\"\n")
         with open ("runner.sh", "w") as f:
             f.write("cd /mnt/home/seqware\n")
-            f.write("/mnt/home/seqware/bin/seqware workflow schedule --accession 3 --host master --ini ini/%s\n" % (ini))
+            f.write("/mnt/home/seqware/bin/seqware workflow schedule --accession %s --host master --ini ini/%s\n" %
+                    (WORKFLOW_ACCESSION, ini))
         with open ('crontab', 'w') as f:
             f.write(CRONTAB)
         with open("launch.sh", "w") as f:
