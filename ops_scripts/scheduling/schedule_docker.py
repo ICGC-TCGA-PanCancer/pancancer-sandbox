@@ -4,6 +4,7 @@ __author__ = 'nbyrne'
 
 # Architecture 2.5 Scheduling Script
 # Run this in the same folder as your generated ini files, and it will seed machines and start workflows for you
+# Totally customized for running DEWWRAPPER
 
 import glob
 import os
@@ -13,21 +14,21 @@ import subprocess
 import sys
 
 # Constants
-
-
 WORKFLOWNAME="Workflow_Bundle_DEWrapperWorkflow_"
 SSHKEY_LOCATION = "/home/ubuntu/.ssh/wei-dkfz.pem"
 GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
 
-
-
 # Turn on to enable debugging
 DEBUG=False
-IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
 
+# Customizable crontab
 CRONTAB = ""
 CRONTAB += "#SCHEDULER: check for a runner script and execute it\n"
 CRONTAB += "* * * * * [ -e /home/ubuntu/ini/runner.sh ] && bash /home/ubuntu/ini/runner.sh 2>&1 > ~/.scheduler.txt && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran\n\n"
+
+# Regex
+IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
+
 
 def RunCommand(cmd):
     """ Execute a system call safely, and return output.
@@ -50,6 +51,18 @@ def RunCommand(cmd):
     return out, err, errcode
 
 
+def DoubleSchedulingCheck(ini):
+    """ Very hacky way to avoid double scheduling samples. """
+    # Check for redundant scheduling - VERY HACKY
+    all_files = []
+    for root, dirs, files in os.walk("."):
+        for name in files:
+            all_files.append(name)
+    if all_files.count(ini) > 1:
+        print "Duplicate scheduling is being avoided for %s" % ini
+        sys.exit()
+
+
 def GetIni(directory):
     """ Gets a list of ini files from the absolute path 'dir'
     Args:
@@ -57,7 +70,7 @@ def GetIni(directory):
     Returns:
         A list of filenames matching the *.ini naming convention.
     """
-    files = [ os.path.basename(f) for f in glob.glob(os.path.join(directory, '*.ini')) ]
+    files = [os.path.basename(f) for f in glob.glob(os.path.join(directory, '*.ini'))]
     return files
 
 
@@ -75,12 +88,82 @@ def GetMachines():
     return machines
 
 
-def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKEY_LOCATION):
-    """ Send an ini file to a machine and execute it. """
+def WriteFile(filename, body):
+    """ Writes out a string to the specified filename.
+    Arguments:
+        filename:   A string representing the name of the file to write.
+        body:       A string to be written as the contents of the file.
+    Returns:
+        None
+    """
+    with open(filename, "w") as f:
+            f.write(body+"\n")
+
+
+def CreateSchedulingContent(ini, gnosfile=GNOSKEY_LOCATION):
+    """ Creates the files necessary for scheduling workflows.
+    Arguments:
+        ini:        The ini file to to schedule
+        gnosfile:   The location of the gnos key file to use
+    Returns:
+        None
+    """
+    # Read the gnos key into ram
     with open(gnosfile) as f:
         gnoskey = f.read()
+
+    # Custom workflow launcher (Needs to be heavily customized to your environment)
+    # Prepare monitoring Script
+    content = """
+    #!/bin/bash
+    while true; do
+        docker logs `cat ~/.workflow_container`
+        sleep 5
+    done
+    """
+    WriteFile("monitor.sh", content)
+    # Prepare runner Script
+    content = """
+    cd /mnt/home/seqware
+    # Select A DEWrapper Version
+    files=$(ls /workflows | sort)
+    regex="Workflow_Bundle_DEWrapperWorkflow_(.*)_SeqWare_1.1.0"
+    for f in $files; do
+       if [[ -f $f ]]; then
+           continue
+       fi
+       if [[ $f =~ $regex ]]; then
+           version=${BASH_REMATCH[1]}
+       fi
+       done
+    # Launch the workflow
+    """
+    content += (
+        "container=$(docker run -d -h master -it -v /var/run/docker.sock:/var/run/docker.sock "
+        "-v /datastore:/datastore -v /workflows:/workflows -v /home/ubuntu/ini/%s:/workflow.ini "
+        "-v /home/ubuntu/ini/gnostest.pem:/home/ubuntu/.ssh/gnos.pem "
+        "seqware/seqware_whitestar_pancancer:1.1.1 "
+        "bash -c \"seqware bundle launch "
+        "--dir /workflows/Workflow_Bundle_DEWrapperWorkflow_${version}_SeqWare_1.1.0 "
+        "--engine whitestar --no-metadata --ini /workflow.ini\")\n" % ini
+    )
+    content += """
+    # Write the container ID
+    echo "$container" > ~/.workflow_container
+    # Copy the monitor to the home folder for easy access
+    cp ~/ini/monitor.sh ~/monitor
+    """
+    WriteFile("runner.sh", content)
+    WriteFile("crontab", CRONTAB)
+    WriteFile("gnostest.pem", gnoskey)
+
+
+def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION):
+    """ Send an ini file to a machine and execute it. """
     for ip in ips:
         ini = ini_files.pop()
+        # Check for redundant scheduling
+        DoubleSchedulingCheck(ini)
         print "Scheduling on %s ... " % (ip)
         print "\t1) Creating remote directory ... "
         out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"mkdir ini\"" % (key, ip))
@@ -90,41 +173,14 @@ def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKE
             sys.exit()
         print "\t3) Creating custom launching components ... "
         # Custom workflow launcher (Needs to be heavily customized to your environment)
-        with open("monitor.sh", "w") as f:
-            f.write("#!/bin/bash\n")
-            f.write("watch -n 5 \"docker logs `cat ~/.workflow_container`\"\n")
-        with open ("runner.sh", "w") as f:
-            f.write("cd /mnt/home/seqware\n")
-            f.write("\n# Select A DEWrapper Version\n")
-            f.write("files=$(ls /workflows | sort --unique)\n")
-            f.write("regex=\"Workflow_Bundle_DEWrapperWorkflow_(.*)_SeqWare_1.1.0\"\n")
-            f.write("for f in $files; do\n")
-            f.write("   if [[ $f =~ $regex ]]; then\n")
-            f.write("       version=${BASH_REMATCH[1]}\n")
-            f.write("   fi\n")
-            f.write("done")
-            f.write("\n# Launch the workflow\n")
-            f.write("container=$(docker run -d -h master -it -v /var/run/docker.sock:/var/run/docker.sock "
-                    "-v /datastore:/datastore -v /workflows:/workflows -v /home/ubuntu/ini/%s:/workflow.ini "
-                    "-v /home/ubuntu/ini/gnostest.pem:/home/ubuntu/.ssh/gnos.pem "
-                    "seqware/seqware_whitestar_pancancer:1.1.1 "
-                    "bash -c \"seqware bundle launch "
-                    "--dir /workflows/Workflow_Bundle_DEWrapperWorkflow_${version}_SeqWare_1.1.0 "
-                    "--engine whitestar --no-metadata --ini /workflow.ini\")\n" % ini)
-            f.write("\n# Write the container ID\n")
-            f.write("echo \"$container\" > ~/.workflow_container")
-        with open ('crontab', 'w') as f:
-            f.write(CRONTAB)
-        with open('gnostest.pem', 'w') as f:
-            f.write(gnoskey)
+        CreateSchedulingContent(ini)
         print "\t4)  Copying custom launcher components ... "
         for fl in ['monitor.sh', 'runner.sh', 'crontab', 'gnostest.pem']:
             out, err, errcode = RunCommand("scp -i %s %s/%s ubuntu@%s:~/ini" % (key, directory, fl, ip))
             if errcode:
-                    sys.exit()
+                sys.exit()
         print "\t5)  Remotely scheduling workflow ..."
         out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"crontab ini/crontab\"" % (key,ip))
-        out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"cp ini/monitor.sh ~/monitor\"" % (key,ip))
         try:
             os.mkdir(ip)
         except:

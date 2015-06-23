@@ -92,7 +92,7 @@ def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKE
         gnoskey = f.read()
     for ip in ips:
         ini = ini_files.pop()
-        # Check for redundant scheduling - VERY HACKY
+        # Check for redundant scheduling
         DoubleSchedulingCheck(ini)
         print "Scheduling on %s ... " % (ip)
         print "\t1) Creating remote directory ... "
