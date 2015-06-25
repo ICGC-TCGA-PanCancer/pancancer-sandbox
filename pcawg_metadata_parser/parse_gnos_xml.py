@@ -54,6 +54,11 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
                          .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
         return
 
+    if gnos_analysis.get('study').lower().endswith('_test'):
+        logger.warning('ignore variant calling entry with study ending with _test, donor: {} GNOS entry: {}'
+                         .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+        return
+
     if analysis_attrib.get('variant_workflow_name') == 'SangerPancancerCgpCnIndelSnvStr' \
         and (
                 (analysis_attrib.get('variant_workflow_version').startswith('1.0.')
@@ -123,13 +128,6 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
     elif analysis_attrib.get('variant_workflow_name').startswith('EMBLPancancer') \
         and  LooseVersion(analysis_attrib.get('variant_workflow_version')) >= LooseVersion('1.0.0'):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
-        # ignore vcf entries with study field ends with _test, but temporarily we need 
-        # to protect some donors from be excluded as they are actual real result (not test),
-        # such exception will eventually be removed when these donors are fixed
-        if gnos_analysis.get('study').endswith('_test'):
-            logger.warning('ignore entry with study ending with _test, donor: {} GNOS entry: {}'
-                         .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
-            return
 
         logger.info('process EMBL variant call for donor: {}, in entry {}'
             .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
@@ -141,14 +139,6 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
     elif analysis_attrib.get('variant_workflow_name') == 'DKFZPancancerCnIndelSnv' \
         and  LooseVersion(analysis_attrib.get('variant_workflow_version')) >= LooseVersion('1.0.0'):
         donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
-
-        # ignore vcf entries with study field ends with _test, but temporarily we need 
-        # to protect some donors from be excluded as they are actual real result (not test),
-        # such exception will eventually be removed when these donors are fixed
-        if gnos_analysis.get('study').endswith('_test'):
-            logger.warning('ignore entry with study ending with _test, donor: {} GNOS entry: {}'
-                         .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
-            return
 
         logger.info('process DKFZ variant call for donor: {}, in entry {}'
             .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
@@ -640,7 +630,7 @@ def is_test(analysis_attrib, gnos_analysis):
     if (gnos_analysis.get('aliquot_id') == '85098796-a2c1-11e3-a743-6c6c38d06053'
           or gnos_analysis.get('study') == 'CGTEST'
           or gnos_analysis.get('study') == 'icgc_pancancer_vcf_test'
-          or 'test' in gnos_analysis.get('study').lower()
+          or gnos_analysis.get('study').lower().endswith('_test')
         ):
         return True
     elif (analysis_attrib.get('dcc_project_code') == 'None-US'
