@@ -30,14 +30,13 @@ sudo sudo ln -sf `pwd`/orchestra.py /bin/orchestra
 sudo chmod +x orchestra.py
 
 echo "Installing remote webservice on all nodes ..."
-if [ ! -z $1 ]; then
+if [ -z $1 ]; then
     echo "    No inventory file specified- using auto discovery mode."
     echo "    This will be very time consuming.  Expect a long delay while this completes."
     subnet=`cat ~/.orchestra_subnet`
     python install/subnet-install.py $subnet $keyfile
     bash install/push.sh
 else
-    subnet=`cat ~/.orchestra_subnet`
     cd install
     bash install/push.sh
 fi
