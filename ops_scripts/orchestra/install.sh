@@ -10,11 +10,11 @@ if [ ! -z $1 ]; then
         echo "Inventory file not found."
         exit 1
     fi
-fi
-
-if [ ! -f ~/.orchestra_subnet ]; then
-    echo "Create your orchestra subnet file."
-    exit 1
+else
+    if [ ! -f ~/.orchestra_subnet ]; then
+        echo "Create your orchestra subnet file."
+        exit 1
+    fi
 fi
 
 echo "Installing dependencies ..."

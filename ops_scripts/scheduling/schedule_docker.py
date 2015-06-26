@@ -17,7 +17,7 @@ import urllib2
 # Configuration
 SSHKEY_LOCATION = "/home/ubuntu/.ssh/wei-dkfz.pem"
 GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
-WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare_1.1.0)"
+WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
 
 # Turn on to enable debugging
 DEBUG = False
@@ -27,7 +27,6 @@ CRONTAB = ""
 CRONTAB += "#SCHEDULER: check for a runner script and execute it\n"
 CRONTAB += "* * * * * [ -e /home/ubuntu/ini/runner.sh ] && bash /home/ubuntu/ini/runner.sh 2>&1 > ~/.scheduler.txt && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran\n\n"
 
-# Regex
 IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
 
 
