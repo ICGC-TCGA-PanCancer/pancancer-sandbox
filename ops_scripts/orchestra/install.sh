@@ -39,8 +39,8 @@ if [ -z $1 ]; then
     cd install
     bash push.sh inventory
 else
-    cd install
     cp "$1" install
+    cd install
     bash push.sh $1
 fi
 
