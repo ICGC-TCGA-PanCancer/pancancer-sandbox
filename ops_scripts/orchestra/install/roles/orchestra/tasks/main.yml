@@ -4,6 +4,11 @@
   sudo: True
   command: docker ps
 
+- name: Stop Orchestra Service
+  sudo: True
+  ignore_errors: yes
+  command: chdir=/home/{{ user_name }}/gitroot service orchestra stop
+
 - name: Create Git Repo Root
   sudo: "{{ user_name }}"
   file: dest=/home/{{ user_name }}/gitroot mode=755 owner={{ user_name }} group={{ user_name }} state=directory

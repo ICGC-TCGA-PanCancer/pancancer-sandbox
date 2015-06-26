@@ -131,7 +131,7 @@ def route(path, req):
         headers(req)
         cmd = "docker ps"
         out, err, code = RunCommand(cmd)
-        data = out.split("\n")
+        data = out.strip().split("\n")
         if len(data) < 2:
             req.wfile.write("FALSE\n")
         else:
