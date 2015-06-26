@@ -8,6 +8,10 @@
   sudo: "{{ user_name }}"
   file: dest=/home/{{ user_name }}/gitroot mode=755 owner={{ user_name }} group={{ user_name }} state=directory
 
+- name: Create Worker Home Folder
+  sudo: "{{ user_name }}"
+  file: dest=/home/{{ user_name }}/.worker mode=755 owner={{ user_name }} group={{ user_name }} state=directory
+
 - name: Install Required Packages
   sudo: True
   apt: name={{ item }} state=latest update_cache=yes

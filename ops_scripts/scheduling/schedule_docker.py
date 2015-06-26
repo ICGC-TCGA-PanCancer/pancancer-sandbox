@@ -4,7 +4,7 @@ __author__ = 'nbyrne'
 
 # Architecture 2.5 Scheduling Script
 # Run this in the same folder as your generated ini files, and it will seed machines and start workflows for you
-# Totally customized for running DEWWRAPPER
+# Totally customized for running DEWRAPPER
 
 import glob
 import os
@@ -12,14 +12,15 @@ import shlex
 import shutil
 import subprocess
 import sys
+import urllib2
 
-# Constants
-WORKFLOWNAME="Workflow_Bundle_DEWrapperWorkflow_"
+# Configuration
 SSHKEY_LOCATION = "/home/ubuntu/.ssh/wei-dkfz.pem"
 GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
+WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare_1.1.0)"
 
 # Turn on to enable debugging
-DEBUG=False
+DEBUG = False
 
 # Customizable crontab
 CRONTAB = ""
@@ -28,6 +29,19 @@ CRONTAB += "* * * * * [ -e /home/ubuntu/ini/runner.sh ] && bash /home/ubuntu/ini
 
 # Regex
 IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
+
+
+def MachineBusy(ip):
+    """ Uses the orchestra webservice to determine if a workflow is already running. """
+    try:
+        data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=5).read().strip()
+    except:
+        print "The orchestra webservice is not responding on this machine.  No scheduling to this machine will occur."
+        return True
+    if data == "TRUE":
+        print "This machine is already processing a workflow."
+        return True
+    return False
 
 
 def RunCommand(cmd):
@@ -48,11 +62,11 @@ def RunCommand(cmd):
         print out
         print err
         print errcode
-    return out, err, errcode
+    return out, err, errcode0
 
 
 def DoubleSchedulingCheck(ini):
-    """ Very hacky way to avoid double scheduling samples. """
+    """ Avoid double scheduling samples. """
     # Check for redundant scheduling - VERY HACKY
     all_files = []
     for root, dirs, files in os.walk("."):
@@ -60,7 +74,8 @@ def DoubleSchedulingCheck(ini):
             all_files.append(name)
     if all_files.count(ini) > 1:
         print "Duplicate scheduling is being avoided for %s" % ini
-        sys.exit()
+        return True
+    return False
 
 
 def GetIni(directory):
@@ -125,27 +140,36 @@ def CreateSchedulingContent(ini, gnosfile=GNOSKEY_LOCATION):
     # Prepare runner Script
     content = """
     cd /mnt/home/seqware
-    # Select A DEWrapper Version
+    # Get the latest version of the workflow
     files=$(ls /workflows | sort)
-    regex="Workflow_Bundle_DEWrapperWorkflow_(.*)_SeqWare_1.1.0"
+    """
+    content += "regex=%s" % WORKFLOW_REGEX
+    content += """
     for f in $files; do
        if [[ -f $f ]]; then
            continue
        fi
        if [[ $f =~ $regex ]]; then
-           version=${BASH_REMATCH[1]}
+           workflow=${BASH_REMATCH[1]}
        fi
        done
     # Launch the workflow
     """
     content += (
-        "container=$(docker run -d -h master -it -v /var/run/docker.sock:/var/run/docker.sock "
+        "[[ ! -e /home/ubuntu/.worker ]] && mkdir .worker\n"
+        "[[ ! -e /home/ubuntu/.worker/success.cid ]] && touch /home/ubuntu/.worker/success.cid\n"
+        "[[ ! -e /home/ubuntu/.worker/lastrun.cid ]] && rm /home/ubuntu/.worker/lastrun.cid\n"
+        "container=$(docker run --cid=\"/home/ubuntu/.worker/lastrun.cid\" -d -h master -it "
+        "-v /var/run/docker.sock:/var/run/docker.sock "
         "-v /datastore:/datastore -v /workflows:/workflows -v /home/ubuntu/ini/%s:/workflow.ini "
+        "-v /home/ubuntu/.worker/success.cid:/home/ubuntu/.worker/success.cid "
         "-v /home/ubuntu/ini/gnostest.pem:/home/ubuntu/.ssh/gnos.pem "
         "seqware/seqware_whitestar_pancancer:1.1.1 "
         "bash -c \"seqware bundle launch "
-        "--dir /workflows/Workflow_Bundle_DEWrapperWorkflow_${version}_SeqWare_1.1.0 "
-        "--engine whitestar --no-metadata --ini /workflow.ini\")\n" % ini
+        "--dir /workflows/${workflow} "
+        "--engine whitestar --no-metadata --ini /workflow.ini && "
+        "cat ~/.worker/lastrun.cid >> /home/ubuntu/.worker/success.cid"
+        "\")\n" % ini
     )
     content += """
     # Write the container ID
@@ -161,32 +185,39 @@ def CreateSchedulingContent(ini, gnosfile=GNOSKEY_LOCATION):
 def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION):
     """ Send an ini file to a machine and execute it. """
     for ip in ips:
+        # Check if the Machine is Busy
+        if MachineBusy(ip):
+            continue
+
+        # Select a workflow, avoid doublescheduling things
         ini = ini_files.pop()
-        # Check for redundant scheduling
-        DoubleSchedulingCheck(ini)
-        print "Scheduling on %s ... " % (ip)
+        while DoubleSchedulingCheck(ini):
+            ini = ini_files.pop()
+
+        # Start Scheduling Pipeline
+        print "Scheduling on %s ... " % ip
         print "\t1) Creating remote directory ... "
         out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"mkdir ini\"" % (key, ip))
-        print "\t2) Copying ini file to %s ... " % (ip)
+        print "\t2) Copying ini file to %s ... " % ip
         out, err, errcode = RunCommand("scp -i %s %s/%s ubuntu@%s:~/ini" % (key, directory, ini, ip))
         if errcode:
             sys.exit()
         print "\t3) Creating custom launching components ... "
-        # Custom workflow launcher (Needs to be heavily customized to your environment)
+        # Custom workflow launcher scripts
         CreateSchedulingContent(ini)
-        print "\t4)  Copying custom launcher components ... "
+        print "\t4) Copying custom launcher components ... "
         for fl in ['monitor.sh', 'runner.sh', 'crontab', 'gnostest.pem']:
             out, err, errcode = RunCommand("scp -i %s %s/%s ubuntu@%s:~/ini" % (key, directory, fl, ip))
             if errcode:
                 sys.exit()
-        print "\t5)  Remotely scheduling workflow ..."
-        out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"crontab ini/crontab\"" % (key,ip))
+        print "\t5) Remotely scheduling workflow ..."
+        out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"crontab ini/crontab\"" % (key, ip))
         try:
             os.mkdir(ip)
         except:
             pass
         print "\t5) Moving local ini file into a host folder"
-        shutil.move(ini, os.path.join(ip,ini))
+        shutil.move(ini, os.path.join(ip, ini))
         print "\t6) All steps are complete"
 
 

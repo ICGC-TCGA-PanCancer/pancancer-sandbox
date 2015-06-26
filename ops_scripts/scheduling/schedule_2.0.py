@@ -50,7 +50,6 @@ def RunCommand(cmd):
         print errcode
     return out, err, errcode
 
-
 def GetIni(directory):
     """ Gets a list of ini files from the absolute path 'dir'
     Args:
@@ -60,7 +59,6 @@ def GetIni(directory):
     """
     files = [ os.path.basename(f) for f in glob.glob(os.path.join(directory, '*.ini')) ]
     return files
-
 
 def GetMachines():
     """ Interacts with the nova command line to get a list of machines to schedule on. """
@@ -76,7 +74,7 @@ def GetMachines():
     return machines
 
 def DoubleSchedulingCheck(ini):
-    """ Very hacky way to avoid double scheduling samples. """
+    """ Avoid double scheduling samples. """
     # Check for redundant scheduling - VERY HACKY
     all_files = []
     for root, dirs, files in os.walk("."):
@@ -84,7 +82,8 @@ def DoubleSchedulingCheck(ini):
             all_files.append(name)
     if all_files.count(ini) > 1:
         print "Duplicate scheduling is being avoided for %s" % ini
-        sys.exit()
+        return True
+    return False
 
 def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKEY_LOCATION):
     """ Send an ini file to a machine and execute it. """
@@ -92,8 +91,8 @@ def FeedMachines(ips, directory, ini_files, key=SSHKEY_LOCATION, gnosfile=GNOSKE
         gnoskey = f.read()
     for ip in ips:
         ini = ini_files.pop()
-        # Check for redundant scheduling
-        DoubleSchedulingCheck(ini)
+	    while DoubleSchedulingCheck(ini):
+            ini = ini_files.pop()
         print "Scheduling on %s ... " % (ip)
         print "\t1) Creating remote directory ... "
         out, err, errcode = RunCommand("ssh -i %s ubuntu@%s \"mkdir ini\"" % (key, ip))

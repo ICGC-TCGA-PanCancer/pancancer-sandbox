@@ -2,15 +2,18 @@
 
 __author__ = 'nbyrne'
 
-# Installs the mangement_interface on all nodes in a subnet
+# Creates an ansible inventory file for installing the Orchestra webservice
+# It writes the entire subnet to the file, so that an install is tried on all IP's
+# Failures are expected
 
 import netaddr
-import os
 import sys
 
 def main(subnet, keyfile):
-    for ip in netaddr.IPNetwork(subnet):
-        os.system("bash install/push.sh %s %s" % (ip, keyfile))
+    with open("inventory", "w") as f:
+        f.write("[ seqware_worker ]\n")
+        for ip in netaddr.IPNetwork(subnet):
+            f.write(str(ip)+" ansible_ssh_private_key_file=%s\n" % sys.argv[2])
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:

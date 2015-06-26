@@ -7,6 +7,7 @@ __author__ = 'nbyrne'
 import BaseHTTPServer
 import logging
 import os
+import re
 import shlex
 import subprocess
 import time
@@ -55,6 +56,12 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         route(path, req)
 
 
+def headers(req):
+    req.send_response(200)
+    req.send_header("Content-type", "text/plain")
+    req.end_headers()
+    return
+
 def route(path, req):
     """ HTTP request router.
     Args:
@@ -63,17 +70,24 @@ def route(path, req):
     Returns:
         Nothing, handles all communication
     """
+    if path == "/success":
+        home = os.path.expanduser("~")
+        fname = os.path.join(home, ".worker/success.cid")
+        data = ""
+        if os.path.exists(fname):
+            with open(fname) as f:
+                data += f.readlines()
+        headers(req)
+        req.wfile.write(data+"\n")
+        return
+
     if path == "/healthy":
-        req.send_response(200)
-        req.send_header("Content-type", "text/plain")
-        req.end_headers()
+        headers(req)
         req.wfile.write("TRUE\n")
         return
 
     if path == "/workflows":
-        req.send_response(200)
-        req.send_header("Content-type", "text/plain")
-        req.end_headers()
+        headers(req)
         if os.path.exists("/workflows"):
             results = []
             for f in os.listdir("/workflows"):
@@ -88,24 +102,33 @@ def route(path, req):
                 req.wfile.write("None\n")
         return
 
+    if path == "/lastcontainer":
+        home = os.path.expanduser("~")
+        fname = os.path.join(home, ".worker/lastrun.cid")
+        data = ""
+        if os.path.exists(fname):
+            with open(fname) as f:
+                data += f.readlines()
+        headers(req)
+        req.wfile.write(data+"\n")
+        return
+
     if path == "/containers":
-        req.send_response(200)
-        req.send_header("Content-type", "text/plain")
-        req.end_headers()
-        cmd = "docker ps"
+        headers(req)
+        cmd = "docker ps --no-trunc"
         out, err, code = RunCommand(cmd)
         data = out.split('\n')
         for line in data:
-            req.wfile.write("%s\n" % line)
+            match = re.search("^([a-z0-9]]+)\s+seqware", line)
+            if match is not None:
+                req.wfile.write("%s\n" % match.group(1))
         if code != 0:
             logging.error("ERROR RUNNING: %s" % cmd)
             logging.error("ERROR: %s" % err)
         return
 
     if path == "/busy":
-        req.send_response(200)
-        req.send_header("Content-type", "text/plain")
-        req.end_headers()
+        headers(req)
         cmd = "docker ps"
         out, err, code = RunCommand(cmd)
         data = out.split("\n")
