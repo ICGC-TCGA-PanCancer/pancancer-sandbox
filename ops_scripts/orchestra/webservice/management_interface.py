@@ -19,7 +19,6 @@ PORT_NUMBER = 9009
 HOST_NAME = '0.0.0.0'
 LOGFILE = 'webservice.log'
 
-
 def RunCommand(cmd):
     """ Execute a system call safely, and return output.
     Args:
@@ -40,7 +39,6 @@ def RunCommand(cmd):
         print errcode
     return out, err, errcode
 
-
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """ Handler for the listener. """
 
@@ -54,7 +52,6 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """Respond to a GET request."""
         path = urlparse.urlparse(req.path).path
         route(path, req)
-
 
 def headers(req):
     req.send_response(200)
@@ -144,7 +141,6 @@ def route(path, req):
     logging.error("BAD REQUEST TO PATH: %s" % path)
     return
 
-
 def setup_logging(filename, level=logging.INFO):
     """ Logging Module Interface.
     Args:
@@ -156,7 +152,6 @@ def setup_logging(filename, level=logging.INFO):
     logging.basicConfig(filename=filename,level=level)
     return None
 
-
 def main():
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
     logging.info("Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER))
@@ -167,7 +162,6 @@ def main():
     httpd.server_close()
     print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
     logging.info("Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER))
-
 
 if __name__ == '__main__':
     setup_logging(LOGFILE)

@@ -25,7 +25,7 @@ DEBUG = False
 # Customizable crontab
 CRONTAB = ""
 CRONTAB += "#SCHEDULER: check for a runner script and execute it\n"
-CRONTAB += "* * * * * [ -e /home/ubuntu/ini/runner.sh ] && bash /home/ubuntu/ini/runner.sh 2>&1 > ~/.scheduler.txt && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran\n\n"
+CRONTAB += "* * * * * [ -e /home/ubuntu/ini/runner.sh ] && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran && bash /home/ubuntu/ini/runner.ran 2>&1 > ~/.scheduler.txt \n\n"
 
 IP_REGEX = "\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\b"
 
@@ -35,8 +35,8 @@ def MachineBusy(ip):
     try:
         data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=5).read().strip()
     except:
-        print "The orchestra webservice is not responding on this machine.  No scheduling to this machine will occur."
-        return True
+        print "The orchestra webservice is not responding on this machine."
+        return False
     if data == "TRUE":
         print "This machine is already processing a workflow."
         return True
@@ -61,7 +61,7 @@ def RunCommand(cmd):
         print out
         print err
         print errcode
-    return out, err, errcode0
+    return out, err, errcode
 
 
 def DoubleSchedulingCheck(ini):
@@ -129,53 +129,53 @@ def CreateSchedulingContent(ini, gnosfile=GNOSKEY_LOCATION):
     # Custom workflow launcher (Needs to be heavily customized to your environment)
     # Prepare monitoring Script
     content = """
-    #!/bin/bash
-    while true; do
-        docker logs `cat ~/.workflow_container`
-        sleep 5
-    done
-    """
+#!/bin/bash
+while true; do
+    docker logs `cat /datastore/.worker/lastrun.cid`
+    sleep 5
+done
+"""
     WriteFile("monitor.sh", content)
     # Prepare runner Script
     content = """
-    cd /mnt/home/seqware
-    # Get the latest version of the workflow
-    files=$(ls /workflows | sort)
-    """
-    content += "regex=%s" % WORKFLOW_REGEX
+#!/bin/bash
+cd /home/ubuntu
+# Get the latest version of the workflow
+files=$(ls /workflows | sort)
+"""
+    content += "regex=\"%s\"" % WORKFLOW_REGEX
     content += """
-    for f in $files; do
-       if [[ -f $f ]]; then
-           continue
-       fi
-       if [[ $f =~ $regex ]]; then
-           workflow=${BASH_REMATCH[1]}
-       fi
-       done
-    # Launch the workflow
-    """
+for f in $files; do
+   if [[ -f /workflows/$f ]]; then
+       continue
+   fi
+   if [[ $f =~ $regex ]]; then
+       workflow=${BASH_REMATCH[1]}
+   fi
+   done
+# Launch the workflow
+"""
     content += (
-        "[[ ! -e /home/ubuntu/.worker ]] && mkdir .worker\n"
-        "[[ ! -e /home/ubuntu/.worker/success.cid ]] && touch /home/ubuntu/.worker/success.cid\n"
-        "[[ ! -e /home/ubuntu/.worker/lastrun.cid ]] && rm /home/ubuntu/.worker/lastrun.cid\n"
-        "container=$(docker run --cid=\"/home/ubuntu/.worker/lastrun.cid\" -d -h master -it "
+        "[[ ! -e /datastore/.worker ]] && mkdir /datastore/.worker\n"
+        "[[ ! -e /datastore/.worker/success.cid ]] && touch /datastore/.worker/success.cid\n"
+        "[[ -e /datastore/.worker/lastrun.cid ]] && rm /datastore/.worker/lastrun.cid\n"
+        "docker run --cidfile=\"/datastore/.worker/lastrun.cid\" -d -h master -it "
         "-v /var/run/docker.sock:/var/run/docker.sock "
-        "-v /datastore:/datastore -v /workflows:/workflows -v /home/ubuntu/ini/%s:/workflow.ini "
-        "-v /home/ubuntu/.worker/success.cid:/home/ubuntu/.worker/success.cid "
+        "-v /datastore:/datastore "
+        "-v /workflows:/workflows "
+        "-v /home/ubuntu/ini/%s:/workflow.ini "
         "-v /home/ubuntu/ini/gnostest.pem:/home/ubuntu/.ssh/gnos.pem "
         "seqware/seqware_whitestar_pancancer:1.1.1 "
         "bash -c \"seqware bundle launch "
         "--dir /workflows/${workflow} "
         "--engine whitestar --no-metadata --ini /workflow.ini && "
-        "cat ~/.worker/lastrun.cid >> /home/ubuntu/.worker/success.cid"
-        "\")\n" % ini
+        "cat /datastore/.worker/lastrun.cid >> /datastore/.worker/success.cid"
+        "\"\n" % ini
     )
     content += """
-    # Write the container ID
-    echo "$container" > ~/.workflow_container
-    # Copy the monitor to the home folder for easy access
-    cp ~/ini/monitor.sh ~/monitor
-    """
+# Copy the monitor to the home folder for easy access
+cp ~/ini/monitor.sh ~/monitor
+"""
     WriteFile("runner.sh", content)
     WriteFile("crontab", CRONTAB)
     WriteFile("gnostest.pem", gnoskey)
