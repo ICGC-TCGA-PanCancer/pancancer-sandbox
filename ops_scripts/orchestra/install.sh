@@ -15,7 +15,7 @@ else
         echo "Create your orchestra subnet file."
         exit 1
     fi
-fil
+fi
 
 echo "Installing dependencies ..."
 sudo apt-get update 2>&1 > install.log
