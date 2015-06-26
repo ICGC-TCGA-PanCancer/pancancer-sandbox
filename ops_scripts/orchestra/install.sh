@@ -15,12 +15,12 @@ else
         echo "Create your orchestra subnet file."
         exit 1
     fi
-fi
+fil
 
 echo "Installing dependencies ..."
 sudo apt-get update 2>&1 > install.log
 sudo apt-get install -y software-properties-common 2>&1 >> install.log
-sudo apt-add-repository ppa:ansible/ansible 2>&1 >> install.log
+sudo apt-add-repository -y ppa:ansible/ansible 2>&1 >> install.log
 sudo apt-get update 2>&1 >> install.log
 sudo apt-get install -y python-pip ansible 2>&1 >> install.log
 sudo pip install netaddr 2>&1 >> install.log
@@ -35,9 +35,11 @@ if [ -z $1 ]; then
     echo "    This will be very time consuming.  Expect a long delay while this completes."
     subnet=`cat ~/.orchestra_subnet`
     python install/subnet-install.py $subnet $keyfile
+    bash install/push.sh
 else
     subnet=`cat ~/.orchestra_subnet`
-    python install/subnet-install.py $subnet $keyfile
+    cd install
+    bash install/push.sh
 fi
 
 echo "All done."

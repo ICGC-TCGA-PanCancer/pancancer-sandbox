@@ -13,7 +13,7 @@ def main(subnet, keyfile):
     with open("inventory", "w") as f:
         f.write("[ seqware_worker ]\n")
         for ip in netaddr.IPNetwork(subnet):
-            f.write(str(ip)+" ansible_ssh_private_key_file=%s\n" % sys.argv[2])
+            f.write(str(ip)+" /%s\n" % sys.argv[2])
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
