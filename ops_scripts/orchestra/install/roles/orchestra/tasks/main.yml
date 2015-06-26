@@ -18,6 +18,11 @@
   with_items:
         - git
 
+- name: Wipe Old Git Repo if it exists
+  sudo: "{{ user_name }}"
+  ignore_errors: yes
+  command: chdir=/home/{{ user_name }}/gitroot rm -rf pancancer-sandbox
+  
 - name: Install the Git Repo for pcawg-operations
   sudo: "{{ user_name }}"
   command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pancancer-sandbox.git -b niall-ops_code
