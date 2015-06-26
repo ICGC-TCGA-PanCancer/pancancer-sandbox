@@ -11,6 +11,6 @@
 
 # Begin Remote Install as Background Process
 
-ansible-playbook -i inventory site.yml
+ansible-playbook -i $1 site.yml
 
 

@@ -35,10 +35,9 @@ if [ -z $1 ]; then
     echo "    This will be very time consuming.  Expect a long delay while this completes."
     subnet=`cat ~/.orchestra_subnet`
     python install/subnet-install.py $subnet $keyfile
-    bash install/push.sh
+    bash install/push.sh inventory
 else
-    cd install
-    bash install/push.sh
+    bash install/push.sh $1
 fi
 
 echo "All done."
