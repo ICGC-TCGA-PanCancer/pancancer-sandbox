@@ -1,4 +1,4 @@
 ---
-- hosts: seqware_worker
+- hosts: all
   roles:
     - { role: orchestra }
