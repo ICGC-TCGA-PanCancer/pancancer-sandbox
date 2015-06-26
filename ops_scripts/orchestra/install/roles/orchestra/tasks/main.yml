@@ -24,7 +24,7 @@
 
 - name: Install Orchestra Service File
   sudo: True
-  copy: src=/home/{{ user_name }}/gitroot/pancancer-sandbox/ops_scripts/orchestra/webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
+  copy: src=../webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
 
 - name: Update rc links for Orchestra service
   sudo: True
