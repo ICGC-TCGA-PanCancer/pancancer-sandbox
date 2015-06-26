@@ -37,6 +37,7 @@ if [ -z $1 ]; then
     python install/subnet-install.py $subnet $keyfile
     bash install/push.sh inventory
 else
+    cp "$1" "install/$1"
     bash install/push.sh $1
 fi
 
