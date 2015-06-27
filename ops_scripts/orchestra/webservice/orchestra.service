@@ -6,7 +6,7 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NAME=orchestra
 DESC="orchestra webservice"
 DEFAULT=/etc/default/$NAME
-RUNDIR=/home/ubuntu/gitroot/pancancer-sandbox/ops_scripts/orchestra/webservice
+RUNDIR=/home/ubuntu/orchestra/
 
 if [ `id -u` -ne 0 ]; then
 	echo "You need root privileges to run this script"

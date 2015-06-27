@@ -4,8 +4,23 @@ __author__ = 'nbyrne'
 
 # Architecture 2.5 Scheduling Script
 # Run this in the same folder as your generated ini files, and it will seed machines and start workflows for you
-# Totally customized for running DEWRAPPER
+# Integrates with orchestra for automatic scheduling, and failure detection
+# You need to modify the Configuration section to customize to your environment
 
+# The scheduler will install the GNOS pem file, the ini file, and a cronjob to launch the workflow.
+# Log into the worker, and view the contents of /home/ubuntu/ini to see worker side configuration.
+
+# Configuration
+SSHKEY_LOCATION = "/home/ubuntu/.ssh/wei-dkfz.pem"
+GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
+
+# Workflow Selection
+# WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
+# WORKFLOW_REGEX = "(Workflow_Bundle_BWA_.*_SeqWare.*)"
+WORKFLOW_REGEX = "(Workflow_Bundle_HelloWorld_.*_SeqWare.*)"
+# WORKFLOW_REGEX = "(Workflow_Bundle_SangerPancancerCgpCnIndelSnvStr_.*_SeqWare.*)"
+
+# Import Modules
 import glob
 import os
 import shlex
@@ -13,11 +28,6 @@ import shutil
 import subprocess
 import sys
 import urllib2
-
-# Configuration
-SSHKEY_LOCATION = "/home/ubuntu/.ssh/wei-dkfz.pem"
-GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
-WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
 
 # Turn on to enable debugging
 DEBUG = False
@@ -72,7 +82,8 @@ def DoubleSchedulingCheck(ini):
         for name in files:
             all_files.append(name)
     if all_files.count(ini) > 1:
-        print "Duplicate scheduling is being avoided for %s" % ini
+        print "SKIPPING: %s has already been scheduled." % ini
+        print "\t(Move this file out of it's ip-address folder to schedule it again.)"
         return True
     return False
 

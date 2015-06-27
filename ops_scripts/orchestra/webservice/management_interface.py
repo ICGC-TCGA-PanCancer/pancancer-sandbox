@@ -68,8 +68,7 @@ def route(path, req):
         Nothing, handles all communication
     """
     if path == "/success":
-        home = os.path.expanduser("~")
-        fname = os.path.join(home, ".worker/success.cid")
+        fname = os.path.join(home, "/datastore/.worker/success.cid")
         data = ""
         if os.path.exists(fname):
             with open(fname) as f:
@@ -100,8 +99,7 @@ def route(path, req):
         return
 
     if path == "/lastcontainer":
-        home = os.path.expanduser("~")
-        fname = os.path.join(home, ".worker/lastrun.cid")
+        fname = os.path.join(home, "/datastore/.worker/lastrun.cid")
         data = ""
         if os.path.exists(fname):
             with open(fname) as f:

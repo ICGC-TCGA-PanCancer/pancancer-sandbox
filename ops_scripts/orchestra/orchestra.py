@@ -19,15 +19,6 @@ def parsefail():
     print "Try: orchestra help\n"
     sys.exit(1)
 
-def readsubnetfile():
-    """ Simple helper function that returns the contents of the subnet file. """
-    if not os.path.exists(SUBNET):
-        print "No subnet file found.  You'll need to create one.\n"
-        sys.exit(1)
-    with open(SUBNET) as f:
-        data = f.read()
-    return data
-
 def RunCommand(cmd):
     """ Execute a system call safely, and return output.
     Args:
@@ -48,17 +39,16 @@ def RunCommand(cmd):
         print errcode
     return out, err, errcode
 
-def ListCommand():
+def HealthStatus(ip):
     """  Processes the list command.  """
-    with open(CACHEFILE, "w") as f:
-        for ip in netaddr.IPNetwork(SUBNET):
-            try:
-                data = urllib2.urlopen("http://%s:9009/healthy" % ip, timeout=2).read().strip()
-            except:
-                data = "FALSE"
-            if data == "TRUE":
-                print ip
-                f.write(str(ip)+"\n")
+    try:
+        data = urllib2.urlopen("http://%s:9009/healthy" % ip, timeout=2).read().strip()
+    except:
+        data = "FALSE"
+    if data == "TRUE":
+        return True
+    else:
+        return False
 
 def WorkerStatus(cmd):
     """ Processes the busy and lazy commands. """
@@ -85,59 +75,91 @@ def ListWorkflows(ip):
         data = ""
     print data
 
+def LastContainer(ip):
+    """ Processes a helper command to view the last run container id """
+    try:
+        data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
+    except:
+        data = ""
+    return data
+
+def SuccessContainers(ip):
+    """ Processes a helper function to list sucessful container id's """
+    try:
+        data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
+    except:
+        data = ""
+    return data.split('\n')
+
 def HasFailed(ip):
     """ Processes the failure command """
     data = WorkerStatus("busy")
     if ip in data:
         return "FALSE"
-    containers = LastContainer(ip).split("\n")
-
+    success = SuccessContainers(ip)
+    last = LastContainer(ip)
+    if last in success:
+        return False
+    return True
 
 def main():
-    SUBNET = readsubnetfile()
-    
-    # Handle the discover command - find all nodes with orchestra installed
-    if sys.argv[1] == "discover":
-       ListCommand()
     
     # Handle the busy, and lazy commands - use cached data to find nodes
     if sys.argv[1] == "busy" or sys.argv[1] == "lazy":
         WorkerStatus(sys.argv[1])
-    
+
+    # Check the webservice on a particular machine
+    if sys.argv[1] == "check":
+        if HealthStatus(sys.argv[2]):
+            print "OK"
+        else:
+            print "FAILURE"
+
     # List the workflows on a particular machine
     if sys.argv[1] == "workflows":
         ListWorkflows(sys.argv[2])
-
-    # Indicates if the machine is idle, with the last workflow a failure
-    # Do not schedule to machines in this state- require manual intervention
-    # if sys.argv[1] == "failure":
-    #    ip = sys.argv[2]
-    #    HasFailed(ip)
     
     # Integrate with the scheduler to launch an ini file
     if sys.argv[1] == "schedule":
         ip = sys.argv[2]
         ini = sys.argv[3]
-        print "NOT IMPLEMENTED YET"
-    sys.exit(0)
 
+        # Do not schedule to nodes not running the webservice
+        if not HealthStatus(sys.argv[2]):
+            print "The webservice is not responding the machine at: %s" % ip
+            sys.exit(1)
+
+        if HasFailed(ip):
+            print "This machine is not being scheduled to right now."
+            print "Please check the docker logs for the last container run."
+            print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cd"
+            print "\tTo rereun the last workflow:  bash /home/ubuntu/ini/runner/ran"
+            print ""
+        else:
+            print "NOT IMPLEMENTED YET"
+            print ""
+
+    sys.exit(0)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         if sys.argv[1] == "help":
             print "Valid Commands:"
-            print "\torchestra discover -- retrieve a list of all servers on this subnet running orchestra."
             print "\torchestra busy -- retrieve a list of all servers on this subnet running workflows."
             print "\torchestra lazy -- retrieve a list of all servers on this subnet not running workflows."
             print "\torchestra workflows [ip address] -- retrieve a list of all workflows on this machine."
             print "\torchestra schedule [ip address] [ini file] -- send an ini file to a machine and run it."
-
+            print "\torchestra auto-schedule -- execute from inside a folder full of ini files, " \
+                  "will schedule to all available machines."
+            print "\torchestra check [ip address] -- confirms orchestra webservice is running remotely."
             print ""
             sys.exit(0)
-        if sys.argv[1] == "busy" or sys.argv[1] == "lazy" or sys.argv[1] == "list":
+        if sys.argv[1] == "busy" or sys.argv[1] == "lazy":
             main()
     if len(sys.argv) > 1:
         if sys.argv[1] == "workflows" and len(sys.argv) == 3:
+            main()
+        if sys.argv[1] == "check" and len(sys.argv) == 3:
             main()
         if sys.argv[1] == "schedule" and len(sys.argv) == 4:
             main()

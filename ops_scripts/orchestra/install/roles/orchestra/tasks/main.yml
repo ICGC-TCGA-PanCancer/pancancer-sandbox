@@ -4,18 +4,21 @@
   sudo: True
   command: docker ps
 
-- name: Stop Orchestra Service
+- stat: path=/bin/orchestra
+  register: orchestra_symlink
+
+- name: Do not install on a launcher machine -- don't schedule workflows
+  fail: msg="This is machine is an orchestra manager, not installing the webservice."
+  when: orchestra_symlink.stat.exists == True
+
+- name: Stop Orchestra Service (if it has already been installed)
   sudo: True
   ignore_errors: yes
-  command: chdir=/home/{{ user_name }}/gitroot service orchestra stop
+  service: name=orchestra state=stopped
 
-- name: Create Git Repo Root
+- name: Create Webservice Home Folder
   sudo: "{{ user_name }}"
-  file: dest=/home/{{ user_name }}/gitroot mode=755 owner={{ user_name }} group={{ user_name }} state=directory
-
-- name: Create Worker Home Folder
-  sudo: "{{ user_name }}"
-  file: dest=/home/{{ user_name }}/.worker mode=755 owner={{ user_name }} group={{ user_name }} state=directory
+  file: dest=/home/{{ user_name }}/orchestra mode=755 owner={{ user_name }} group={{ user_name }} state=directory
 
 - name: Install Required Packages
   sudo: True
@@ -23,26 +26,21 @@
   with_items:
         - git
 
-- name: Wipe Old Git Repo if it exists
-  sudo: "{{ user_name }}"
-  ignore_errors: yes
-  command: chdir=/home/{{ user_name }}/gitroot rm -rf pancancer-sandbox
-
-- name: Install the Git Repo for pcawg-operations
-  sudo: "{{ user_name }}"
-  command: chdir=/home/{{ user_name }}/gitroot git clone https://github.com/ICGC-TCGA-PanCancer/pancancer-sandbox.git -b niall-ops_code
-
 - name: Install Orchestra Service File
   sudo: True
   copy: src=../webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
 
+- name: Install Orchestra Service File
+  sudo: "{{ user_name }}"
+  copy: src=../webservice/management_interface.py /home/{{ user_name }}/orchestra/management_interface.py owner={{ user_name }} mode=0700
+
 - name: Update rc links for Orchestra service
   sudo: True
-  command: chdir=/home/{{ user_name }}/gitroot update-rc.d orchestra defaults
+  command: chdir=/home/{{ user_name }}/orchestra update-rc.d orchestra defaults
 
 - name: Start Orchestra Service
   sudo: True
-  command: chdir=/home/{{ user_name }}/gitroot service orchestra start
+  service: name=orchestra state=start
 
 - name: Confirm service is up
   sudo: "{{ user_name }}"
