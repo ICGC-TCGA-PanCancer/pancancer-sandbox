@@ -70,7 +70,7 @@ def HealthStatus(ip):
 def HostList():
     """ Processes the hosts command. """
     result = []
-    busyhosts = WorkerStatus(busy)
+    busyhosts = WorkerStatus("busy")
     if not os.path.exists(CACHEFILE):
             print "No cache file found: Run 'orchestra list' to create one.\n"
             sys.exit(1)
