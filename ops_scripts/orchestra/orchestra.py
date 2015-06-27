@@ -7,6 +7,7 @@ __author__ = 'nbyrne'
 import logging
 import netaddr
 import os
+import shlex
 import subprocess
 import sys
 import urllib2
