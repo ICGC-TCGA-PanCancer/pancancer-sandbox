@@ -40,7 +40,7 @@
 
 - name: Start Orchestra Service
   sudo: True
-  service: name=orchestra state=start
+  service: name=orchestra state=started
 
 - name: Confirm service is up
   sudo: "{{ user_name }}"
