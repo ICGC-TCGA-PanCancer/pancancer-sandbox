@@ -47,13 +47,13 @@
   command: curl http://127.0.0.1:9009/healthy
 
 - name: Append the IP address to the orchestra cache file
-  local_action: command echo "{{ ansible_eth0.ipv4.address }}" >> /home/{{ user_name }}/.orchestra_cache
+  local_action: shell echo "{{ ansible_eth0.ipv4.address }}" >> /home/{{ user_name }}/.orchestra_cache
 
 - name: Make the .orchestra_cache unique
-  local_action: command cat /home/{{ user_name }}/.orchestra_cache | sort --unique > /home/{{ user_name }}/.orchestra_cache_new
+  local_action: shell cat /home/{{ user_name }}/.orchestra_cache | sort --unique > /home/{{ user_name }}/.orchestra_cache_new
 
 - name: Finalize the .orchestra_cache
-  local_action: command rm /home/{{ user_name }}/.orchestra_cache && mv /home/{{ user_name }}/.orchestra_cache_new /home/{{ user_name }}/.orchestra_cache
+  local_action: shell rm /home/{{ user_name }}/.orchestra_cache && mv /home/{{ user_name }}/.orchestra_cache_new /home/{{ user_name }}/.orchestra_cache
 
 
 
