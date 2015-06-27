@@ -19,29 +19,27 @@ Automatic provisioning will attempt to install the webservice on ALL machines in
 the orchestra master node (this meaning your launcher, or control machine.)<br>
 
 To try automatic provisioning, put the CIDR of your cloud's subnet into this file:<br>
-```vi ~/.orchestra_subnet```<br><br>
+```vi ~/.orchestra_subnet```<br>
 
 To manually provision, create an ansible inventory file of your own like so:<br>
 ```[ seqware_worker ]```<br>
 ```192.168.0.1     ansible_ssh_private_key_file=/home/ubuntu/.ssh/myssh.pem```<br>
 ```192.168.0.2    ansible_ssh_private_key_file=/home/ubuntu/.ssh/myssh.pem```<br>
-<br>
 
 Once this is in place, you can install orchestra on the whole subnet:<br>
 ```bash install.sh```  to use automatic provisioning<br>
 ```bash install.sh inventoryfile```  to use your custom inventory file<br>
-<br>
 
-This will take some time to complete.<br><br>
+This will take some time to complete, ansible will try even IP's without a server so expect to see failures, and don't be alarmed by them.  Totally normal.<br>
 
 The install script will create a cached copy of all hosts the webservice was installed on:<br>
 *If you blow away hosts, remove the IP from this cache file*<br>
-```~/.orchestra_cache``` <br><br>
+```~/.orchestra_cache``` <br>
 
 This cache will be used by the CLI to communicate with the webservice to run commands:<br>
 ```orchestra busy``` will list all the machines currently running docker containers.<br>
 ```orchestra lazy``` will list all the machines not currently running workflows.<br>
-```orchestra help``` will list the scheduling and other polling commands available to you.<br><br>
+```orchestra help``` will list the scheduling and other polling commands available to you.<br>
 
 #### Configuration
 
