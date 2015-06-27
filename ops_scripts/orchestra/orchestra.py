@@ -156,8 +156,11 @@ def Schedule(ip):
         # chdir to the scheduler folder, and call the scheduler symlink
         mypath = os.getcwd()
         os.chdir("/bin/orchestra_scheduler")
-        RunCommand("python schedule_docker.py %s" % ip)
-        os.chidr(mypath)
+        out, err, errcode = RunCommand("python schedule_docker.py %s" % ip)
+        if errcode:
+            print err
+            sys.exit(1)
+        os.chddr(mypath)
 
 def main():
     
