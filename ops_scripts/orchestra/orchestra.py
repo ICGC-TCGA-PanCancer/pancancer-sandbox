@@ -7,9 +7,9 @@ __author__ = 'nbyrne'
 import logging
 import netaddr
 import os
+import subprocess
 import sys
 import urllib2
-
 
 # CONSTANTS
 CACHEFILE = os.path.join(os.getenv("HOME"), ".orchestra_cache")
