@@ -7,13 +7,9 @@
     sudo: True
     command: docker ps
 
-  - name: Create ini folder on remote machine
-    sudo: ubuntu
-    file: dest=/home/ubuntu/ini mode=755 owner=ubuntu group=ubuntu state=directory
-
   - name: Copy scheduling content to remote machine
     sudo: True
-    copy: src=/home/ubuntu/.scheduling dest=/home/ubuntu/ini owner=ubuntu group=ubuntu mode=0700
+    copy: src=/home/ubuntu/.scheduling/ dest=/home/ubuntu/ini owner=ubuntu group=ubuntu mode=0700
 
   - name: Install orchestra crontab
     cron: minute="*"
