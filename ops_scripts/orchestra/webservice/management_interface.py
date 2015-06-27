@@ -19,7 +19,7 @@ PORT_NUMBER = 9009
 HOST_NAME = '0.0.0.0'
 LOGFILE = 'webservice.log'
 
-def RunCommand(cmd, shell=False):
+def RunCommand(cmd):
     """ Execute a system call safely, and return output.
     Args:
         cmd:        A string containing the command to run.
@@ -133,10 +133,10 @@ def route(path, req):
         out, err, code = RunCommand(cmd)
         data = out.strip().split("\n")
         # Catch docker containers downloading images
-        cmd = "ps aux | grep \"docker run\" | wc -l"
-        out, err, code = RunCommand(cmd, shell=True)
-        data2 = int(out)
-        if len(data) < 2 and len(data2) < 2:
+        cmd = "ps aux"
+        out, err, code = RunCommand(cmd)
+        data2 = out.strip()
+        if len(data) < 2 and data2.count("docker run") == 0:
             req.wfile.write("FALSE\n")
         else:
             req.wfile.write("TRUE\n")
