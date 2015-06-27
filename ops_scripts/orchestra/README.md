@@ -1,6 +1,6 @@
 ## orchestra  (It totally works!)
 
-This is an thin webservice and CLI for managing machines in a subnet.<br>
+This is an thin webservice and CLI for managing machines in a subnet- it's totally KISS approach based.<br>
 
 You can leverage the cli to poll machines to find out who is running a workflow, who is idle, who has failed workflows.<br>
 This makes scheduling work to your cluster relatively easy and trouble-free.  Various mechanisms are used to avoid double booking machines.<br><br>
