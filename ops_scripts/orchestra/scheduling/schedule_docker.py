@@ -212,8 +212,6 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         print >> sys.stderr, "There are no more ini files available for scheduling."
         sys.exit(1)
 
-    print ini_files
-
     for ip in ips:
         # Check if the Machine is Busy
         if MachineBusy(ip):
@@ -247,7 +245,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         if errcode:
             logging.error("Unable to schedule %s to %s." % (ini, ip))
             print >> sys.stderr, "ERROR: scheduling %s to %s" % (ini, ip)
-            print err
+            print out, err
             continue
         # Create local ip folder and move content inside
         # shutil.move(ini, os.path.join(ip, ini))
