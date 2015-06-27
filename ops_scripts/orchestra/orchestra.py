@@ -170,11 +170,11 @@ def main():
     
     # Handle the busy, and lazy commands - use cached data to find nodes
     if sys.argv[1] == "busy" or sys.argv[1] == "lazy":
-        print "\nn".join(WorkerStatus(sys.argv[1]))
+        print "\n".join(WorkerStatus(sys.argv[1]))
 
     # Handle the hosts command
     if sys.argv[1] == "hosts":
-        print "\nn".join(HostList())
+        print "\n".join(HostList())
 
     # Check the webservice on a particular machine
     if sys.argv[1] == "check":
