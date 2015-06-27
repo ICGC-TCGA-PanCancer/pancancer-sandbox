@@ -218,7 +218,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         # Check if the Machine is Busy
         if MachineBusy(ip):
             logging.warn("Machine %s reports being busy with a workflow." % ip)
-            print "WARNING: Machine %s reports being busy with a workflow." % ip
+            print >> sys.stderr, "WARNING: Machine %s reports being busy with a workflow." % ip
             continue
 
         # Select a workflow, avoid doublescheduling things
@@ -232,7 +232,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         CreateSchedulingContent(ip, schedulingfolder, ini)
 
         # Create a single host ansible inventory file
-        content = "%s ansible_ssh_private_key_file%s\n" % (ip, key)
+        content = "%s ansible_ssh_private_key_file=%s\n" % (ip, key)
         WriteFile(os.path.join(schedulingfolder, "inventory"), content)
 
         # Call ansible to execute the install
@@ -246,7 +246,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         os.chdir(mypath)
         if errcode:
             logging.error("Unable to schedule %s to %s." % (ini, ip))
-            print "ERROR: scheduling %s to %s" % (ini, ip)
+            print >> sys.stderr, "ERROR: scheduling %s to %s" % (ini, ip)
             continue
         # Create local ip folder and move content inside
         # shutil.move(ini, os.path.join(ip, ini))
