@@ -130,9 +130,6 @@ def SuccessContainers(ip):
 
 def HasFailed(ip):
     """ Processes the failure command """
-    data = WorkerStatus("busy")
-    if ip in data:
-        return "FALSE"
     success = SuccessContainers(ip)
     last = LastContainer(ip)
     if last in success:
@@ -144,6 +141,12 @@ def Schedule(ip):
     # Do not schedule to nodes not running the webservice
     if not HealthStatus(sys.argv[2]):
         print "The webservice is not responding the machine at: %s" % ip
+        sys.exit(1)
+
+    # Do not schedule to busy machiens
+    data = WorkerStatus("busy")
+    if ip in data:
+        print "This machine is already running a workflow."
         sys.exit(1)
 
     if HasFailed(ip):
