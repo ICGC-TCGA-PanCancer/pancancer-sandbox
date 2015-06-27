@@ -72,7 +72,7 @@ def route_success(path, req):
     Returns:
         Nothing, handles all communication
     """
-    fname = os.path.join(home, "/datastore/.worker/success.cid")
+    fname = "/datastore/.worker/success.cid"
     data = ""
     if os.path.exists(fname):
         with open(fname) as f:
@@ -126,7 +126,8 @@ def route_lastcontainer(path, req):
     Returns:
         Nothing, handles all communication
     """
-    fname = os.path.join(home, "/datastore/.worker/lastrun.cid")
+
+    fname = "/datastore/.worker/lastrun.cid"
     data = ""
     if os.path.exists(fname):
         with open(fname) as f:
@@ -148,7 +149,7 @@ def route_containers(path, req):
     out, err, code = RunCommand(cmd)
     data = out.split('\n')
     for line in data:
-        match = re.search("^([a-z0-9]]+)\s+seqware", line)
+        match = re.search(r"^([a-z|0-9]+)\s+", line.strip())
         if match is not None:
             req.wfile.write("%s\n" % match.group(1))
     if code != 0:
