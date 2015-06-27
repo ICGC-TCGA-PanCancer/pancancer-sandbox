@@ -18,5 +18,5 @@
   - name: Install orchestra crontab
     cron: minute="*"
           name="orchestra"
-          user="root"
+          user="ubuntu"
           job="[ -e /home/ubuntu/ini/runner.sh ] && bash /home/ubuntu/ini/runner.sh 2>&1 > ~/.scheduler.txt && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran"
