@@ -209,7 +209,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
     """ Send an ini file to a machine and execute it. """
 
     if len(ini_files) == 0:
-        print "There are no more ini files available for scheduling."
+        print >> sys.stderr, "There are no more ini files available for scheduling."
         sys.exit(1)
 
     print ini_files
