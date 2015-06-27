@@ -19,14 +19,16 @@ the orchestra master node (this meaning your launcher, or control machine.)<br>
 To try automatic provisioning, but the CIDR of your subnet into this file:<br>
 ```vi ~/.orchestra_subnet```<br><br>
 
-To manually provision, create an ansible inventory file of your own like so:
+To manually provision, create an ansible inventory file of your own like so:<br>
 ```[ seqware_worker ]```<br>
 ```192.168.0.1     ansible_ssh_private_key_file=/home/ubuntu/.ssh/myssh.pem```<br>
 ```192.168.0.2    ansible_ssh_private_key_file=/home/ubuntu/.ssh/myssh.pem```<br>
 <br>
 
 Once this is in place, you can install orchestra on the whole subnet:<br>
-```bash install.sh```<br><br>
+```bash install.sh```  to use automatic provisioning<br>
+```bash install.sh inventoryfile```  to use your custom inventory file<br>
+<br>
 
 This will take some time to complete.<br>
 Once it's done, you can do the following to confirm you can manage your machines:<br>
