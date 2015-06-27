@@ -133,6 +133,7 @@ def HasFailed(ip):
         return "FALSE"
     success = SuccessContainers(ip)
     last = LastContainer(ip)
+    print last, success
     if last in success:
         return False
     return True
