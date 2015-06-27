@@ -16,6 +16,7 @@ import urllib2
 CACHEFILE = os.path.join(os.getenv("HOME"), ".orchestra_cache")
 SUBNET = os.path.join(os.getenv("HOME"), ".orchestra_subnet")
 LOGFILE = "/home/ubuntu/.orchestra.log"
+DEBUG = False
 
 def setup_logging(filename, level=logging.INFO):
     """ Logging Module Interface.
