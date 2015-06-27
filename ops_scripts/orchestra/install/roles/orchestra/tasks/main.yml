@@ -30,9 +30,9 @@
   sudo: True
   copy: src=../webservice/orchestra.service dest=/etc/init.d/orchestra owner=root mode=0700
 
-- name: Install Orchestra Service File
+- name: Install Orchestra Webservice
   sudo: "{{ user_name }}"
-  copy: src=../webservice/management_interface.py /home/{{ user_name }}/orchestra/management_interface.py owner={{ user_name }} mode=0700
+  copy: src=../webservice/management_interface.py dest=/home/{{ user_name }}/orchestra/management_interface.py owner={{ user_name }} mode=0700
 
 - name: Update rc links for Orchestra service
   sudo: True
