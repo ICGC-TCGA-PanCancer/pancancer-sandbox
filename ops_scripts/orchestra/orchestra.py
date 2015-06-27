@@ -163,7 +163,7 @@ def main():
 
 def LogArguments():
     args = ",".join(sys.argv)
-    logger.info("orchestra was called with arguments %s" % args)
+    logging.info("orchestra was called with arguments %s" % args)
 
 if __name__ == '__main__':
     setup_logging(LOGFILE)
