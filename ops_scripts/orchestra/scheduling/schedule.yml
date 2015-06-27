@@ -15,4 +15,4 @@
     cron: minute="*"
           name="orchestra"
           user="ubuntu"
-          job="[ -e /home/ubuntu/ini/runner.sh ] && bash /home/ubuntu/ini/runner.sh 2>&1 > ~/.scheduler.txt && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran"
+          job="[ -e /home/ubuntu/ini/runner.sh ]  && mv /home/ubuntu/ini/runner.sh /home/ubuntu/ini/runner.ran && bash /home/ubuntu/ini/runner.ran 2>&1 > ~/.scheduler.txt"
