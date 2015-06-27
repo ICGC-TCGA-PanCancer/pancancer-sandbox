@@ -97,7 +97,7 @@ def LastContainer(ip):
     try:
         data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
     except:
-        data = ""
+        data = "No previous container data found!"
     return data
 
 def SuccessContainers(ip):
@@ -105,7 +105,7 @@ def SuccessContainers(ip):
     try:
         data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
     except:
-        data = ""
+        data = "No successful workflow runs yet!"
     return data.split('\n')
 
 def HasFailed(ip):
@@ -118,6 +118,26 @@ def HasFailed(ip):
     if last in success:
         return False
     return True
+
+def Schedule(ip):
+    """ Processes the schedule command """
+    # Do not schedule to nodes not running the webservice
+    if not HealthStatus(sys.argv[2]):
+        print "The webservice is not responding the machine at: %s" % ip
+        sys.exit(1)
+
+    if HasFailed(ip):
+        print "This machine is not being scheduled to right now."
+        print "Please check the docker logs for the last container run."
+        print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cd"
+        print "\tTo rereun the last workflow:  bash /home/ubuntu/ini/runner/ran"
+        print ""
+    else:
+        # chdir to the scheduler folder, and call the scheduler symlink
+        mypath = os.getcwd()
+        os.chdir("/bin/orchestra_scheduler")
+        RunCommand("python schedule_docker.py %s" % ip)
+        os.chidr(mypath)
 
 def main():
     
@@ -139,25 +159,7 @@ def main():
     # Integrate with the scheduler to launch an ini file
     if sys.argv[1] == "schedule":
         ip = sys.argv[2]
-        ini = sys.argv[3]
-
-        # Do not schedule to nodes not running the webservice
-        if not HealthStatus(sys.argv[2]):
-            print "The webservice is not responding the machine at: %s" % ip
-            sys.exit(1)
-
-        if HasFailed(ip):
-            print "This machine is not being scheduled to right now."
-            print "Please check the docker logs for the last container run."
-            print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cd"
-            print "\tTo rereun the last workflow:  bash /home/ubuntu/ini/runner/ran"
-            print ""
-        else:
-            # chdir to the scheduler folder, and call the scheduler symlink
-            mypath = os.getcwd()
-            os.chdir("/bin/orchestra_scheduler")
-            RunCommand("python schedule_docker.py %s" % ip)
-            os.chidr(mypath)
+        Schedule(ip)
 
     sys.exit(0)
 
@@ -174,9 +176,7 @@ if __name__ == '__main__':
             print "\torchestra busy -- retrieve a list of all servers on this subnet running workflows."
             print "\torchestra lazy -- retrieve a list of all servers on this subnet not running workflows."
             print "\torchestra workflows [ip address] -- retrieve a list of all workflows on this machine."
-            print "\torchestra schedule [ip address] [ini file] -- send an ini file to a machine and run it."
-            print "\torchestra auto-schedule -- execute from inside a folder full of ini files, " \
-                  "will schedule to all available machines."
+            print "\torchestra schedule [ip address] -- run the scheduler on the host specified."
             print "\torchestra check [ip address] -- confirms orchestra webservice is running remotely."
             print ""
             sys.exit(0)
@@ -187,6 +187,6 @@ if __name__ == '__main__':
             main()
         if sys.argv[1] == "check" and len(sys.argv) == 3:
             main()
-        if sys.argv[1] == "schedule" and len(sys.argv) == 4:
+        if sys.argv[1] == "schedule" and len(sys.argv) == 3:
             main()
     parsefail()
