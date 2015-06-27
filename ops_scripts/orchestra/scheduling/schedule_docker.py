@@ -238,7 +238,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         # Call ansible to execute the install
         print "Scheduling %s on %s" % (ini, ip)
         logging.info("Scheduling %s on %s" % (ini, ip))
-        shutil.copy(ini, os.path.join(schedulingfolder, ini))
+        shutil.copy(ini, os.path.join(schedulingfolder, os.path.basename(ini)))
         shutil.copy(schedulingfolder, "schedule.yml")
         mypath =  os.getcwd()
         os.chdir(schedulingfolder)
@@ -248,7 +248,8 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
             logging.error("Unable to schedule %s to %s." % (ini, ip))
             print "ERROR: scheduling %s to %s" % (ini, ip)
             continue
-        shutil.move(ini, os.path.join(ip, ini))
+        # Create local ip folder and move content inside
+        # shutil.move(ini, os.path.join(ip, ini))
         logging.info("Success scheduling %s to %s." % (ini, ip))
         print "SUCCESS: scheduling %s to %s" % (ini, ip)
 
