@@ -7,6 +7,8 @@ It's a very thin and simple webservice that runs on all worker machines.<br>
 You can leverage the cli to poll machines to find out who is running a workflow, who is idle, who has failed workflows.<br>
 This makes scheduling work to your cluster relatively easy and trouble free.  Various mechanisms are used to avoid double booking machines.<br><br>
 
+Just run the install.sh script, it will install the dependencies for you.  You only need to decide on what kind of install to try.<br><br>
+
 #### Provisioning Your Fleet
 
 On your launcher, or controll node, clone this repo with the correct branch.<br>
