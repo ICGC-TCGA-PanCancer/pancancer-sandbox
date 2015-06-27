@@ -28,10 +28,14 @@ def RunCommand(cmd):
         err:        A string containing stderr.
         errcode:    The error code returned by the system call.
     """
+    logging.info("System call: %s" % cmd)
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     out, err = p.communicate()
     errcode = p.returncode
+    logging.info("Return code: %s" % errcode)
+    if errcode:
+        logging.error(err)
     if DEBUG:
         print cmd
         print out
@@ -51,6 +55,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(req):
         """Respond to a GET request."""
         path = urlparse.urlparse(req.path).path
+        logging.info("Webservice request: %s" % path)
         route(path, req)
 
 def headers(req):

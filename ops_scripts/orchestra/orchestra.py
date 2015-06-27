@@ -4,6 +4,7 @@ __author__ = 'nbyrne'
 
 # Orchestra CLI
 
+import logging
 import netaddr
 import os
 import sys
@@ -13,6 +14,7 @@ import urllib2
 # CONSTANTS
 CACHEFILE = os.path.join(os.getenv("HOME"), ".orchestra_cache")
 SUBNET = os.path.join(os.getenv("HOME"), ".orchestra_subnet")
+LOGFILE = "/home/ubuntu/.orchestra.log"
 
 def parsefail():
     """Simple help message when parsing the command arguments fails."""
@@ -28,10 +30,14 @@ def RunCommand(cmd):
         err:        A string containing stderr.
         errcode:    The error code returned by the system call.
     """
+    logging.info("System call: %s" % cmd)
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     out, err = p.communicate()
     errcode = p.returncode
+    logging.info("Return code: %s" % errcode)
+    if errcode:
+        logging.error(err)
     if DEBUG:
         print cmd
         print out
@@ -136,12 +142,21 @@ def main():
             print "\tTo rereun the last workflow:  bash /home/ubuntu/ini/runner/ran"
             print ""
         else:
-            print "NOT IMPLEMENTED YET"
-            print ""
+            # chdir to the scheduler folder, and call the scheduler symlink
+            mypath = os.getcwd()
+            os.chdir("/bin/orchestra_scheduler")
+            RunCommand("python schedule_docker.py %s" % ip)
+            os.chidr(mypath)
 
     sys.exit(0)
 
+def LogArguments():
+    args = ",".join(sys.argv)
+    logger.info("orchestra was called with arguments %s" % args)
+
 if __name__ == '__main__':
+    setup_logging(LOGFILE)
+    LogArguments()
     if len(sys.argv) == 2:
         if sys.argv[1] == "help":
             print "Valid Commands:"

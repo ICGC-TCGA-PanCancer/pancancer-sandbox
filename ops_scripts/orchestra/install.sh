@@ -12,7 +12,7 @@ if [ ! -z $1 ]; then
     fi
 else
     if [ ! -f ~/.orchestra_subnet ]; then
-        echo "Create your orchestra subnet file."
+        echo "For an automated install create your orchestra subnet file (vi ~/.orchestra_subnet)."
         exit 1
     fi
 fi
@@ -27,12 +27,13 @@ sudo pip install netaddr 2>&1 >> install.log
 
 echo "Installing orchestra CLI ..."
 sudo sudo ln -sf `pwd`/orchestra.py /bin/orchestra
+sudo sudo ln -sf `pwd`/scheduling /bin/orchestra_scheduler
 sudo chmod +x orchestra.py
 
 echo "Installing remote webservice on all nodes ..."
 if [ -z $1 ]; then
     echo "    No inventory file specified- using auto discovery mode."
-    echo "    This will be very time consuming.  Expect a long delay while this completes."
+    echo "    This will be very time consuming.  Expect some delay while this completes."
     subnet=`cat ~/.orchestra_subnet`
     python install/subnet-install.py $subnet $keyfile
     cp inventory install
