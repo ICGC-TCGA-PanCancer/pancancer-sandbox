@@ -45,8 +45,4 @@ else
     bash push.sh $1
 fi
 
-# Make the local cache file unique
-cat ~/.orchestra_cache | sort --unique > ~/.orchestra_cache_new
-mv ~/.orchestra_cache_new ~/.orchestra_cache
-
 echo "All done."
