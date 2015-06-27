@@ -84,10 +84,10 @@ def RunCommand(cmd):
     return out, err, errcode
 
 def DoubleSchedulingCheck(ini):
-    """ Avoid double scheduling samples. """
+    """ Avoid double scheduling samples. Useful for decider re-runs."""
     # Check for redundant scheduling - VERY HACKY
     all_files = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(INIFILE_LOCATION):
         for name in files:
             all_files.append(name)
     if all_files.count(ini) > 1:
@@ -248,7 +248,12 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
             print out, err
             continue
         # Create local ip folder and move content inside
-        # shutil.move(ini, os.path.join(ip, ini))
+        ipfolder = os.path.join(INIFILE_LOCATION, ip)
+        try:
+            os.mkdir(ipfolder)
+        except OSError as e:
+            pass
+        shutil.move(ini, os.path.join(ipfolder, os.path.basename(ini)))
         logging.info("Success scheduling %s to %s." % (ini, ip))
         print "SUCCESS: scheduling %s to %s" % (ini, ip)
 

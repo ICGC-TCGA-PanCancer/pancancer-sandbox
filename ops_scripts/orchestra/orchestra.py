@@ -121,6 +121,8 @@ def LastContainer(ip):
         data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
     except:
         data = "No previous container data found!"
+    if len(data.strip()) == 0:
+        data = "No previous container data found!"
     return data
 
 def SuccessContainers(ip):
@@ -128,6 +130,8 @@ def SuccessContainers(ip):
     try:
         data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
     except:
+        data = "No successful workflow runs yet!"
+    if len(data.strip()) == 0:
         data = "No successful workflow runs yet!"
     return data.split('\n')
 
