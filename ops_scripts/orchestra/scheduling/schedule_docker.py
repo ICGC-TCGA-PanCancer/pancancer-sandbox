@@ -233,7 +233,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
 
         # Create a single host ansible inventory file
         content = "%s ansible_ssh_private_key_file%s\n" % (ip, key)
-        WriteFile(os.path.join(schedulingfolder, "inventory", content))
+        WriteFile(os.path.join(schedulingfolder, "inventory"), content)
 
         # Call ansible to execute the install
         print "Scheduling %s on %s" % (ini, ip)
