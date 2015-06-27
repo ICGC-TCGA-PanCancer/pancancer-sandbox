@@ -67,6 +67,22 @@ def HealthStatus(ip):
     else:
         return False
 
+def HostList():
+    """ Processes the hosts command. """
+    result = []
+    busyhosts = WorkerStatus(busy)
+    if not os.path.exists(CACHEFILE):
+            print "No cache file found: Run 'orchestra list' to create one.\n"
+            sys.exit(1)
+    with open(CACHEFILE) as f:
+        targets = f.read().strip().split("\n")
+    for ip in targets:
+        if ip in busyhosts:
+            result.append("%s\tCurrently running a docker container." % ip)
+        else:
+            result.append("%s\tCurrently idle." % ip)
+    return result
+
 def WorkerStatus(cmd):
     """ Processes the busy and lazy commands. """
     result = []
@@ -147,6 +163,10 @@ def main():
     if sys.argv[1] == "busy" or sys.argv[1] == "lazy":
         print "/n".join(WorkerStatus(sys.argv[1]))
 
+    # Handle the hosts command
+    if sys.argv[1] == "hosts":
+        print "/n".join(HostList())
+
     # Check the webservice on a particular machine
     if sys.argv[1] == "check":
         if HealthStatus(sys.argv[2]):
@@ -175,6 +195,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         if sys.argv[1] == "help":
             print "Valid Commands:"
+            print "\torchestra hosts -- retrieve a list of all hosts, and their current status"
             print "\torchestra busy -- retrieve a list of all servers on this subnet running workflows."
             print "\torchestra lazy -- retrieve a list of all servers on this subnet not running workflows."
             print "\torchestra workflows [ip address] -- retrieve a list of all workflows on this machine."
@@ -182,7 +203,7 @@ if __name__ == '__main__':
             print "\torchestra check [ip address] -- confirms orchestra webservice is running remotely."
             print ""
             sys.exit(0)
-        if sys.argv[1] == "busy" or sys.argv[1] == "lazy":
+        if sys.argv[1] == "busy" or sys.argv[1] == "lazy" or sys.argv[1] == "hosts":
             main()
     if len(sys.argv) > 1:
         if sys.argv[1] == "workflows" and len(sys.argv) == 3:
