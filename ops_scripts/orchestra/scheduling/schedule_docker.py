@@ -228,7 +228,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
             ini = ini_files.pop()
 
         # Create the scheduling content for this machine
-        schedulingfolder="/home/ubuntu/scheduling"
+        schedulingfolder="/home/ubuntu/.scheduling"
         CreateSchedulingContent(ip, schedulingfolder, ini)
 
         # Create a single host ansible inventory file
@@ -242,11 +242,12 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         shutil.copy("schedule.yml", os.path.join(schedulingfolder, "schedule.yml"))
         mypath = os.getcwd()
         os.chdir(schedulingfolder)
-        our, err, errcode = RunCommand("ansible-playbook -i inventory schedule.yml ")
+        out, err, errcode = RunCommand("ansible-playbook -i inventory schedule.yml ")
         os.chdir(mypath)
         if errcode:
             logging.error("Unable to schedule %s to %s." % (ini, ip))
             print >> sys.stderr, "ERROR: scheduling %s to %s" % (ini, ip)
+            print err
             continue
         # Create local ip folder and move content inside
         # shutil.move(ini, os.path.join(ip, ini))
