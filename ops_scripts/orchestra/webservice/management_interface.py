@@ -30,7 +30,7 @@ def RunCommand(cmd):
     """
     logging.info("System call: %s" % cmd)
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=shell)
+                         stderr=subprocess.PIPE)
     out, err = p.communicate()
     errcode = p.returncode
     logging.info("Return code: %s" % errcode)
