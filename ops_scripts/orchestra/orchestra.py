@@ -80,7 +80,8 @@ def HostList():
         targets = f.read().strip().split("\n")
     for ip in targets:
         if ip in busyhosts:
-            result.append("%s\tCurrently running a docker container." % ip)
+            container = LastContainer(ip)
+            result.append("%s\tCurrently running docker container: %s" % ip, container)
         else:
             result.append("%s\tCurrently idle." % ip)
     return result
