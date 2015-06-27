@@ -133,10 +133,9 @@ def HasFailed(ip):
         return "FALSE"
     success = SuccessContainers(ip)
     last = LastContainer(ip)
-    print last, success
     if last in success:
-        return False
-    return True
+        return True
+    return False
 
 def Schedule(ip):
     """ Processes the schedule command """
@@ -146,10 +145,10 @@ def Schedule(ip):
         sys.exit(1)
 
     if HasFailed(ip):
-        print "This machine is not being scheduled to right now."
-        print "Please check the docker logs for the last container run."
-        print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cd"
-        print "\tTo rereun the last workflow:  bash /home/ubuntu/ini/runner/ran"
+        print "This machine is not being scheduled to right now- LOG INTO THIS MACHINE!"
+        print "\tTo check the logs of the last workflow: bash ~/monitor"
+        print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cid"
+        print "\tTo rerun the last workflow:  bash /home/ubuntu/ini/runner.ran"
         print ""
     else:
         # chdir to the scheduler folder, and call the scheduler symlink
