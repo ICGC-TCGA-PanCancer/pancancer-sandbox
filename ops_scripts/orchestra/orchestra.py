@@ -69,6 +69,7 @@ def HealthStatus(ip):
 
 def WorkerStatus(cmd):
     """ Processes the busy and lazy commands. """
+    result = []
     if not os.path.exists(CACHEFILE):
             print "No cache file found: Run 'orchestra list' to create one.\n"
             sys.exit(1)
@@ -80,9 +81,10 @@ def WorkerStatus(cmd):
         except:
             data = "FALSE"
         if data == "TRUE" and cmd == "busy":
-            print ip
+            result.append(ip)
         if data == "FALSE" and cmd == "lazy":
-            print ip
+            result.append(ip)
+    return result
 
 def ListWorkflows(ip):
     """ Processes the workflows command """
@@ -143,7 +145,7 @@ def main():
     
     # Handle the busy, and lazy commands - use cached data to find nodes
     if sys.argv[1] == "busy" or sys.argv[1] == "lazy":
-        WorkerStatus(sys.argv[1])
+        print "/n".join(WorkerStatus(sys.argv[1]))
 
     # Check the webservice on a particular machine
     if sys.argv[1] == "check":
