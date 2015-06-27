@@ -16,6 +16,17 @@ CACHEFILE = os.path.join(os.getenv("HOME"), ".orchestra_cache")
 SUBNET = os.path.join(os.getenv("HOME"), ".orchestra_subnet")
 LOGFILE = "/home/ubuntu/.orchestra.log"
 
+def setup_logging(filename, level=logging.INFO):
+    """ Logging Module Interface.
+    Args:
+        filename:   The filename to log to.
+        level:      The logging level desired.
+    Returns:
+        None
+    """
+    logging.basicConfig(filename=filename,level=level)
+    return None
+
 def parsefail():
     """Simple help message when parsing the command arguments fails."""
     print "Try: orchestra help\n"
