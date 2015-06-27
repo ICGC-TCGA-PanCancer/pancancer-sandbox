@@ -64,6 +64,120 @@ def headers(req):
     req.end_headers()
     return
 
+def route_success(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    fname = os.path.join(home, "/datastore/.worker/success.cid")
+    data = ""
+    if os.path.exists(fname):
+        with open(fname) as f:
+            data += f.readlines()
+    headers(req)
+    req.wfile.write(data+"\n")
+    return
+
+def route_health(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    headers(req)
+    req.wfile.write("TRUE\n")
+    return
+
+def route_workflows(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    headers(req)
+    if os.path.exists("/workflows"):
+        results = []
+        for f in os.listdir("/workflows"):
+            if f == "." or f == "..":
+                continue
+            if os.path.isdir(os.path.join("/workflows",f)):
+                results.append(f)
+        results = sorted(results)
+        for f in results:
+            req.wfile.write("%s\n" % f)
+        if len(f) == 0:
+            req.wfile.write("None\n")
+    else:
+        req.wfile.write("None\n")
+    return
+
+def route_lastcontainer(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    fname = os.path.join(home, "/datastore/.worker/lastrun.cid")
+    data = ""
+    if os.path.exists(fname):
+        with open(fname) as f:
+            data = f.read()
+    headers(req)
+    req.wfile.write(data+"\n")
+    return
+
+def route_containers(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    headers(req)
+    cmd = "docker ps --no-trunc"
+    out, err, code = RunCommand(cmd)
+    data = out.split('\n')
+    for line in data:
+        match = re.search("^([a-z0-9]]+)\s+seqware", line)
+        if match is not None:
+            req.wfile.write("%s\n" % match.group(1))
+    if code != 0:
+        logging.error("ERROR RUNNING: %s" % cmd)
+        logging.error("ERROR: %s" % err)
+    return
+
+def route_busy(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    headers(req)
+    cmd = "docker ps"
+    out, err, code = RunCommand(cmd)
+    data = out.strip().split("\n")
+    # Catch docker containers downloading images
+    cmd = "ps aux"
+    out, err, code = RunCommand(cmd)
+    data2 = out.strip()
+    if len(data) < 2 and data2.count("docker run") == 0:
+        req.wfile.write("FALSE\n")
+    else:
+        req.wfile.write("TRUE\n")
+    return
+
 def route(path, req):
     """ HTTP request router.
     Args:
@@ -73,80 +187,23 @@ def route(path, req):
         Nothing, handles all communication
     """
     if path == "/success":
-        fname = os.path.join(home, "/datastore/.worker/success.cid")
-        data = ""
-        if os.path.exists(fname):
-            with open(fname) as f:
-                data += f.readlines()
-        headers(req)
-        req.wfile.write(data+"\n")
+        route_success(path, req)
+    elif path == "/healthy":
+        route_health(path, req)
+    elif path == "/workflows":
+        route_workflows(path,req)
+    elif path == "/lastcontainer":
+        route_lastcontainer(path, req)
+    elif path == "/containers":
+        route_containers(path, req)
+    elif path == "/busy":
+        route_busy(path, req)
+    else:
+        req.send_response(404)
+        req.send_header("Content-type", "text/plain")
+        req.wfile.write("NOT FOUND")
+        logging.error("BAD REQUEST TO PATH: %s" % path)
         return
-
-    if path == "/healthy":
-        headers(req)
-        req.wfile.write("TRUE\n")
-        return
-
-    if path == "/workflows":
-        headers(req)
-        if os.path.exists("/workflows"):
-            results = []
-            for f in os.listdir("/workflows"):
-                if f == "." or f == "..":
-                    continue
-                if os.path.isdir(os.path.join("/workflows",f)):
-                    results.append(f)
-            results = sorted(results)
-            for f in results:
-                req.wfile.write("%s\n" % f)
-            if len(f) == 0:
-                req.wfile.write("None\n")
-        return
-
-    if path == "/lastcontainer":
-        fname = os.path.join(home, "/datastore/.worker/lastrun.cid")
-        data = ""
-        if os.path.exists(fname):
-            with open(fname) as f:
-                data += f.readlines()
-        headers(req)
-        req.wfile.write(data+"\n")
-        return
-
-    if path == "/containers":
-        headers(req)
-        cmd = "docker ps --no-trunc"
-        out, err, code = RunCommand(cmd)
-        data = out.split('\n')
-        for line in data:
-            match = re.search("^([a-z0-9]]+)\s+seqware", line)
-            if match is not None:
-                req.wfile.write("%s\n" % match.group(1))
-        if code != 0:
-            logging.error("ERROR RUNNING: %s" % cmd)
-            logging.error("ERROR: %s" % err)
-        return
-
-    if path == "/busy":
-        headers(req)
-        cmd = "docker ps"
-        out, err, code = RunCommand(cmd)
-        data = out.strip().split("\n")
-        # Catch docker containers downloading images
-        cmd = "ps aux"
-        out, err, code = RunCommand(cmd)
-        data2 = out.strip()
-        if len(data) < 2 and data2.count("docker run") == 0:
-            req.wfile.write("FALSE\n")
-        else:
-            req.wfile.write("TRUE\n")
-        return
-
-    req.send_response(404)
-    req.send_header("Content-type", "text/plain")
-    req.wfile.write("NOT FOUND")
-    logging.error("BAD REQUEST TO PATH: %s" % path)
-    return
 
 def setup_logging(filename, level=logging.INFO):
     """ Logging Module Interface.
