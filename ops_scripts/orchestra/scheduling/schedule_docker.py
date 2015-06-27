@@ -196,7 +196,7 @@ for f in $files; do
         "--dir /workflows/${workflow} "
         "--engine whitestar --no-metadata --ini /workflow.ini && "
         "cat /datastore/.worker/lastrun.cid >> /datastore/.worker/success.cid"
-        "\"\n" % ini
+        "\"\n" % os.path.basename(ini)
     )
     content += """
 # Copy the monitor script to the home folder for easy access
