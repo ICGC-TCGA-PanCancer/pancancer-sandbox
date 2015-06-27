@@ -16,9 +16,9 @@ GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
 INIFILE_LOCATION = "/home/ubuntu/central-decider-client/ini"
 
 # Workflow Selection, uncomment the workflow you want to run
-# WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
+WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
 # WORKFLOW_REGEX = "(Workflow_Bundle_BWA_.*_SeqWare.*)"
-WORKFLOW_REGEX = "(Workflow_Bundle_HelloWorld_.*_SeqWare.*)"
+# WORKFLOW_REGEX = "(Workflow_Bundle_HelloWorld_.*_SeqWare.*)"
 # WORKFLOW_REGEX = "(Workflow_Bundle_SangerPancancerCgpCnIndelSnvStr_.*_SeqWare.*)"
 
 # Import Modules
