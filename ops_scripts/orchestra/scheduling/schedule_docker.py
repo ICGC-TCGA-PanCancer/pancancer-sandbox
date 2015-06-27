@@ -179,7 +179,7 @@ for f in $files; do
    fi
    done
 
-# Launch the workflow
+# Launch the workflow run
 """
     content += (
         "[[ ! -e /datastore/.worker ]] && mkdir /datastore/.worker\n"

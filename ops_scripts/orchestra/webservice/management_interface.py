@@ -19,7 +19,7 @@ PORT_NUMBER = 9009
 HOST_NAME = '0.0.0.0'
 LOGFILE = 'webservice.log'
 
-def RunCommand(cmd):
+def RunCommand(cmd, shell=False):
     """ Execute a system call safely, and return output.
     Args:
         cmd:        A string containing the command to run.
@@ -30,7 +30,7 @@ def RunCommand(cmd):
     """
     logging.info("System call: %s" % cmd)
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE, shell=shell)
     out, err = p.communicate()
     errcode = p.returncode
     logging.info("Return code: %s" % errcode)
@@ -132,7 +132,11 @@ def route(path, req):
         cmd = "docker ps"
         out, err, code = RunCommand(cmd)
         data = out.strip().split("\n")
-        if len(data) < 2:
+        # Catch docker containers downloading images
+        cmd = "ps aux | grep "docker run" | wc -l"
+        out, err, code = RunCommand(cmd, shell=True)
+        data2 = int(out)
+        if len(data) < 2 and len(data2) < 2:
             req.wfile.write("FALSE\n")
         else:
             req.wfile.write("TRUE\n")
