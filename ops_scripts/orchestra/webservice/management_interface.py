@@ -133,7 +133,7 @@ def route(path, req):
         out, err, code = RunCommand(cmd)
         data = out.strip().split("\n")
         # Catch docker containers downloading images
-        cmd = "ps aux | grep "docker run" | wc -l"
+        cmd = "ps aux | grep \"docker run\" | wc -l"
         out, err, code = RunCommand(cmd, shell=True)
         data2 = int(out)
         if len(data) < 2 and len(data2) < 2:
