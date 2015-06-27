@@ -3,7 +3,7 @@
 This is an thin webservice and CLI for managing machines in a subnet- it's totally KISS approach based.<br>
 
 You can leverage the cli to poll machines to find out who is running a workflow, who is idle, who has failed workflows.<br>
-This makes scheduling work to your cluster relatively easy and trouble-free.  Various mechanisms are used to avoid double booking machines.<br><br>
+This makes scheduling work to your cluster relatively easy and trouble-free.  Various mechanisms are used to avoid double booking machines.<br>
 
 Just run the install.sh script, it will install the dependencies for you and push the webservice out to hosts.<br>
 You only need to decide on what kind of install to try.<br><br>
