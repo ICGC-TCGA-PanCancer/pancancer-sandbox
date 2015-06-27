@@ -1,19 +1,29 @@
 ### orchestra  (Still not fully tested- I'm poking at this when I have a free minute here and there.)
 
-This is an experimental webservice for managing machines in a subnet.<br>
+This is an light webservice for managing machines in a subnet.<br>
 On your launcher node, clone this repo and navigate to this folder.<br>
 
 It's a very thin and simple webservice that runs on all worker machines.<br>
-You can run ```orchestra list``` to poll the entire subnet to find workers.<br>
-This allows you to generate lists of workers from the command line to poll or schedule to.<br><br>
+You can leverage the cli to poll machines to find out who is running a workflow, who is idle, who has failed workflows.<br>
+This makes scheduling work to your cluster relatively easy and trouble free.  Various mechanisms are used to avoid double booking machines.<br><br>
 
-#### Provision an Entire Subnet Automatically
+#### Provisioning Your Fleet
 
-To get started, put the CIDR of your subnet in this file:<br>
+On your launcher, or controll node, clone this repo with the correct branch.<br>
+Navigate to the folder containing the ```install.sh``` script.<br>
+You need to decide if you are going to auto-provision, or manually list the machines to install on.<br>
+
+Automatic provisioning will attempt to install the webservice on ALL machines in a subnet, except for <br>
+the orchestra master node (this meaning your launcher, or control machine.)<br>
+
+To try automatic provisioning, but the CIDR of your subnet into this file:<br>
 ```vi ~/.orchestra_subnet```<br><br>
 
-Next, edit the install script to point to your ssh keyfile:<br>
-```vi install.sh```<br><br>
+To manually provision, create an ansible inventory file of your own like so:
+```[ seqware_worker ]```<br>
+```192.168.0.1     ansible_ssh_private_key_file=/home/ubuntu/.ssh/myssh.pem```<br>
+```192.168.0.2    ansible_ssh_private_key_file=/home/ubuntu/.ssh/myssh.pem```<br>
+<br>
 
 Once this is in place, you can install orchestra on the whole subnet:<br>
 ```bash install.sh```<br><br>
