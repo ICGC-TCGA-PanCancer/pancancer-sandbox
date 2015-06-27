@@ -30,15 +30,13 @@ Once this is in place, you can install orchestra on the whole subnet:<br>
 ```bash install.sh inventoryfile```  to use your custom inventory file<br>
 <br>
 
-This will take some time to complete.<br>
-Once it's done, you can do the following to confirm you can manage your machines:<br>
-```orchestra list```<br><br>
-This command will take some time to run as it tries all IP addresses available to find workers<br>
-in your subnet.  Once it has finished, it creates a cache to make subsequent commands execute quickly.<br>
+This will take some time to complete.<br><br>
+
+Now once you have installed the webservice everywhere, you need to create a list of IP's to manage with the cli:<br>
+```vi ~/.orchestra_cache```<br><br>
+
+This list of IP's, will be polled by the CLI to allow you to use the following types of commands:<br>
 ```orchestra busy``` will list all the machines currently running docker containers.<br>
-```orchestra lazy``` will list all the machines not currently running workflows.<br><br>
+```orchestra lazy``` will list all the machines not currently running workflows.<br>
+```orchestra help``` will list the scheduling and other polling commands available to you.<br><br>
 
-
-#### Provision A Single Worker
-Get the IP of your host.<br>
-```bash install/push.sh [ip address]```<br><br>
