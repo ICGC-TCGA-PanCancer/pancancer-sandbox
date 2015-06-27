@@ -229,7 +229,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
 
         # Create the scheduling content for this machine
         schedulingfolder="/home/ubuntu/scheduling"
-        CreateSchedulingContent(schedulingfolder, ini)
+        CreateSchedulingContent(ip, schedulingfolder, ini)
 
         # Create a single host ansible inventory file
         content = "%s ansible_ssh_private_key_file%s\n" % (ip, key)
