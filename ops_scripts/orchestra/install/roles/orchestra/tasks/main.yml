@@ -44,8 +44,8 @@
     command: curl http://127.0.0.1:9009/healthy
 
 - hosts: all
-  tasks:
   serial: 1
+  tasks:
 
   - name: Append the IP address to the orchestra cache file
     local_action: shell echo "{{ ansible_eth0.ipv4.address }}" >> /home/{{ user_name }}/.orchestra_cache
