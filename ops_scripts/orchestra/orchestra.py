@@ -158,9 +158,9 @@ def Schedule(ip):
         os.chdir("/bin/orchestra_scheduler")
         out, err, errcode = RunCommand("python schedule_docker.py %s" % ip)
         if errcode:
-            print err
+            print out,err
             sys.exit(1)
-        os.chddr(mypath)
+        os.chdir(mypath)
 
 def main():
     
