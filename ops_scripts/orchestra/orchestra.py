@@ -81,6 +81,8 @@ def HostList():
     for ip in targets:
         if ip in busyhosts:
             container = LastContainer(ip)
+            if len(container.stip()) == 0:
+                container = "Unknown CID"
             result.append("%s\tCurrently running docker container: %s" % (ip, container))
         else:
             result.append("%s\tCurrently idle." % ip)
