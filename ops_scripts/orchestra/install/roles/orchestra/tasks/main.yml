@@ -42,15 +42,7 @@
 
 - name: Append the IP address to the orchestra cache file
   local_action: shell echo "{{ ansible_eth0.ipv4.address }}" >> /home/{{ user_name }}/.orchestra_cache
-  serial: 1
 
-- name: Make the .orchestra_cache unique
-  local_action: shell cat /home/{{ user_name }}/.orchestra_cache | sort --unique > /home/{{ user_name }}/.orchestra_cache_new
-  serial: 1
-
-- name: Finalize the .orchestra_cache
-  local_action: shell rm /home/{{ user_name }}/.orchestra_cache && mv /home/{{ user_name }}/.orchestra_cache_new /home/{{ user_name }}/.orchestra_cache
-  serial: 1
 
 
 
