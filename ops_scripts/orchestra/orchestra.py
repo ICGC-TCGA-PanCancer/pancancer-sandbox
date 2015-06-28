@@ -81,6 +81,7 @@ def HostList():
     for ip in targets:
         if not HealthStatus(ip):
             result.append("%s\tIS NOT RESPONDING!" % ip)
+            continue
         if ip in busyhosts:
             container = LastContainer(ip)
             if len(container.strip()) == 0:
@@ -99,6 +100,9 @@ def WorkerStatus(cmd):
     with open(CACHEFILE) as f:
         targets = f.read().strip().split("\n")
     for ip in targets:
+        if not HealthStatus(ip):
+            result.append("%s\tIS NOT RESPONDING!" % ip)
+            continue
         try:
             data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=5).read().strip()
         except:
