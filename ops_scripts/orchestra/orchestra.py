@@ -100,7 +100,8 @@ def WorkerStatus(cmd):
         try:
             data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=5).read().strip()
         except:
-            data = "FALSE"
+            # Workers who don't respond to the request won't be listed
+            data = ""
         if data == "TRUE" and cmd == "busy":
             result.append(ip)
         if data == "FALSE" and cmd == "lazy":
@@ -128,7 +129,7 @@ def LastContainer(ip):
 def SuccessContainers(ip):
     """ Processes a helper function to list sucessful container id's """
     try:
-        data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
+        data = urllib2.urlopen("http://%s:9009/success" % ip, timeout=5).read().strip()
     except:
         data = "No successful workflow runs yet!"
     if len(data.strip()) == 0:

@@ -76,7 +76,7 @@ def route_success(path, req):
     data = ""
     if os.path.exists(fname):
         with open(fname) as f:
-            data += f.readlines()
+            data = f.read()
     headers(req)
     req.wfile.write(data+"\n")
     return
