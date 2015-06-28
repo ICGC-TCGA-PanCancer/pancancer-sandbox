@@ -90,6 +90,7 @@ def HostList():
             result.append("%s\tCurrently running docker container: %s" % (ip, container))
         else:
             result.append("%s\tCurrently idle." % ip)
+    sorted(result)
     return result + notresponding
 
 def WorkerStatus(cmd):
@@ -114,6 +115,7 @@ def WorkerStatus(cmd):
             result.append(ip)
         if data == "FALSE" and cmd == "lazy":
             result.append(ip)
+    sorted(result)
     return result + notresponding
 
 def ListWorkflows(ip):
