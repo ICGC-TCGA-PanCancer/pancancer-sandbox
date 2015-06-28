@@ -72,6 +72,7 @@ def HealthStatus(ip):
 def HostList():
     """ Processes the hosts command. """
     result = []
+    notresponding = []
     busyhosts = WorkerStatus("busy")
     if not os.path.exists(CACHEFILE):
             print "No cache file found: Run 'orchestra list' to create one.\n"
@@ -80,7 +81,7 @@ def HostList():
         targets = f.read().strip().split("\n")
     for ip in targets:
         if not HealthStatus(ip):
-            result.append("%s\tIS NOT RESPONDING!" % ip)
+            notresponding.append("%s\tIS NOT RESPONDING!" % ip)
             continue
         if ip in busyhosts:
             container = LastContainer(ip)
@@ -89,11 +90,12 @@ def HostList():
             result.append("%s\tCurrently running docker container: %s" % (ip, container))
         else:
             result.append("%s\tCurrently idle." % ip)
-    return result
+    return result + notresponding
 
 def WorkerStatus(cmd):
     """ Processes the busy and lazy commands. """
     result = []
+    notresponding = []
     if not os.path.exists(CACHEFILE):
             print "No cache file found: Run 'orchestra list' to create one.\n"
             sys.exit(1)
@@ -101,7 +103,7 @@ def WorkerStatus(cmd):
         targets = f.read().strip().split("\n")
     for ip in targets:
         if not HealthStatus(ip):
-            result.append("%s\tIS NOT RESPONDING!" % ip)
+            notresponding.append("%s\tIS NOT RESPONDING!" % ip)
             continue
         try:
             data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=5).read().strip()
@@ -112,7 +114,7 @@ def WorkerStatus(cmd):
             result.append(ip)
         if data == "FALSE" and cmd == "lazy":
             result.append(ip)
-    return result
+    return result + notresponding
 
 def ListWorkflows(ip):
     """ Processes the workflows command """
