@@ -79,6 +79,8 @@ def HostList():
     with open(CACHEFILE) as f:
         targets = f.read().strip().split("\n")
     for ip in targets:
+        if not HealthStatus(ip):
+            result.append("%s\tIS NOT RESPONDING!" % ip)
         if ip in busyhosts:
             container = LastContainer(ip)
             if len(container.strip()) == 0:
