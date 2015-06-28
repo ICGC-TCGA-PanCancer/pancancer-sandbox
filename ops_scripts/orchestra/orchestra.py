@@ -158,20 +158,20 @@ def Schedule(ip):
     """ Processes the schedule command """
     # Do not schedule to nodes not running the webservice
     if not HealthStatus(sys.argv[2]):
-        print "The webservice is not responding the machine at: %s" % ip
+        print "The webservice is not responding on the machine at: %s" % ip
         sys.exit(1)
 
-    # Do not schedule to busy machiens
+    # Do not schedule to busy machines
     data = WorkerStatus("busy")
     if ip in data:
         print "This machine is already running a workflow."
         sys.exit(1)
 
     if HasFailed(ip):
-        print "This machine is not being scheduled to right now- LOG INTO THIS MACHINE!"
-        print "\tTo check the logs of the last workflow: bash ~/monitor"
+        print "This machine is not being scheduled to right now: LOG INTO THIS MACHINE!"
+        print "\tTo check view the logs from the last run workflow: bash ~/monitor"
         print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cid"
-        print "\tTo rerun the last workflow:  bash /home/ubuntu/ini/runner.ran"
+        print "\tTo re-run the last failed workflow:  bash /home/ubuntu/ini/runner.ran"
         print ""
     else:
         # chdir to the scheduler folder, and call the scheduler symlink
