@@ -171,7 +171,8 @@ def Schedule(ip):
         print "This machine is not being scheduled to right now: LOG INTO THIS MACHINE!"
         print "\tTo check view the logs from the last run workflow: bash ~/monitor"
         print "\tTo schedule to this machine again: rm /datastore/.worker/lastrun.cid"
-        print "\tTo re-run the last failed workflow:  bash /home/ubuntu/ini/runner.ran"
+        print "\tTo re-run the last failed ls" \
+              "workflow:  bash /home/ubuntu/ini/runner.ran"
         print ""
     else:
         # chdir to the scheduler folder, and call the scheduler symlink

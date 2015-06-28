@@ -7,9 +7,16 @@
 - stat: path=/bin/orchestra
   register: orchestra_symlink
 
+- stat: path=/media/large_volume/tabix/data/
+  register: tabix_media
+
 - name: Do not install on a launcher machine -- don't schedule workflows
   fail: msg="This is machine is an orchestra manager, not installing the webservice."
   when: orchestra_symlink.stat.exists == True
+
+- name: Do not install on a tabix servers -- don't schedule workflows
+  fail: msg="This is machine is a tabix server, not installing the webservice."
+  when: tabix_media == True
 
 - name: Stop Orchestra Service (if it has already been installed)
   sudo: True
