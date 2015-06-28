@@ -16,7 +16,7 @@ You need to decide if you are going to auto-provision, or manually list the mach
 *Automatic provisioning works quite well, so it's the method I'm recommending*<br>
 
 Automatic provisioning will attempt to install the webservice on ALL machines in a subnet, except for <br>
-the orchestra master node (this meaning your launcher, or control machine.)<br>
+the orchestra master node (this meaning your launcher, or control machine) and it will skip tabix servers too.<br>
 
 To try automatic provisioning, put the CIDR of your cloud's subnet into this file:<br>
 ```vi ~/.orchestra_subnet```<br>
