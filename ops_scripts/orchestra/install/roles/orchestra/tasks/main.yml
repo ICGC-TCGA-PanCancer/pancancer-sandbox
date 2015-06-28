@@ -14,7 +14,7 @@
   fail: msg="This is machine is an orchestra manager, not installing the webservice."
   when: orchestra_symlink.stat.exists == True
 
-- name: Do not install on a tabix servers -- don't schedule workflows
+- name: Do not install on a tabix server -- don't schedule workflows
   fail: msg="This is machine is a tabix server, not installing the webservice."
   when: tabix_media.stat.exists == True
 
