@@ -123,9 +123,9 @@ def LastContainer(ip):
     try:
         data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
     except:
-        data = "No previous container data found!"
+        data = "CID FILE NOT FOUND!"
     if len(data.strip()) == 0:
-        data = "No previous container data found!"
+        data = "CID FILE NOT FOUND!"
     return data
 
 def SuccessContainers(ip):
