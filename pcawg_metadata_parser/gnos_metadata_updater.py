@@ -5,7 +5,7 @@ import os
 import re
 import glob
 import xmltodict
-import json
+import simplejson as json
 import yaml
 import copy
 import logging
@@ -80,30 +80,80 @@ def get_analysis_attrib(gnos_analysis):
     return analysis_attrib
 
 
+def update_icgc_id(id_type, id_mapping_type, row):
+    if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id') and id_mapping_type:
+        for l, v in id_mapping_type.iteritems():
+            if v.get('tcga') and v.get('tcga') == row.get('submitted_' + id_type + '_id'):
+                v['icgc'] = row.get('icgc_' + id_type + '_id')
+                return
+
+    return 
+
+
+
 def read_id_mapping(id_mapping_file, id_mapping):
 
-    id_domain = 'icgc' if 'icgc' in id_mapping_file else 'tcga' 
+    if 'icgc' in id_mapping_file:
 
-    with open(id_mapping_file, 'r') as f:
-        reader = csv.DictReader(f, delimiter='\t')
-        mapping = {}
-        for row in reader:
-            if not mapping.get(row['project_code']):
-                mapping[row['project_code']] = {
-                    'donor': {},
-                    'specimen': {},
-                    'sample': {}
-                }
-            if row.get('submitted_donor_id') and row.get(id_domain + '_donor_id'):
-                mapping.get(row['project_code'])['donor'].update({row['submitted_donor_id']: row[id_domain + '_donor_id']})
-            if row.get('submitted_specimen_id') and row.get(id_domain + '_specimen_id'):
-                mapping.get(row['project_code'])['specimen'].update({row['submitted_specimen_id']: row[id_domain + '_specimen_id']})
-            if row.get('submitted_sample_id') and row.get(id_domain + '_sample_id'):
-                mapping.get(row['project_code'])['sample'].update({row['submitted_sample_id']: row[id_domain + '_sample_id']})
+        with open(id_mapping_file, 'r') as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                if row.get('project_code') and not id_mapping.get(row['project_code']):
+                    id_mapping[row['project_code']] = {
+                        'donor': {},
+                        'specimen': {},
+                        'sample': {}
+                    }
+                if row.get('project_code').endswith('-US'):
+                    for id_type in ['donor', 'specimen', 'sample']:
+                        update_icgc_id(id_type, id_mapping.get(row['project_code']).get(id_type), row)
 
-    id_mapping[id_domain] = mapping
+                else:    
+                    if row.get('submitted_donor_id') and row.get('icgc_donor_id'):
+                        id_mapping.get(row['project_code'])['donor'].update({row['submitted_donor_id']: {'icgc': row['icgc_donor_id']}})
+                    if row.get('submitted_specimen_id') and row.get('icgc_specimen_id'):
+                        id_mapping.get(row['project_code'])['specimen'].update({row['submitted_specimen_id']: {'icgc': row['icgc_specimen_id']}})
+                    if row.get('submitted_sample_id') and row.get('icgc_sample_id'):
+                        id_mapping.get(row['project_code'])['sample'].update({row['submitted_sample_id']: {'icgc': row['icgc_sample_id']}})
 
-    return id_mapping
+    elif 'gdc' in id_mapping_file:
+
+        with open(id_mapping_file, 'r') as f:
+            id_mapping_gdc = {}
+            for l in f:
+                row = json.loads(l)
+                if row.get('project.project_id')[0] and 'tcga' in row['project.project_id'][0].lower():
+                    project = str.split(row['project.project_id'][0], '-')[1] + '-US'
+                    if not id_mapping.get(project):
+                        id_mapping[project] = {
+                            'donor': {},
+                            'specimen': {},
+                            'sample': {}
+                        }
+                        id_mapping_gdc[project] = {
+                            'donor': {},
+                            'specimen': {},
+                            'sample': {}                        
+                        }
+                    if row.get('participant_id')[0] and row.get('submitter_id')[0]:
+                        id_mapping.get(project)['donor'].update({row['participant_id'][0]: {'tcga': row['submitter_id'][0]}})
+                        id_mapping_gdc.get(project)['donor'].update({row['submitter_id'][0]: row['participant_id'][0]})
+                    if row.get('sample_ids') and row.get('submitter_sample_ids'):
+                        if len(row.get('sample_ids')) == len(row.get('submitter_sample_ids')):
+                            for l in range(len(row.get('sample_ids'))):
+                                 id_mapping.get(project)['specimen'].update({row.get('sample_ids')[l]: {'tcga': row.get('submitter_sample_ids')[l]}})
+                                 id_mapping_gdc.get(project)['specimen'].update({row.get('submitter_sample_ids')[l]: row.get('sample_ids')[l]})
+                        else: # specimen id mapping length are different
+                            pass
+                    if row.get('aliquot_ids') and row.get('submitter_aliquot_ids'):
+                        if len(row.get('aliquot_ids')) == len(row.get('submitter_aliquot_ids')):
+                            for l in range(len(row.get('aliquot_ids'))):
+                                 id_mapping.get(project)['sample'].update({row.get('aliquot_ids')[l]: {'tcga': row.get('submitter_aliquot_ids')[l]}})
+                                 id_mapping_gdc.get(project)['sample'].update({row.get('submitter_aliquot_ids')[l]: row.get('aliquot_ids')[l]})
+                        else: # specimen id mapping length are different
+                            pass
+
+    return (id_mapping, id_mapping_gdc)
 
 
 def id_mapping_from_webservice(query_id):
@@ -143,7 +193,7 @@ def get_id_mapping(gnos_analysis, analysis_attrib, id_domain, id_type, id_mappin
                     .format( id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
             else:
                 if id_in_xml == id_mapped:
-                    logger.warning( 'Valid xml is already updated: {}_{}_id: {} has been correctly added for submitter_{}_id:{}, GNOS entry {}'
+                    logger.info( 'Valid xml is already updated: {}_{}_id: {} has been correctly added for submitter_{}_id:{}, GNOS entry {}'
                         .format( id_domain, id_type, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
                     return None
                 else:
@@ -159,6 +209,13 @@ def get_id_mapping(gnos_analysis, analysis_attrib, id_domain, id_type, id_mappin
 def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
 
     id_to_insert = {}
+
+    field_map = {
+        'donor': 'participant',
+        'specimen': 'sample',
+        'sample': 'aliquot',
+        'id': 'barcode'
+    }
     
     for id_domain, v_domain in id_mapping.iteritems():
         if v_domain.get(analysis_attrib.get('dcc_project_code')):
@@ -167,7 +224,10 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
                     continue 
                 id_mapped = get_id_mapping(gnos_analysis, analysis_attrib, id_domain, id_type, id_mapping)  
                 if id_mapped is not None:
-                    id_to_insert.update({id_domain + '_' + id_type + '_id': id_mapped})
+                    if id_domain == 'icgc':
+                        id_to_insert.update({id_domain + '_' + id_type + '_id': id_mapped})
+                    elif id_domain == 'tcga':
+                        id_to_insert.update({id_domain + '_' + field_map[id_type] + '_' + field_map['id']: id_mapped})
         else:
             logger.warning( 'Project: {} does not have id_mapping info ...'
                     .format( analysis_attrib.get('dcc_project_code')))
@@ -242,7 +302,7 @@ def update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping
         output_dir = metadata_dir.rstrip('/') + '_updated/' + str.split(f, '__')[0] + '/'
         f_update = conf.get('output_dir') + '/__all_update_metadata_xml/' + f
 
-        f = conf.get('output_dir') + '/__all_update_metadata_xml/' + f
+        f = conf.get('output_dir') + '/__all_metadata_xml/' + f
          
         gnos_analysis = get_gnos_analysis(f)
 
@@ -281,6 +341,13 @@ def update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping
 
         else:
             logger.warning( 'skipping invalid xml file: {}'.format(f) )  
+
+def set_default(obj):
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
 
 
 def main(argv=None):
@@ -339,7 +406,15 @@ def main(argv=None):
     id_mapping = {}
     if not webservice:
         # read the id_mapping file into a dict 
-        read_id_mapping('pc_id_mapping-icgc.tsv', id_mapping) 
+        read_id_mapping('gdc_id_mapping.jsonl', id_mapping) 
+        read_id_mapping('pc_id_mapping-icgc.tsv', id_mapping)
+        
+    
+    # debug
+    with open('id_mapping.txt', 'w') as f:
+        f.write(json.dumps(id_mapping, default=set_default))
+
+    sys.exit(0)
 
     update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
 
