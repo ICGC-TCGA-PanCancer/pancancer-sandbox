@@ -253,7 +253,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
             os.mkdir(ipfolder)
         except OSError as e:
             pass
-        shutil.move(ini, os.path.join(ipfolder, os.path.basename(ini)))
+        shutil.move(os.path.join(ini), os.path.join(ipfolder, os.path.basename(ini)))
         logging.info("Success scheduling %s to %s." % (ini, ip))
         print "SUCCESS: scheduling %s to %s" % (ini, ip)
 
