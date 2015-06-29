@@ -7,6 +7,11 @@
     sudo: True
     command: docker ps
 
+  - name: Create remote ini folder
+    sudo: True
+    ignore_errors: yes
+    file: dest=home/ubuntu/ini mode=755 owner=ubuntu group=ubuntu state=directory
+
   - name: Copy scheduling content to remote machine
     sudo: True
     copy: src=/home/ubuntu/.scheduling/ dest=/home/ubuntu/ini owner=ubuntu group=ubuntu mode=0700
