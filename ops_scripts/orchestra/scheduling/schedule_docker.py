@@ -223,7 +223,9 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
         ini = ini_files.pop()
         while DoubleSchedulingCheck(ini):
             logging.warn("Scheduling conflict: %s was previously scheduled." % ini)
-            print >> sys.stderr, "WARNING: skipping %s, as it was previously scheduled."
+            if len(ini_files) == 0:
+                print >> sys.stderr, "There are no more ini files available for scheduling."
+                sys.exit(1)
             ini = ini_files.pop()
 
         # Create the scheduling content for this machine
