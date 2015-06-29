@@ -12,7 +12,7 @@
     ignore_errors: yes
     file: dest=home/ubuntu/ini mode=755 owner=ubuntu group=ubuntu state=directory
 
-  - name: Copy scheduling content to remote machine
+  - name: Copy scheduling content to remote machine's ini folder
     sudo: True
     copy: src=/home/ubuntu/.scheduling/ dest=/home/ubuntu/ini owner=ubuntu group=ubuntu mode=0700
 
