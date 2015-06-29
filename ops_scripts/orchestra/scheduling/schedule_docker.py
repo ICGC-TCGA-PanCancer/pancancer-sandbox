@@ -219,7 +219,7 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
             print >> sys.stderr, "WARNING: Machine %s reports being busy with a workflow." % ip
             continue
 
-        # Select a workflow, avoid doublescheduling things
+        # Select a workflow, avoid double scheduling things
         ini = ini_files.pop()
         while DoubleSchedulingCheck(ini):
             logging.warn("Scheduling conflict: %s was previously scheduled." % ini)
