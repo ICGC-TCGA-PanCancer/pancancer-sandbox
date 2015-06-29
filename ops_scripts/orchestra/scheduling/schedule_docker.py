@@ -90,7 +90,7 @@ def DoubleSchedulingCheck(ini):
     for root, dirs, files in os.walk(INIFILE_LOCATION):
         for name in files:
             all_files.append(name)
-    if all_files.count(ini) > 1:
+    if all_files.count(os.path.basename(ini)) > 1:
         print "SKIPPING: %s has already been scheduled." % ini
         print "\t(Move this file out of it's ip-address folder to schedule it again.)"
         return True
