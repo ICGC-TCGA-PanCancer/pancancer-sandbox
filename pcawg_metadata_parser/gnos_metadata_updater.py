@@ -213,19 +213,31 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
         'id': 'barcode'
     }
     
-    id_type = ['donor', 'specimen', 'sample']
-
-    if id_mapping.get(analysis_attrib.get('dcc_project_code')):
+    project = analysis_attrib.get('dcc_project_code')
+    if id_mapping.get(project):
         for id_type in ['donor', 'specimen', 'sample']:
-            id_mapped = get_id_mapping(gnos_analysis, analysis_attrib, id_type, id_mapping)  
-            if id_mapped is not None:
-                if id_domain == 'icgc':
-                    id_to_insert.update({id_domain + '_' + id_type + '_id': id_mapped})
-                elif id_domain == 'tcga':
-                    id_to_insert.update({id_domain + '_' + field_map[id_type] + '_' + field_map['id']: id_mapped})
-        else:
-            logger.warning( 'Project: {} does not have id_mapping info ...'
-                    .format( analysis_attrib.get('dcc_project_code')))
+            if analysis_attrib.get('submitter_'+id_type+'_id'):
+                id_to_map = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
+                if id_to_map:
+                    for k, id_mapped in id_to_map.iteritems():
+                        tag = k + '_' + id_type + '_id' if k == 'icgc' else k + '_' + field_map[id_type] + '_' + field_map['id']                    
+                        id_in_xml = analysis_attrib.get(tag)
+
+                        if not id_in_xml: # No mapping id exist
+                            id_to_insert.update({tag: id_mapped})
+                        else:
+                            if id_in_xml == id_mapped:
+                                logger.info( 'Valid xml is already updated: {}: {} has been correctly added for submitter_{}_id:{}, GNOS entry {}'
+                                    .format( tag, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))                            
+                            else:
+                                logger.warning( 'Invalid updated xml: {}: {} in xml is different with id_mapping for submitter_{}_id:{}, GNOS entry {}'
+                                    .format( tag, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+                else:                            
+                    logger.warning( 'No id mapping info exists of submitter_{}_id: {} for donor: {}::{}'
+                        .format( id_type, analysis_attrib.get('submitter_' + id_type + '_id'), project, analysis_attrib.get('submitter_donor_id')))
+
+    else:
+        logger.warning( 'Project: {} does not have id_mapping info, GNOS entry: {}'.format(project, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
     
     return id_to_insert
 
@@ -250,14 +262,14 @@ def update_gnos_xml(xml_tree, gnos_analysis, analysis_attrib, output_dir, id_map
             analysis_xml = xml_tree.find('Result/analysis_xml/ANALYSIS_SET')
             analysis_attribs = analysis_xml.find('ANALYSIS/ANALYSIS_ATTRIBUTES')
             for k,v in id_to_insert.iteritems():
-                analysis_attrib = ET.Element('ANALYSIS_ATTRIBUTE')
+                analysis_attrib_element = ET.Element('ANALYSIS_ATTRIBUTE')
                 tag = ET.Element('TAG')
                 tag.text = k
-                analysis_attrib.append(tag)
+                analysis_attrib_element.append(tag)
                 value = ET.Element('VALUE')
                 value.text = v
-                analysis_attrib.append(value)
-                analysis_attribs.append(analysis_attrib)
+                analysis_attrib_element.append(value)
+                analysis_attribs.append(analysis_attrib_element)
 
             # write the xml metadata files 
             fname = output_dir + 'analysis.xml'
@@ -411,7 +423,6 @@ def main(argv=None):
     with open('id_mapping_all.txt', 'w') as f:
         f.write(json.dumps(id_mapping, default=set_default))
 
-    sys.exit(0)
 
     update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
 
