@@ -119,6 +119,7 @@ def WorkerStatus(cmd):
                 data2 = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
 
             except:
+                pass
             result.append(ip + "\t" + data2)
         if data == "FALSE" and cmd == "lazy":
             result.append(ip)
