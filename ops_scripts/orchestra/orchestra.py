@@ -17,6 +17,7 @@ CACHEFILE = os.path.join(os.getenv("HOME"), ".orchestra_cache")
 SUBNET = os.path.join(os.getenv("HOME"), ".orchestra_subnet")
 LOGFILE = "/home/ubuntu/.orchestra.log"
 DEBUG = False
+TIMEOUT = 10
 
 def setup_logging(filename, level=logging.INFO):
     """ Logging Module Interface.
@@ -28,7 +29,7 @@ def setup_logging(filename, level=logging.INFO):
     """
     logging.basicConfig(filename=filename,level=level)
     return None
-
+F
 def parsefail():
     """Simple help message when parsing the command arguments fails."""
     print "Try: orchestra help\n"
@@ -61,7 +62,7 @@ def RunCommand(cmd):
 def HealthStatus(ip):
     """  Processes the list command.  """
     try:
-        data = urllib2.urlopen("http://%s:9009/healthy" % ip, timeout=2).read().strip()
+        data = urllib2.urlopen("http://%s:9009/healthy" % ip, timeout=TIMEOUT).read().strip()
     except:
         data = "FALSE"
     if data == "TRUE":
@@ -107,7 +108,7 @@ def WorkerStatus(cmd):
             notresponding.append("%s\tIS NOT RESPONDING!" % ip)
             continue
         try:
-            data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=5).read().strip()
+            data = urllib2.urlopen("http://%s:9009/busy" % ip, timeout=TIMEOUT).read().strip()
         except:
             # Workers who don't respond to the request won't be listed
             data = ""
@@ -121,7 +122,7 @@ def WorkerStatus(cmd):
 def ListWorkflows(ip):
     """ Processes the workflows command """
     try:
-        data = urllib2.urlopen("http://%s:9009/workflows" % ip, timeout=5).read().strip()
+        data = urllib2.urlopen("http://%s:9009/workflows" % ip, timeout=TIMEOUT).read().strip()
     except:
         data = ""
     print data
@@ -129,7 +130,7 @@ def ListWorkflows(ip):
 def LastContainer(ip):
     """ Processes a helper command to view the last run container id """
     try:
-        data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=5).read().strip()
+        data = urllib2.urlopen("http://%s:9009/lastcontainer" % ip, timeout=TIMEOUT).read().strip()
     except:
         data = "CID FILE NOT FOUND!"
     if len(data.strip()) == 0:
@@ -139,7 +140,7 @@ def LastContainer(ip):
 def SuccessContainers(ip):
     """ Processes a helper function to list sucessful container id's """
     try:
-        data = urllib2.urlopen("http://%s:9009/success" % ip, timeout=5).read().strip()
+        data = urllib2.urlopen("http://%s:9009/success" % ip, timeout=TIMEOUT).read().strip()
     except:
         data = "No successful workflow runs yet!"
     if len(data.strip()) == 0:

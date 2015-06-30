@@ -195,7 +195,9 @@ for f in $files; do
         "bash -c \"seqware bundle launch "
         "--dir /workflows/${workflow} "
         "--engine whitestar --no-metadata --ini /workflow.ini && "
-        "cat /datastore/.worker/lastrun.cid >> /datastore/.worker/success.cid"
+        "cat /datastore/.worker/lastrun.cid >> "
+        "ls"
+        "   ifcon"
         "\"\n" % os.path.basename(ini)
     )
     content += """
