@@ -29,7 +29,7 @@ def setup_logging(filename, level=logging.INFO):
     """
     logging.basicConfig(filename=filename,level=level)
     return None
-F
+
 def parsefail():
     """Simple help message when parsing the command arguments fails."""
     print "Try: orchestra help\n"
