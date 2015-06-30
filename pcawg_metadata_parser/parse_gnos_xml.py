@@ -7,7 +7,7 @@ import os
 import re
 import glob
 import xmltodict
-import json
+import simplejson as json
 import yaml
 import copy
 import logging
@@ -19,11 +19,13 @@ import datetime
 import dateutil.parser
 from itertools import izip
 from distutils.version import LooseVersion
-
+import csv
 
 logger = logging.getLogger('gnos parser')
 # create console handler with a higher log level
 ch = logging.StreamHandler()
+
+webservice = False
 
 
 def init_es(es_host, es_index):
@@ -42,8 +44,78 @@ def init_es(es_host, es_index):
 
     return es
 
+def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
 
-def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_output_fh, annotations):
+    if 'icgc' in id_mapping_file:
+
+        with open(id_mapping_file, 'r') as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                if row.get('project_code') and not id_mapping.get(row['project_code']):
+                    id_mapping[row['project_code']] = {
+                        'donor': {},
+                        'specimen': {},
+                        'sample': {}
+                    }
+                    id_mapping_gdc[row['project_code']] = {
+                        'donor': {},
+                        'specimen': {},
+                        'sample': {}
+                    }
+                if row.get('project_code').endswith('-US'): #TCGA projects: use tcga_barcode to find the pcawg_id first
+                    for id_type in ['donor', 'specimen', 'sample']:
+                        id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
+                        id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
+                        if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id') and id_mapping_type and id_mapping_gdc_type:
+                            if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id'))):
+                                id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')))['icgc'] = row.get('icgc_' + id_type + '_id')
+
+                else:    
+                    if row.get('submitted_donor_id') and row.get('icgc_donor_id'):
+                        id_mapping.get(row['project_code'])['donor'].update({row['submitted_donor_id']: {'icgc': row['icgc_donor_id']}})
+                    if row.get('submitted_specimen_id') and row.get('icgc_specimen_id'):
+                        id_mapping.get(row['project_code'])['specimen'].update({row['submitted_specimen_id']: {'icgc': row['icgc_specimen_id']}})
+                    if row.get('submitted_sample_id') and row.get('icgc_sample_id'):
+                        id_mapping.get(row['project_code'])['sample'].update({row['submitted_sample_id']: {'icgc': row['icgc_sample_id']}})
+
+    elif 'gdc' in id_mapping_file:
+
+        with open(id_mapping_file, 'r') as f:
+            for l in f:
+                row = json.loads(l)
+                if row.get('project.project_id')[0]:
+                    project = str.split(row['project.project_id'][0], '-')[1] + '-US'
+                    if not id_mapping.get(project):
+                        id_mapping[project] = {
+                            'donor': {},
+                            'specimen': {},
+                            'sample': {}
+                        }
+                        id_mapping_gdc[project] = {
+                            'donor': {},
+                            'specimen': {},
+                            'sample': {}                        
+                        }
+                    if row.get('participant_id')[0] and row.get('submitter_id')[0]:
+                        id_mapping.get(project)['donor'].update({row['participant_id'][0]: {'tcga': row['submitter_id'][0]}})
+                        id_mapping_gdc.get(project)['donor'].update({row['submitter_id'][0]: row['participant_id'][0]})
+                    if row.get('sample_ids') and row.get('submitter_sample_ids'):
+                        if len(row.get('sample_ids')) == len(row.get('submitter_sample_ids')):
+                            for l in range(len(row.get('sample_ids'))):
+                                 id_mapping.get(project)['specimen'].update({row.get('sample_ids')[l]: {'tcga': row.get('submitter_sample_ids')[l]}})
+                                 id_mapping_gdc.get(project)['specimen'].update({row.get('submitter_sample_ids')[l]: row.get('sample_ids')[l]})
+                        else: # specimen id mapping length are different
+                            pass
+                    if row.get('aliquot_ids') and row.get('submitter_aliquot_ids'):
+                        if len(row.get('aliquot_ids')) == len(row.get('submitter_aliquot_ids')):
+                            for l in range(len(row.get('aliquot_ids'))):
+                                 id_mapping.get(project)['sample'].update({row.get('aliquot_ids')[l]: {'tcga': row.get('submitter_aliquot_ids')[l]}})
+                                 id_mapping_gdc.get(project)['sample'].update({row.get('submitter_aliquot_ids')[l]: row.get('aliquot_ids')[l]})
+                        else: # specimen id mapping length are different
+                            pass
+
+
+def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_output_fh, annotations, id_mapping):
   analysis_attrib = get_analysis_attrib(gnos_analysis)
 
   if analysis_attrib and analysis_attrib.get('variant_workflow_name'):  # variant call gnos entry
@@ -237,7 +309,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
 
     if not donors.get(donor_unique_id):
         # create a new donor if not exist
-        donors[ donor_unique_id ] = create_donor(donor_unique_id, analysis_attrib, gnos_analysis)
+        donors[ donor_unique_id ] = create_donor(donor_unique_id, analysis_attrib, gnos_analysis, id_mapping)
 
     else: # the donor this bam entry belongs to already exists
         # perform some comparison between existing donor and the info in the current bam entry
@@ -249,7 +321,7 @@ def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_
         # more such check may be added, no time for this now
 
     # now parse out gnos analysis object info to build bam_file doc
-    bam_file = create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis)
+    bam_file = create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis, id_mapping)
      
 
     # only do the following when it is WGS
@@ -453,7 +525,7 @@ def is_in_donor_blacklist(donor_unique_id):
         return False
 
 
-def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
+def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis, id_mapping):
     file_info = parse_bam_file_info(gnos_analysis.get('files').get('file'))
     bam_file = {
         "dcc_specimen_type": analysis_attrib.get('dcc_specimen_type'),
@@ -509,6 +581,18 @@ def create_bam_file_entry(donor_unique_id, analysis_attrib, gnos_analysis):
         bam_file['is_aligned'] = False
         bam_file['bam_type'] = 'Unknown'
         bam_file['alignment'] = None
+
+    # initialize the fields: icgc_donor_id
+    bam_file['icgc_specimen_id'] = None
+    bam_file['icgc_sample_id'] = None
+
+    if analysis_attrib['dcc_project_code'].endswith('-US'):
+        bam_file['tcga_sample_barcode'] = None
+        bam_file['tcga_aliquot_barcode'] = None
+    
+    # populate the fields
+    id_to_insert = get_id_to_populate( gnos_analysis, analysis_attrib, id_mapping, ['specimen', 'sample'])
+    bam_file.update(id_to_insert)
 
     return bam_file
 
@@ -577,7 +661,7 @@ def is_corrupted_train_2_alignment(analysis_attrib, gnos_analysis):
         return False
 
 
-def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
+def create_donor(donor_unique_id, analysis_attrib, gnos_analysis, id_mapping):
     donor = {
         'donor_unique_id': donor_unique_id,
         'submitter_donor_id': analysis_attrib['submitter_donor_id'],
@@ -624,7 +708,54 @@ def create_donor(donor_unique_id, analysis_attrib, gnos_analysis):
     except:
         logger.warning('analysis object has no sequencing_center information: {}'.format(gnos_analysis.get('analysis_detail_uri')))
 
+    # initialize the fields: icgc_donor_id
+    donor['icgc_donor_id'] = None
+
+    if analysis_attrib['dcc_project_code'].endswith('-US'):
+        donor['tcga_participant_barcode'] = None
+    
+    # populate the fields
+    id_to_insert = get_id_to_populate( gnos_analysis, analysis_attrib, id_mapping, ['donor'])
+    donor.update(id_to_insert)
+
     return donor
+
+
+def get_id_to_populate( gnos_analysis, analysis_attrib, id_mapping, id_type_list):
+
+    id_to_insert = {} 
+
+    field_map = {
+        'donor': 'participant',
+        'specimen': 'sample',
+        'sample': 'aliquot',
+        'id': 'barcode'
+    }
+    
+    project = analysis_attrib.get('dcc_project_code')
+    if id_mapping.get(project):
+        for id_type in id_type_list:
+            if analysis_attrib.get('submitter_'+id_type+'_id'):
+                id_to_map = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
+                if id_to_map:
+                    for k, id_mapped in id_to_map.iteritems():
+                        tag = k + '_' + id_type + '_id' if k == 'icgc' else k + '_' + field_map[id_type] + '_' + field_map['id']                    
+                        id_in_xml = analysis_attrib.get(tag)
+
+                        if not id_in_xml or id_in_xml == id_mapped: # No mapping id exist
+                            id_to_insert.update({tag: id_mapped})
+                        else:
+                            logger.warning( 'Invalid updated xml: {}: {} in xml is different with id_mapping for submitter_{}_id:{}, GNOS entry {}'
+                                    .format( tag, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+                else:                            
+                    logger.warning( 'No id mapping info exists of submitter_{}_id: {} for donor: {}::{}'
+                        .format( id_type, analysis_attrib.get('submitter_' + id_type + '_id'), project, analysis_attrib.get('submitter_donor_id')))
+
+    else:
+        logger.warning( 'Project: {} does not have id_mapping info, GNOS entry: {}'.format(project, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+    
+    return id_to_insert
+
 
 def is_test(analysis_attrib, gnos_analysis):
     if (gnos_analysis.get('aliquot_id') == '85098796-a2c1-11e3-a743-6c6c38d06053'
@@ -694,7 +825,7 @@ def get_xml_files( metadata_dir, conf, repo ):
     return xml_files
 
 
-def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo, exclude_gnos_id_lists):
+def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_output_jsonl_file, repo, exclude_gnos_id_lists, id_mapping):
     donors = {}
     vcf_entries = {}
 
@@ -737,7 +868,7 @@ def process(metadata_dir, conf, es_index, es, donor_output_jsonl_file, bam_outpu
                     .format(f, gnos_analysis.get('analysis_id')) )
                 continue
 
-            process_gnos_analysis( gnos_analysis, donors, vcf_entries, es_index, es, bam_fh, annotations )
+            process_gnos_analysis( gnos_analysis, donors, vcf_entries, es_index, es, bam_fh, annotations, id_mapping )
         else:
             logger.warning( 'skipping invalid xml file: {}'.format(f) )
 
@@ -1389,6 +1520,8 @@ def bam_aggregation(bam_files):
                 "aliquot_id": bam['aliquot_id'],
                 "submitter_specimen_id": bam['submitter_specimen_id'],
                 "submitter_sample_id": bam['submitter_sample_id'],
+                "icgc_specimen_id": bam['icgc_specimen_id'],
+                "icgc_sample_id": bam['icgc_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": True,
                 "lane_count": set(),
@@ -1405,6 +1538,10 @@ def bam_aggregation(bam_files):
                  "bam_with_unmappable_reads": {},
                  "unaligned_bams": {}
             }
+            if bam['dcc_project_code'].endswith('-US'):
+                aggregated_bam_info[bam['aliquot_id']]['tcga_sample_barcode'] = bam['tcga_sample_barcode']
+                aggregated_bam_info[bam['aliquot_id']]['tcga_aliquot_barcode'] = bam['tcga_sample_barcode']
+
         else:
             alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
             if alignment_status.get('aligned_bam').get('gnos_id') == bam['bam_gnos_ao_id']:
@@ -1465,6 +1602,8 @@ def bam_aggregation(bam_files):
                 "aliquot_id": bam['aliquot_id'],
                 "submitter_specimen_id": bam['submitter_specimen_id'],
                 "submitter_sample_id": bam['submitter_sample_id'],
+                "icgc_specimen_id": bam['icgc_specimen_id'],
+                "icgc_sample_id": bam['icgc_sample_id'],
                 "dcc_specimen_type": bam['dcc_specimen_type'],
                 "aligned": False,
                 "lane_count": set([bam['total_lanes']]),
@@ -1480,6 +1619,10 @@ def bam_aggregation(bam_files):
                     }
                 }
             }
+            if bam['dcc_project_code'].endswith('-US'):
+                aggregated_bam_info[bam['aliquot_id']]['tcga_sample_barcode'] = bam['tcga_sample_barcode']
+                aggregated_bam_info[bam['aliquot_id']]['tcga_aliquot_barcode'] = bam['tcga_sample_barcode']
+
         else: # aliquot already exists
             alignment_status = aggregated_bam_info.get(bam['aliquot_id'])
             alignment_status.get('lane_count').add(bam['total_lanes'])
@@ -1519,6 +1662,8 @@ def bam_aggregation(bam_files):
                     "aliquot_id": bam['aliquot_id'],
                     "submitter_specimen_id": bam['submitter_specimen_id'],
                     "submitter_sample_id": bam['submitter_sample_id'],
+                    "icgc_specimen_id": bam['icgc_specimen_id'],
+                    "icgc_sample_id": bam['icgc_sample_id'],
                     "dcc_specimen_type": bam['dcc_specimen_type'],
                     "aligned": True,                
                     "gnos_info": {
@@ -1530,6 +1675,10 @@ def bam_aggregation(bam_files):
                         "gnos_last_modified": [bam['last_modified']]
                     }
                 }
+            if bam['dcc_project_code'].endswith('-US'):
+                aliquot_tmp['tcga_sample_barcode'] = bam.get('tcga_sample_barcode')
+                aliquot_tmp['tcga_aliquot_barcode'] = bam.get('tcga_sample_barcode')
+
             if 'tophat' in bam.get('alignment').get('workflow_name').lower(): 
                 aggregated_bam_info.get(bam['aliquot_id'])['tophat'] = aliquot_tmp
 
@@ -1549,6 +1698,8 @@ def bam_aggregation(bam_files):
                         "aliquot_id": bam['aliquot_id'],
                         "submitter_specimen_id": bam['submitter_specimen_id'],
                         "submitter_sample_id": bam['submitter_sample_id'],
+                        "icgc_specimen_id": bam['icgc_specimen_id'],
+                        "icgc_sample_id": bam['icgc_sample_id'],
                         "dcc_specimen_type": bam['dcc_specimen_type'],
                         "aligned": True,                
                         "gnos_info": {
@@ -1560,6 +1711,10 @@ def bam_aggregation(bam_files):
                             "gnos_last_modified": [bam['last_modified']]
                             }
                         }
+                    if bam['dcc_project_code'].endswith('-US'):
+                        aliquot_tmp['tcga_sample_barcode'] = bam.get('tcga_sample_barcode')
+                        aliquot_tmp['tcga_aliquot_barcode'] = bam.get('tcga_sample_barcode')
+
                     alignment_status['tophat'] = aliquot_tmp
 
                 elif alignment_status.get('tophat').get('gnos_info').get('gnos_id') == bam['bam_gnos_ao_id']:
@@ -1589,6 +1744,8 @@ def bam_aggregation(bam_files):
                         "aliquot_id": bam['aliquot_id'],
                         "submitter_specimen_id": bam['submitter_specimen_id'],
                         "submitter_sample_id": bam['submitter_sample_id'],
+                        "icgc_specimen_id": bam['icgc_specimen_id'],
+                        "icgc_sample_id": bam['icgc_sample_id'],
                         "dcc_specimen_type": bam['dcc_specimen_type'],
                         "aligned": True,                
                         "gnos_info": {
@@ -1600,6 +1757,10 @@ def bam_aggregation(bam_files):
                             "gnos_last_modified": [bam['last_modified']]
                             }
                         }
+                    if bam['dcc_project_code'].endswith('-US'):
+                        aliquot_tmp['tcga_sample_barcode'] = bam.get('tcga_sample_barcode')
+                        aliquot_tmp['tcga_aliquot_barcode'] = bam.get('tcga_sample_barcode')
+
                     alignment_status['star'] = aliquot_tmp
 
                 elif alignment_status.get('star').get('gnos_info').get('gnos_id') == bam['bam_gnos_ao_id']:
@@ -1712,12 +1873,22 @@ def main(argv=None):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
+    # generate the dict: id_mapping
+    id_mapping = {} # generate the mapping dict between {pcawg_id(key): {'icgc': icgc_id, 'tcga': tcga_id}}
+    id_mapping_gdc = {} # generate the mapping dict between tcga_barcode(key) with pcawg_id(value) {tcga_barcode: pcawg_id}
+    if not webservice:
+        # read the id_mapping file into dict, the sequence for reading files are important.
+        generate_id_mapping('gdc_id_mapping.jsonl', id_mapping, id_mapping_gdc)
+
+        generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
+    
+
     es_host = 'localhost:9200'
     es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1) + es_index_suffix
     es = init_es(es_host, es_index)
 
     logger.info('processing metadata list files in {} to build es index {}'.format(metadata_dir, es_index))
-    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl', repo, exclude_gnos_id_lists)
+    process(metadata_dir, conf, es_index, es, metadata_dir+'/donor_'+es_index+'.jsonl', metadata_dir+'/bam_'+es_index+'.jsonl', repo, exclude_gnos_id_lists, id_mapping)
 
     # now update kibana dashboard
     # donor
@@ -1755,6 +1926,7 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+
     sys.exit(main())
 
 
