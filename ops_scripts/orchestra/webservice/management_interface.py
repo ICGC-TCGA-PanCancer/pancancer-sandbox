@@ -136,6 +136,24 @@ def route_lastcontainer(path, req):
     req.wfile.write(data+"\n")
     return
 
+def route_lastini(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+
+    fname = "/datastore/.worker/lastrun.ini"
+    data = ""
+    if os.path.exists(fname):
+        with open(fname) as f:
+            data = f.read()
+    headers(req)
+    req.wfile.write(data+"\n")
+    return
+
 def route_containers(path, req):
     """ HTTP route
     Args:
@@ -199,6 +217,8 @@ def route(path, req):
         route_containers(path, req)
     elif path == "/busy":
         route_busy(path, req)
+    elif path == "/lastini":
+        route_lastini(path, req)
     else:
         req.send_response(404)
         req.send_header("Content-type", "text/plain")

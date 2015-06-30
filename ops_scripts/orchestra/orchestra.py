@@ -113,7 +113,12 @@ def WorkerStatus(cmd):
             # Workers who don't respond to the request won't be listed
             data = ""
         if data == "TRUE" and cmd == "busy":
-            result.append(ip)
+            # Try to get the donor name
+            try:
+                data = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
+                result.append(ip + "\t" + data)
+            except:
+                result.append(ip)
         if data == "FALSE" and cmd == "lazy":
             result.append(ip)
     sorted(result)

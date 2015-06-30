@@ -195,15 +195,14 @@ for f in $files; do
         "bash -c \"seqware bundle launch "
         "--dir /workflows/${workflow} "
         "--engine whitestar --no-metadata --ini /workflow.ini && "
-        "cat /datastore/.worker/lastrun.cid >> "
-        "ls"
-        "   ifcon"
+        "cat /datastore/.worker/lastrun.cid >> /datastore/.worker/success.cid"
         "\"\n" % os.path.basename(ini)
     )
     content += """
 # Copy the monitor script to the home folder for easy access
 cp ~/ini/monitor.sh ~/monitor
 """
+    content += "cat ~/ini/%s > /datastore/.worker/lastrun.ini" % os.path.basename(ini)
     WriteFile(os.path.join(directory, "runner.sh"), content)
     WriteFile(os.path.join(directory, "gnostest.pem"), gnoskey)
 
