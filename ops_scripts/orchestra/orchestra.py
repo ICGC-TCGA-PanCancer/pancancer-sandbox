@@ -115,8 +115,8 @@ def WorkerStatus(cmd):
         if data == "TRUE" and cmd == "busy":
             # Try to get the donor name
             try:
-                data = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
-                result.append(ip + "\t" + data)
+                data2 = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
+                result.append(ip + "\t" + data2)
             except:
                 result.append(ip)
         if data == "FALSE" and cmd == "lazy":
