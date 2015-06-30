@@ -80,18 +80,7 @@ def get_analysis_attrib(gnos_analysis):
     return analysis_attrib
 
 
-def update_icgc_id(id_type, id_mapping_type, row):
-    if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id') and id_mapping_type:
-        for l, v in id_mapping_type.iteritems():
-            if v.get('tcga') and v.get('tcga') == row.get('submitted_' + id_type + '_id'):
-                v['icgc'] = row.get('icgc_' + id_type + '_id')
-                return
-
-    return 
-
-
-
-def read_id_mapping(id_mapping_file, id_mapping):
+def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
 
     if 'icgc' in id_mapping_file:
 
@@ -104,9 +93,18 @@ def read_id_mapping(id_mapping_file, id_mapping):
                         'specimen': {},
                         'sample': {}
                     }
-                if row.get('project_code').endswith('-US'):
+                    id_mapping_gdc[row['project_code']] = {
+                        'donor': {},
+                        'specimen': {},
+                        'sample': {}
+                    }
+                if row.get('project_code').endswith('-US'): #TCGA projects: use tcga_barcode to find the pcawg_id first
                     for id_type in ['donor', 'specimen', 'sample']:
-                        update_icgc_id(id_type, id_mapping.get(row['project_code']).get(id_type), row)
+                        id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
+                        id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
+                        if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id') and id_mapping_type and id_mapping_gdc_type:
+                            if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id'))):
+                                id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')))['icgc'] = row.get('icgc_' + id_type + '_id')
 
                 else:    
                     if row.get('submitted_donor_id') and row.get('icgc_donor_id'):
@@ -119,10 +117,9 @@ def read_id_mapping(id_mapping_file, id_mapping):
     elif 'gdc' in id_mapping_file:
 
         with open(id_mapping_file, 'r') as f:
-            id_mapping_gdc = {}
             for l in f:
                 row = json.loads(l)
-                if row.get('project.project_id')[0] and 'tcga' in row['project.project_id'][0].lower():
+                if row.get('project.project_id')[0]:
                     project = str.split(row['project.project_id'][0], '-')[1] + '-US'
                     if not id_mapping.get(project):
                         id_mapping[project] = {
@@ -153,7 +150,6 @@ def read_id_mapping(id_mapping_file, id_mapping):
                         else: # specimen id mapping length are different
                             pass
 
-    return (id_mapping, id_mapping_gdc)
 
 
 def id_mapping_from_webservice(query_id):
@@ -176,7 +172,7 @@ def get_id_mapping(gnos_analysis, analysis_attrib, id_domain, id_type, id_mappin
         if webservice:
             id_mapped = id_mapping_from_webservice(analysis_attrib.get('submitter_'+id_type+'_id'))
         else:
-            id_mapped = id_mapping.get(id_domain).get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
+            id_mapped = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
         
         id_in_xml = analysis_attrib.get(id_domain + '_' + id_type + '_id')
         if not id_in_xml:
@@ -217,17 +213,16 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
         'id': 'barcode'
     }
     
-    for id_domain, v_domain in id_mapping.iteritems():
-        if v_domain.get(analysis_attrib.get('dcc_project_code')):
-            for id_type, v_type in v_domain.get(analysis_attrib.get('dcc_project_code')).iteritems():
-                if analysis_attrib.get('variant_workflow_name') and not id_type == 'donor': # vcf entry only have donor ids for mapping 
-                    continue 
-                id_mapped = get_id_mapping(gnos_analysis, analysis_attrib, id_domain, id_type, id_mapping)  
-                if id_mapped is not None:
-                    if id_domain == 'icgc':
-                        id_to_insert.update({id_domain + '_' + id_type + '_id': id_mapped})
-                    elif id_domain == 'tcga':
-                        id_to_insert.update({id_domain + '_' + field_map[id_type] + '_' + field_map['id']: id_mapped})
+    id_type = ['donor', 'specimen', 'sample']
+
+    if id_mapping.get(analysis_attrib.get('dcc_project_code')):
+        for id_type in ['donor', 'specimen', 'sample']:
+            id_mapped = get_id_mapping(gnos_analysis, analysis_attrib, id_type, id_mapping)  
+            if id_mapped is not None:
+                if id_domain == 'icgc':
+                    id_to_insert.update({id_domain + '_' + id_type + '_id': id_mapped})
+                elif id_domain == 'tcga':
+                    id_to_insert.update({id_domain + '_' + field_map[id_type] + '_' + field_map['id']: id_mapped})
         else:
             logger.warning( 'Project: {} does not have id_mapping info ...'
                     .format( analysis_attrib.get('dcc_project_code')))
@@ -403,15 +398,17 @@ def main(argv=None):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-    id_mapping = {}
+    id_mapping = {} # generate the mapping dict between {pcawg_id(key): {'icgc': icgc_id, 'tcga': tcga_id}}
+    id_mapping_gdc = {} # generate the mapping dict between tcga_barcode(key) with pcawg_id(value) {tcga_barcode: pcawg_id}
     if not webservice:
-        # read the id_mapping file into a dict 
-        read_id_mapping('gdc_id_mapping.jsonl', id_mapping) 
-        read_id_mapping('pc_id_mapping-icgc.tsv', id_mapping)
+        # read the id_mapping file into dict, the sequence for reading files are important.
+        generate_id_mapping('gdc_id_mapping.jsonl', id_mapping, id_mapping_gdc)
+
+        generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
         
     
     # debug
-    with open('id_mapping.txt', 'w') as f:
+    with open('id_mapping_all.txt', 'w') as f:
         f.write(json.dumps(id_mapping, default=set_default))
 
     sys.exit(0)
