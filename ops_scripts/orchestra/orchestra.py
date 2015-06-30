@@ -88,7 +88,13 @@ def HostList():
             container = LastContainer(ip)
             if len(container.strip()) == 0:
                 container = "Unknown CID"
-            result.append("%s\tCurrently running docker container: %s" % (ip, container))
+            # Try to get the donor name
+            data2 = ""
+            try:
+                data2 = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
+            except:
+                data2 = "Unknown"
+            result.append("%s\tIni: %s\tCID: %s" % (data2, ip, container))
         else:
             result.append("%s\tCurrently idle." % ip)
     sorted(result)
@@ -113,14 +119,7 @@ def WorkerStatus(cmd):
             # Workers who don't respond to the request won't be listed
             data = ""
         if data == "TRUE" and cmd == "busy":
-            # Try to get the donor name
-            data2 = ""
-            try:
-                data2 = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
-
-            except:
-                pass
-            result.append(ip + "\t" + data2)
+            result.append(ip)
         if data == "FALSE" and cmd == "lazy":
             result.append(ip)
     sorted(result)
