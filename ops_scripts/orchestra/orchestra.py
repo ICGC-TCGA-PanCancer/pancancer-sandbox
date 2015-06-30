@@ -89,12 +89,13 @@ def HostList():
             if len(container.strip()) == 0:
                 container = "Unknown CID"
             # Try to get the donor name
-            data2 = ""
             try:
-                data2 = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
+                donor = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
+                if len(donor) == 0:
+                    donor = "Unknown"
             except:
-                data2 = "Unknown"
-            result.append("%s\tIni: %s\tCID: %s" % (data2, ip, container))
+                donor = "Unknown"
+            result.append("%s\tIni: %s\tCID: %s" % (ip, donor, container))
         else:
             result.append("%s\tCurrently idle." % ip)
     sorted(result)
