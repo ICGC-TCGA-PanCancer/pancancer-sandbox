@@ -202,7 +202,7 @@ for f in $files; do
 # Copy the monitor script to the home folder for easy access
 cp ~/ini/monitor.sh ~/monitor
 """
-    content += "echo \"~/ini/%s\" > /datastore/.worker/lastrun.ini" % os.path.basename(ini)
+    content += "echo \"%s\" > /datastore/.worker/lastrun.ini" % os.path.basename(ini)
     WriteFile(os.path.join(directory, "runner.sh"), content)
     WriteFile(os.path.join(directory, "gnostest.pem"), gnoskey)
 
