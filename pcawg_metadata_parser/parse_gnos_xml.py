@@ -105,14 +105,17 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
                                  id_mapping.get(project)['specimen'].update({row.get('sample_ids')[l]: {'tcga': row.get('submitter_sample_ids')[l]}})
                                  id_mapping_gdc.get(project)['specimen'].update({row.get('submitter_sample_ids')[l]: row.get('sample_ids')[l]})
                         else: # specimen id mapping length are different
-                            pass
+                            logger.warning('The number of specimens are differet for donor: {}::{}'
+                         .format(project, row.get('participant_id')[0]))
+
                     if row.get('aliquot_ids') and row.get('submitter_aliquot_ids'):
                         if len(row.get('aliquot_ids')) == len(row.get('submitter_aliquot_ids')):
                             for l in range(len(row.get('aliquot_ids'))):
                                  id_mapping.get(project)['sample'].update({row.get('aliquot_ids')[l]: {'tcga': row.get('submitter_aliquot_ids')[l]}})
                                  id_mapping_gdc.get(project)['sample'].update({row.get('submitter_aliquot_ids')[l]: row.get('aliquot_ids')[l]})
                         else: # specimen id mapping length are different
-                            pass
+                            logger.warning('The number of samples are differet for donor: {}::{}'
+                         .format(project, row.get('participant_id')[0]))
 
 
 def process_gnos_analysis(gnos_analysis, donors, vcf_entries, es_index, es, bam_output_fh, annotations, id_mapping):
@@ -737,18 +740,18 @@ def get_id_to_populate( gnos_analysis, analysis_attrib, id_mapping, id_type_list
         for id_type in id_type_list:
             if analysis_attrib.get('submitter_'+id_type+'_id'):
                 id_to_map = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
-                if id_to_map:
+                if id_to_map is not None:
                     for k, id_mapped in id_to_map.iteritems():
                         tag = k + '_' + id_type + '_id' if k == 'icgc' else k + '_' + field_map[id_type] + '_' + field_map['id']                    
                         id_in_xml = analysis_attrib.get(tag)
 
-                        if not id_in_xml or id_in_xml == id_mapped: # No mapping id exist
+                        if not id_in_xml or id_in_xml == id_mapped: # No mapped id exist in xml or the mapped id in xml is correct
                             id_to_insert.update({tag: id_mapped})
                         else:
                             logger.warning( 'Invalid updated xml: {}: {} in xml is different with id_mapping for submitter_{}_id:{}, GNOS entry {}'
-                                    .format( tag, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
+                                    .format( tag, id_in_xml, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
                 else:                            
-                    logger.warning( 'No id mapping info exists of submitter_{}_id: {} for donor: {}::{}'
+                    logger.warning( 'No id mapping info exists for submitter_{}_id: {} of donor: {}::{}'
                         .format( id_type, analysis_attrib.get('submitter_' + id_type + '_id'), project, analysis_attrib.get('submitter_donor_id')))
 
     else:
