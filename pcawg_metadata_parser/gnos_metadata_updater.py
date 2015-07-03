@@ -82,12 +82,14 @@ def get_analysis_attrib(gnos_analysis):
 
 def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
 
+    logger.info('Processing id_mapping file: {}'.format(id_mapping_file))
+
     if 'icgc' in id_mapping_file:
 
         with open(id_mapping_file, 'r') as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
-                if row.get('project_code') and not id_mapping.get(row['project_code']):
+                if row.get('project_code') and not id_mapping.get(row['project_code']): # initialize the non-US projects
                     id_mapping[row['project_code']] = {
                         'donor': {},
                         'specimen': {},
@@ -100,11 +102,22 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
                     }
                 if row.get('project_code').endswith('-US'): #TCGA projects: use tcga_barcode to find the pcawg_id first
                     for id_type in ['donor', 'specimen', 'sample']:
-                        id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
-                        id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
-                        if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id') and id_mapping_type and id_mapping_gdc_type:
-                            if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id'))):
-                                id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')))['icgc'] = row.get('icgc_' + id_type + '_id')
+                        if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id'): 
+                            id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
+                            id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
+                            if id_mapping_type and id_mapping_gdc_type:
+                                if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id'))):
+                                    id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')))['icgc'] = row.get('icgc_' + id_type + '_id')
+                                        
+                                else:
+                                    logger.warning('No PCAWG_id mapped to TCGA_id: {} '.format(row.get('submitted_' + id_type + '_id')))
+
+                            else:
+                                logger.warning('No id_mapping information for {} in project: {} '.format(id_type, row.get('project_code')))
+
+                        else:
+                            logger.warning('Not enough information to do the {} id mapping'.format(id_type))
+
 
                 else:    
                     if row.get('submitted_donor_id') and row.get('icgc_donor_id'):
@@ -133,22 +146,29 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
                             'sample': {}                        
                         }
                     if row.get('participant_id')[0] and row.get('submitter_id')[0]:
-                        id_mapping.get(project)['donor'].update({row['participant_id'][0]: {'tcga': row['submitter_id'][0]}})
-                        id_mapping_gdc.get(project)['donor'].update({row['submitter_id'][0]: row['participant_id'][0]})
+                        id_mapping.get(project)['donor'].update({row['participant_id'][0].lower(): {'tcga': row['submitter_id'][0]}})
+                        id_mapping_gdc.get(project)['donor'].update({row['submitter_id'][0]: row['participant_id'][0].lower()})
+
                     if row.get('sample_ids') and row.get('submitter_sample_ids'):
                         if len(row.get('sample_ids')) == len(row.get('submitter_sample_ids')):
                             for l in range(len(row.get('sample_ids'))):
-                                 id_mapping.get(project)['specimen'].update({row.get('sample_ids')[l]: {'tcga': row.get('submitter_sample_ids')[l]}})
-                                 id_mapping_gdc.get(project)['specimen'].update({row.get('submitter_sample_ids')[l]: row.get('sample_ids')[l]})
+                                 id_mapping.get(project)['specimen'].update({row.get('sample_ids')[l].lower(): {'tcga': row.get('submitter_sample_ids')[l]}})
+                                 id_mapping_gdc.get(project)['specimen'].update({row.get('submitter_sample_ids')[l]: row.get('sample_ids')[l].lower()})
                         else: # specimen id mapping length are different
-                            pass
+                            logger.warning('The donor: {} has mismatch number of specimens: {}, in file: {}'.format(row.get('participant_id')[0].lower(), id_mapping_file))
+
                     if row.get('aliquot_ids') and row.get('submitter_aliquot_ids'):
                         if len(row.get('aliquot_ids')) == len(row.get('submitter_aliquot_ids')):
                             for l in range(len(row.get('aliquot_ids'))):
-                                 id_mapping.get(project)['sample'].update({row.get('aliquot_ids')[l]: {'tcga': row.get('submitter_aliquot_ids')[l]}})
-                                 id_mapping_gdc.get(project)['sample'].update({row.get('submitter_aliquot_ids')[l]: row.get('aliquot_ids')[l]})
-                        else: # specimen id mapping length are different
-                            pass
+                                 id_mapping.get(project)['sample'].update({row.get('aliquot_ids')[l].lower(): {'tcga': row.get('submitter_aliquot_ids')[l]}})
+                                 id_mapping_gdc.get(project)['sample'].update({row.get('submitter_aliquot_ids')[l]: row.get('aliquot_ids')[l].lower()})
+                        else: # sample id mapping length are different
+                            logger.warning('The donor: {} has mismatch number of samples: {}, in file: {}'.format(row.get('participant_id')[0].lower(), id_mapping_file))
+
+
+                else:
+                    logger.warning('The project_code information is missing in the row: {}, in file: {}'.format(row, id_mapping_file))
+
 
 
 
@@ -163,42 +183,6 @@ def id_mapping_from_webservice(query_id):
 
     if not response or not response.ok:
         logger.warning('unable to download metadata for: {} from {}'.format(ao_uuid, url))
-        return None
-
-
-def get_id_mapping(gnos_analysis, analysis_attrib, id_domain, id_type, id_mapping):
-    project = analysis_attrib.get('dcc_project_code')
-    if analysis_attrib.get('submitter_'+id_type+'_id'):
-        if webservice:
-            id_mapped = id_mapping_from_webservice(analysis_attrib.get('submitter_'+id_type+'_id'))
-        else:
-            id_mapped = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
-        
-        id_in_xml = analysis_attrib.get(id_domain + '_' + id_type + '_id')
-        if not id_in_xml:
-            if not id_mapped:
-                logger.warning( 'No id mapping info exists of submitter_{}_id: {} for donor: {}::{}'
-                    .format( id_type, analysis_attrib.get('submitter_' + id_type + '_id'), project, analysis_attrib.get('submitter_donor_id')))
-                return None
-            else:
-                return id_mapped
-        
-        else:
-            if not id_mapped:
-                logger.warning( 'Invalid updated xml: No mapping info exists for submitter_{}_id:{}, GNOS entry {}'
-                    .format( id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
-            else:
-                if id_in_xml == id_mapped:
-                    logger.info( 'Valid xml is already updated: {}_{}_id: {} has been correctly added for submitter_{}_id:{}, GNOS entry {}'
-                        .format( id_domain, id_type, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
-                    return None
-                else:
-                    logger.warning( 'Invalid updated xml: {}_{}_id: {} in xml is different with id_mapping for submitter_{}_id:{}, GNOS entry {}'
-                        .format( id_domain, id_type, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
-                    return None
-    else:
-        logger.warning( 'The entry does not have submitter_{}_id information for donor: {}::{}, GNOS entry {}'
-                        .format( id_type, project, analysis_attrib.get('submitter_donor_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))
         return None
 
 
@@ -217,7 +201,11 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
     if id_mapping.get(project):
         for id_type in ['donor', 'specimen', 'sample']:
             if analysis_attrib.get('submitter_'+id_type+'_id'):
-                id_to_map = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
+                if project.endswith('-US'):
+                    pcawg_id = analysis_attrib.get('submitter_'+id_type+'_id').lower()
+                else:
+                    pcawg_id = analysis_attrib.get('submitter_'+id_type+'_id')   
+                id_to_map = id_mapping.get(project).get(id_type).get(pcawg_id)
                 if id_to_map:
                     for k, id_mapped in id_to_map.iteritems():
                         tag = k + '_' + id_type + '_id' if k == 'icgc' else k + '_' + field_map[id_type] + '_' + field_map['id']                    
@@ -226,7 +214,7 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
                         if not id_in_xml: # No mapping id exist
                             id_to_insert.update({tag: id_mapped})
                         else:
-                            if id_in_xml == id_mapped:
+                            if id_in_xml.lower() == id_mapped:
                                 logger.info( 'Valid xml is already updated: {}: {} has been correctly added for submitter_{}_id:{}, GNOS entry {}'
                                     .format( tag, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))                            
                             else:
@@ -337,6 +325,24 @@ def update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping
                 logger.warning('ignore entry does not have dcc_project_code or submitter_donor_id, GNOS entry: {}'
                          .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
                 continue
+            
+            if is_test(analysis_attrib, gnos_analysis):
+                logger.warning('ignore test entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
+                continue # completely ignore test gnos entries for now, this is the quickest way to avoid test interferes real data 
+
+            if analysis_attrib.get('dcc_project_code').endswith('-US') and analysis_attrib.get('submitter_donor_id').startswith('TCGA-'):
+                logger.warning('ignore TCGA entry submitted with barcode, GNOS entry: {}'
+                         .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+                continue
+
+            if gnos_analysis.get('refassem_short_name') != 'unaligned' and gnos_analysis.get('refassem_short_name') != 'GRCh37':
+                logger.warning('ignore entry that is aligned but not aligned to GRCh37: {}'
+                         .format(gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+                continue # completely ignore test gnos entries for now, this is the quickest way to avoid test interferes real data 
+
+            if gnos_analysis.get('library_strategy') == 'RNA-Seq' and not analysis_attrib.get('workflow_name') in ('RNA-Seq_Alignment_SOP_STAR', 'Workflow_Bundle_TOPHAT2'):
+                logger.warning('ignore RNA-Seq entry that is not STAR or TOPHAT2 aligned, entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
+                return
 
 
             xml_tree = ET.parse(f)
@@ -348,6 +354,25 @@ def update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping
 
         else:
             logger.warning( 'skipping invalid xml file: {}'.format(f) )  
+
+
+def is_test(analysis_attrib, gnos_analysis):
+    if (gnos_analysis.get('aliquot_id') == '85098796-a2c1-11e3-a743-6c6c38d06053'
+          or gnos_analysis.get('study') == 'CGTEST'
+          or gnos_analysis.get('study') == 'icgc_pancancer_vcf_test'
+          or 'test' in gnos_analysis.get('study').lower()
+        ):
+        return True
+    elif (analysis_attrib.get('dcc_project_code') == 'None-US'
+          and analysis_attrib.get('submitter_donor_id') == 'None'
+          and analysis_attrib.get('submitter_specimen_id') == 'None'
+          and analysis_attrib.get('dcc_specimen_type') == 'unknown'
+        ):
+        return True
+    # TODO: what's the criteria for determining *test* entries
+
+    return False
+
 
 def set_default(obj):
     if isinstance(obj, datetime.datetime):
@@ -419,8 +444,8 @@ def main(argv=None):
         generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
         
     
-    # debug
-    with open('id_mapping_all.txt', 'w') as f:
+    # write id_mapping to text file for use in parse_gnos_xml.py
+    with open('id_mapping.txt', 'w') as f:
         f.write(json.dumps(id_mapping, default=set_default))
 
 
