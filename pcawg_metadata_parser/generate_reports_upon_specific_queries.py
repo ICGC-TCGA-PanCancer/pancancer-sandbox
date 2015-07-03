@@ -134,7 +134,7 @@ es_queries = [
                   "size": 10000
         }
 },
-# query 3: sanger vcf missing input
+# query 2: sanger vcf missing input
 {
       "name": "sanger_vcf_missing_input",
       "content":{
@@ -185,7 +185,59 @@ es_queries = [
                 "size": 10000
 
       }
+},
+# query 3: get donors with mismatch duplicate bwa bams
+{
+      "name": "donors_with_mismatch_duplicate_bwa_bams",
+      "content":{
+           "fields":[
+               "donor_unique_id"
+           ],  
+           "filter":{
+              "bool":{
+                 "must":[
+                    {
+                       "type":{
+                          "value":"donor"
+                       }
+                    },          
+                    {
+                       "terms":{
+                          "duplicated_bwa_alignment_summary.exists_mismatch_bwa_bams":[
+                             "T"
+                          ]
+                       }
+                    }                        
+                  ],
+                  "must_not": [
+                  {
+                    "terms": {
+                      "flags.is_manual_qc_failed": [
+                              "T"
+                            ]
+                          }
+                      },
+                  {
+                    "terms": {
+                      "flags.is_donor_blacklisted": [
+                              "T"
+                            ]
+                          }
+                      },
+                  {
+                    "terms":{
+                      "dcc_project_code": [
+                              "LIRI-JP"
+                      ]
+                    }
+                  }
+                 ]
+                }
+              },
+              "size": 10000
+      }
 }
+
 ]
 
 report_fields = [
@@ -194,7 +246,9 @@ report_fields = [
 "dcc_specimen_type", "aligned", "number_of_bams", "total_lanes"],
 ["donor_unique_id", "submitter_donor_id", "dcc_project_code", "sanger_vcf_gnos_id", \
 "normal_aliquot_id", "normal_submitter_specimen", "normal_bam_gnos_id", "is_normal_bam_used_by_sanger_missing", \
-"tumor_aliquot_id", "tumor_submitter_specimen", "tumor_bam_gnos_id", "is_tumor_bam_used_by_sanger_missing"]
+"tumor_aliquot_id", "tumor_submitter_specimen", "tumor_bam_gnos_id", "is_tumor_bam_used_by_sanger_missing"],
+["donor_unique_id", "submitter_donor_id", "dcc_project_code", "mismatch_in_normal", "md5sum_mismatch_in_normal", "gnos_id_mismatch_in_normal", \
+"version_mismatch_in_normal", "mismatch_in_tumor", "md5sum_mismatch_in_tumor", "gnos_id_mismatch_in_tumor", "version_mismatch_in_tumor"]
 ]
 
 def get_donor_json(es, es_index, donor_unique_id):
@@ -237,6 +291,9 @@ def create_report_info(donor_unique_id, es_json, q_index):
 
     if q_index == 2:
       add_report_info_2(report_info, report_info_list, es_json)
+
+    if q_index == 3:
+      add_report_info_3(report_info, report_info_list, es_json)
 
     return report_info_list
 
@@ -292,6 +349,19 @@ def add_report_info_2(report_info, report_info_list, es_json):
             report_info['tumor_aliquot_id'].append(vcf_input.get('specimen'))
             report_info['tumor_submitter_specimen'].append(vcf_input.get('attributes').get('submitter_specimen_id'))
             report_info['tumor_bam_gnos_id'].append(vcf_input.get('attributes').get('analysis_id'))
+    report_info_list.append(copy.deepcopy(report_info))
+
+
+def add_report_info_3(report_info, report_info_list, es_json):
+    duplicate_bwa_bams = es_json.get('duplicated_bwa_alignment_summary')
+    report_info['mismatch_in_normal'] = duplicate_bwa_bams.get('exists_mismatch_bwa_bams_in_normal')
+    report_info['md5sum_mismatch_in_normal'] = duplicate_bwa_bams.get('exists_md5sum_mismatch_in_normal')
+    report_info['gnos_id_mismatch_in_normal'] = duplicate_bwa_bams.get('exists_gnos_id_mismatch_in_normal')
+    report_info['version_mismatch_in_normal'] = duplicate_bwa_bams.get('exists_version_mismatch_in_normal')
+    report_info['mismatch_in_tumor'] = duplicate_bwa_bams.get('exists_mismatch_bwa_bams_in_tumor')
+    report_info['md5sum_mismatch_in_tumor'] = duplicate_bwa_bams.get('exists_md5sum_mismatch_in_tumor')
+    report_info['gnos_id_mismatch_in_tumor'] = duplicate_bwa_bams.get('exists_gnos_id_mismatch_in_tumor')
+    report_info['version_mismatch_in_tumor'] = duplicate_bwa_bams.get('exists_version_mismatch_in_tumor')
     report_info_list.append(copy.deepcopy(report_info))
 
 
