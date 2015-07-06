@@ -342,7 +342,7 @@ def update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping
 
             if gnos_analysis.get('library_strategy') == 'RNA-Seq' and not analysis_attrib.get('workflow_name') in ('RNA-Seq_Alignment_SOP_STAR', 'Workflow_Bundle_TOPHAT2'):
                 logger.warning('ignore RNA-Seq entry that is not STAR or TOPHAT2 aligned, entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
-                return
+                continue
 
 
             xml_tree = ET.parse(f)
