@@ -445,8 +445,8 @@ def main(argv=None):
         
     
     # write id_mapping to text file for use in parse_gnos_xml.py
-    with open('id_mapping.txt', 'w') as f:
-        f.write(json.dumps(id_mapping, default=set_default))
+    with open('id_mapping.json', 'w') as f:
+        json.dump(id_mapping, f, indent=4)
 
 
     update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
