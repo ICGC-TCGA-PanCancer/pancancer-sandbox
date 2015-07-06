@@ -1876,15 +1876,18 @@ def main(argv=None):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-    # generate the dict: id_mapping
-    id_mapping = {} # generate the mapping dict between {pcawg_id(key): {'icgc': icgc_id, 'tcga': tcga_id}}
-    id_mapping_gdc = {} # generate the mapping dict between tcga_barcode(key) with pcawg_id(value) {tcga_barcode: pcawg_id}
-    if not webservice:
-        # read the id_mapping file into dict, the sequence for reading files are important.
-        generate_id_mapping('gdc_id_mapping.jsonl', id_mapping, id_mapping_gdc)
+    # # generate the dict: id_mapping
+    # id_mapping = {} # generate the mapping dict between {pcawg_id(key): {'icgc': icgc_id, 'tcga': tcga_id}}
+    # id_mapping_gdc = {} # generate the mapping dict between tcga_barcode(key) with pcawg_id(value) {tcga_barcode: pcawg_id}
+    # if not webservice:
+    #     # read the id_mapping file into dict, the sequence for reading files are important.
+    #     generate_id_mapping('gdc_id_mapping.jsonl', id_mapping, id_mapping_gdc)
 
-        generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
-    
+    #     generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
+
+    # load the id_mapping     
+    with open('id_mapping.txt', 'r') as f:
+        id_mapping = json.loads(f)
 
     es_host = 'localhost:9200'
     es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1) + es_index_suffix
