@@ -201,7 +201,7 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
     if id_mapping.get(project):
         for id_type in ['donor', 'specimen', 'sample']:
             if analysis_attrib.get('submitter_'+id_type+'_id'):
-                if project.endswith('-US'):
+                if project.endswith('-US'): # uuid of tcga submitted to pcawg are case insensitive and transfer to lower case
                     pcawg_id = analysis_attrib.get('submitter_'+id_type+'_id').lower()
                 else:
                     pcawg_id = analysis_attrib.get('submitter_'+id_type+'_id')   
@@ -209,12 +209,12 @@ def get_id_to_insert( gnos_analysis, analysis_attrib, id_mapping):
                 if id_to_map:
                     for k, id_mapped in id_to_map.iteritems():
                         tag = k + '_' + id_type + '_id' if k == 'icgc' else k + '_' + field_map[id_type] + '_' + field_map['id']                    
-                        id_in_xml = analysis_attrib.get(tag)
+                        id_in_xml = analysis_attrib.get(tag) # icgc_id and tcga_barcode are case sensitive
 
                         if not id_in_xml: # No mapping id exist
                             id_to_insert.update({tag: id_mapped})
                         else:
-                            if id_in_xml.lower() == id_mapped:
+                            if id_in_xml == id_mapped:
                                 logger.info( 'Valid xml is already updated: {}: {} has been correctly added for submitter_{}_id:{}, GNOS entry {}'
                                     .format( tag, id_mapped, id_type, analysis_attrib.get('submitter_' + id_type + '_id'), gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull')))                            
                             else:
@@ -344,6 +344,12 @@ def update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping
                 logger.warning('ignore RNA-Seq entry that is not STAR or TOPHAT2 aligned, entry: {}'.format(gnos_analysis.get('analysis_detail_uri')))
                 continue
 
+            donor_unique_id = analysis_attrib.get('dcc_project_code') + '::' + analysis_attrib.get('submitter_donor_id')
+
+            if is_in_donor_blacklist(donor_unique_id):
+                logger.warning('ignore blacklisted donor: {} GNOS entry: {}'
+                                 .format(donor_unique_id, gnos_analysis.get('analysis_detail_uri').replace('analysisDetail', 'analysisFull') ))
+                continue
 
             xml_tree = ET.parse(f)
             update_gnos_xml( xml_tree, gnos_analysis, analysis_attrib, output_dir, id_mapping)
@@ -372,6 +378,22 @@ def is_test(analysis_attrib, gnos_analysis):
     # TODO: what's the criteria for determining *test* entries
 
     return False
+
+
+def is_in_donor_blacklist(donor_unique_id):
+    donor_blacklist = set([
+            "PACA-CA::PCSI_0449",
+            "PACA-CA::PCSI_0309",
+            "LIHC-US::G1551",
+            "LIHC-US::G15512",
+            "TCGA_MUT_BENCHMARK_4::G15511",
+            "TCGA_MUT_BENCHMARK_4::G15512",
+            "PBCA-DE::SNV_CALLING_TEST"
+        ])
+    if donor_blacklist.intersection([donor_unique_id]):
+        return True
+    else:
+        return False
 
 
 def set_default(obj):
