@@ -1886,8 +1886,8 @@ def main(argv=None):
     #     generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
 
     # load the id_mapping     
-    with open('id_mapping.txt', 'r') as f:
-        id_mapping = json.loads(f)
+    with open('id_mapping.json', 'r') as f:
+        id_mapping = json.load(f)
 
     es_host = 'localhost:9200'
     es_index = 'p_' + ('' if not repo else repo+'_') + re.sub(r'\D', '', timestamp).replace('20','',1) + es_index_suffix
