@@ -105,10 +105,12 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
                         if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id'): 
                             id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
                             id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
-                            if id_mapping_type and id_mapping_gdc_type:
-                                if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id'))):
-                                    id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')))['icgc'] = row.get('icgc_' + id_type + '_id')
-                                        
+                            if id_mapping_type and id_mapping_gdc_type:                                
+                                if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')).get('pcawg')):
+                                    id_source = id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')).get('pcawg')
+                                    id_target = row.get('icgc_' + id_type + '_id')
+                                    update_id_mapping_with_check_duplicate(id_source, id_target, 'pcawg', 'icgc', id_mapping, id_type, row.get('project_code'))   
+                                
                                 else:
                                     logger.warning('No PCAWG_id mapped to TCGA_id: {} '.format(row.get('submitted_' + id_type + '_id')))
 
@@ -121,11 +123,14 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
 
                 else:    
                     if row.get('submitted_donor_id') and row.get('icgc_donor_id'):
-                        id_mapping.get(row['project_code'])['donor'].update({row['submitted_donor_id']: {'icgc': row['icgc_donor_id']}})
+                        update_id_mapping_with_check_duplicate(row.get('submitted_donor_id'), row.get('icgc_donor_id'), 'pcawg', 'icgc', id_mapping, 'donor', row.get('project_code'))
+                        
                     if row.get('submitted_specimen_id') and row.get('icgc_specimen_id'):
-                        id_mapping.get(row['project_code'])['specimen'].update({row['submitted_specimen_id']: {'icgc': row['icgc_specimen_id']}})
+                        update_id_mapping_with_check_duplicate(row.get('submitted_specimen_id'), row.get('icgc_specimen_id'), 'pcawg', 'icgc', id_mapping, 'specimen', row.get('project_code'))
+                        
                     if row.get('submitted_sample_id') and row.get('icgc_sample_id'):
-                        id_mapping.get(row['project_code'])['sample'].update({row['submitted_sample_id']: {'icgc': row['icgc_sample_id']}})
+                        update_id_mapping_with_check_duplicate(row.get('submitted_sample_id'), row.get('icgc_sample_id'), 'pcawg', 'icgc', id_mapping, 'sample', row.get('project_code'))
+                        
 
     elif 'gdc' in id_mapping_file:
 
@@ -146,22 +151,27 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
                             'sample': {}                        
                         }
                     if row.get('participant_id')[0] and row.get('submitter_id')[0]:
-                        id_mapping.get(project)['donor'].update({row['participant_id'][0].lower(): {'tcga': row['submitter_id'][0]}})
-                        id_mapping_gdc.get(project)['donor'].update({row['submitter_id'][0]: row['participant_id'][0].lower()})
-
+                        update_id_mapping_with_check_duplicate(row.get('participant_id')[0].lower(), row.get('submitter_id')[0], 'pcawg', 'tcga', id_mapping, 'donor', project)
+                        
+                        update_id_mapping_with_check_duplicate(row.get('submitter_id')[0], row.get('participant_id')[0].lower(), 'tcga', 'pcawg', id_mapping_gdc, 'donor', project)
+                        
                     if row.get('sample_ids') and row.get('submitter_sample_ids'):
                         if len(row.get('sample_ids')) == len(row.get('submitter_sample_ids')):
                             for l in range(len(row.get('sample_ids'))):
-                                 id_mapping.get(project)['specimen'].update({row.get('sample_ids')[l].lower(): {'tcga': row.get('submitter_sample_ids')[l]}})
-                                 id_mapping_gdc.get(project)['specimen'].update({row.get('submitter_sample_ids')[l]: row.get('sample_ids')[l].lower()})
+                                update_id_mapping_with_check_duplicate(row.get('sample_ids')[l].lower(), row.get('submitter_sample_ids')[l], 'pcawg', 'tcga', id_mapping, 'specimen', project)
+                    
+                                update_id_mapping_with_check_duplicate(row.get('submitter_sample_ids')[l], row.get('sample_ids')[l].lower(), 'tcga', 'pcawg', id_mapping_gdc, 'specimen', project)
+                                
                         else: # specimen id mapping length are different
                             logger.warning('The donor: {} has mismatch number of specimens: {}, in file: {}'.format(row.get('participant_id')[0].lower(), id_mapping_file))
 
                     if row.get('aliquot_ids') and row.get('submitter_aliquot_ids'):
                         if len(row.get('aliquot_ids')) == len(row.get('submitter_aliquot_ids')):
                             for l in range(len(row.get('aliquot_ids'))):
-                                 id_mapping.get(project)['sample'].update({row.get('aliquot_ids')[l].lower(): {'tcga': row.get('submitter_aliquot_ids')[l]}})
-                                 id_mapping_gdc.get(project)['sample'].update({row.get('submitter_aliquot_ids')[l]: row.get('aliquot_ids')[l].lower()})
+                                update_id_mapping_with_check_duplicate(row.get('aliquot_ids')[l].lower(), row.get('submitter_aliquot_ids')[l], 'pcawg', 'tcga', id_mapping, 'sample', project)
+                                
+                                update_id_mapping_with_check_duplicate(row.get('submitter_aliquot_ids')[l], row.get('aliquot_ids')[l].lower(), 'tcga', 'pcawg', id_mapping_gdc, 'sample', project)
+                                
                         else: # sample id mapping length are different
                             logger.warning('The donor: {} has mismatch number of samples: {}, in file: {}'.format(row.get('participant_id')[0].lower(), id_mapping_file))
 
@@ -169,6 +179,15 @@ def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
                 else:
                     logger.warning('The project_code information is missing in the row: {}, in file: {}'.format(row, id_mapping_file))
 
+
+def update_id_mapping_with_check_duplicate(id_source, id_target, source_type, target_type, id_mapping, id_type, project):
+    if not id_mapping.get(project).get(id_type).get(id_source):
+        id_mapping.get(project).get(id_type).update({id_source: {target_type: id_target}})
+    elif not id_mapping.get(project).get(id_type).get(id_source).get(target_type):
+        id_mapping.get(project).get(id_type).get(id_source).update({target_type: id_target})
+    elif id_mapping.get(project).get(id_type).get(id_source).get(target_type) and not id_mapping.get(project).get(id_type).get(id_source).get(target_type) == id_target:
+        logger.warning('The {} {}_id: {} has duplicated mapping {}_id: {}, in use is: {}' \
+            .format(id_type, source_type, id_source, target_type, id_target, id_mapping.get(project).get(id_type).get(id_source).get(target_type)))
 
 
 
@@ -463,6 +482,9 @@ def main(argv=None):
         # read the id_mapping file into dict, the sequence for reading files are important.
         generate_id_mapping('gdc_id_mapping.jsonl', id_mapping, id_mapping_gdc)
 
+        with open('id_mapping_gdc.json', 'w') as f:
+            json.dump(id_mapping_gdc, f, indent=4)
+
         generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
         
     
@@ -471,7 +493,7 @@ def main(argv=None):
         json.dump(id_mapping, f, indent=4)
 
 
-    update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
+    #update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
 
     return 0
 
