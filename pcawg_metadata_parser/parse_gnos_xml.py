@@ -666,7 +666,8 @@ def get_id_to_populate( gnos_analysis, analysis_attrib, id_mapping, id_type_list
     if id_mapping.get(project):
         for id_type in id_type_list:
             if analysis_attrib.get('submitter_'+id_type+'_id'):
-                id_to_map = id_mapping.get(project).get(id_type).get(analysis_attrib.get('submitter_'+id_type+'_id'))
+                pcawg_id = analysis_attrib.get('submitter_'+id_type+'_id').lower() if project.endswith('-US') else analysis_attrib.get('submitter_'+id_type+'_id')
+                id_to_map = id_mapping.get(project).get(id_type).get(pcawg_id)
                 if id_to_map is not None:
                     for k, id_mapped in id_to_map.iteritems():
                         tag = k + '_' + id_type + '_id' if k == 'icgc' else k + '_' + field_map[id_type] + '_' + field_map['id']                    
