@@ -80,104 +80,94 @@ def get_analysis_attrib(gnos_analysis):
     return analysis_attrib
 
 
-def generate_id_mapping(id_mapping_file, id_mapping, id_mapping_gdc):
+def generate_id_mapping_from_tsv(id_mapping_file, id_mapping, id_mapping_gdc, source_type, target_type):
 
     logger.info('Processing id_mapping file: {}'.format(id_mapping_file))
 
-    if 'icgc' in id_mapping_file:
-
-        with open(id_mapping_file, 'r') as f:
-            reader = csv.DictReader(f, delimiter='\t')
-            for row in reader:
-                if row.get('project_code') and not id_mapping.get(row['project_code']): # initialize the non-US projects
-                    id_mapping[row['project_code']] = {
-                        'donor': {},
-                        'specimen': {},
-                        'sample': {}
-                    }
-                    id_mapping_gdc[row['project_code']] = {
-                        'donor': {},
-                        'specimen': {},
-                        'sample': {}
-                    }
-                if row.get('project_code').endswith('-US'): #TCGA projects: use tcga_barcode to find the pcawg_id first
-                    for id_type in ['donor', 'specimen', 'sample']:
-                        if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id'): 
-                            id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
-                            id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
-                            if id_mapping_type and id_mapping_gdc_type:                                
-                                if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')).get('pcawg')):
-                                    id_source = id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')).get('pcawg')
-                                    id_target = row.get('icgc_' + id_type + '_id')
-                                    update_id_mapping_with_check_duplicate(id_source, id_target, 'pcawg', 'icgc', id_mapping, id_type, row.get('project_code'))   
-                                
-                                else:
-                                    logger.warning('No PCAWG_id mapped to TCGA_id: {} '.format(row.get('submitted_' + id_type + '_id')))
-
+    with open(id_mapping_file, 'r') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        for row in reader:
+            if row.get('project_code') and not id_mapping.get(row['project_code']): # initialize the non-US projects
+                id_mapping[row['project_code']] = {
+                    'donor': {},
+                    'specimen': {},
+                    'sample': {}
+                }
+                id_mapping_gdc[row['project_code']] = {
+                    'donor': {},
+                    'specimen': {},
+                    'sample': {}
+                }
+            if row.get('project_code').endswith('-US'): #TCGA projects: use tcga_barcode to find the pcawg_id first
+                for id_type in ['donor', 'specimen', 'sample']:
+                    if row.get('submitted_' + id_type + '_id') and row.get('icgc_' + id_type + '_id'): 
+                        id_mapping_type = id_mapping.get(row['project_code']).get(id_type)
+                        id_mapping_gdc_type = id_mapping_gdc.get(row['project_code']).get(id_type)
+                        if id_mapping_type and id_mapping_gdc_type:                                
+                            if id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')) and id_mapping_type.get(id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')).get('pcawg')):
+                                id_source = id_mapping_gdc_type.get(row.get('submitted_' + id_type + '_id')).get(source_type)
+                                id_target = row.get('icgc_' + id_type + '_id')
+                                update_id_mapping_with_check_duplicate(id_source, id_target, source_type, target_type, id_mapping, id_type, row.get('project_code'))   
+                            
                             else:
-                                logger.warning('No id_mapping information for {} in project: {} '.format(id_type, row.get('project_code')))
+                                logger.warning('No PCAWG_id mapped to TCGA_id: {} '.format(row.get('submitted_' + id_type + '_id')))
 
                         else:
-                            logger.warning('Not enough information to do the {} id mapping'.format(id_type))
+                            logger.warning('No id_mapping information for {} in project: {} '.format(id_type, row.get('project_code')))
 
+                    else:
+                        logger.warning('Not enough information to do the {} id mapping'.format(id_type))
 
-                else:    
-                    if row.get('submitted_donor_id') and row.get('icgc_donor_id'):
-                        update_id_mapping_with_check_duplicate(row.get('submitted_donor_id'), row.get('icgc_donor_id'), 'pcawg', 'icgc', id_mapping, 'donor', row.get('project_code'))
-                        
-                    if row.get('submitted_specimen_id') and row.get('icgc_specimen_id'):
-                        update_id_mapping_with_check_duplicate(row.get('submitted_specimen_id'), row.get('icgc_specimen_id'), 'pcawg', 'icgc', id_mapping, 'specimen', row.get('project_code'))
-                        
-                    if row.get('submitted_sample_id') and row.get('icgc_sample_id'):
-                        update_id_mapping_with_check_duplicate(row.get('submitted_sample_id'), row.get('icgc_sample_id'), 'pcawg', 'icgc', id_mapping, 'sample', row.get('project_code'))
-                        
+            else:
+                for id_type in ['donor', 'specimen', 'sample']: 
+                    if row.get('submitted_'+id_type+'_id') and row.get('icgc_'+id_type+'_id'):
+                        update_id_mapping_with_check_duplicate(row.get('submitted_'+id_type+'_id'), row.get('icgc_'+id_type+'_id'), source_type, target_type, id_mapping, id_type, row.get('project_code'))
+                                        
+    
 
-    elif 'gdc' in id_mapping_file:
+def generate_id_mapping_from_json(id_mapping_file, id_mapping, source_type, target_type):
 
-        with open(id_mapping_file, 'r') as f:
-            for l in f:
-                row = json.loads(l)
-                if row.get('project.project_id')[0]:
-                    project = str.split(row['project.project_id'][0], '-')[1] + '-US'
-                    if not id_mapping.get(project):
-                        id_mapping[project] = {
-                            'donor': {},
-                            'specimen': {},
-                            'sample': {}
-                        }
-                        id_mapping_gdc[project] = {
-                            'donor': {},
-                            'specimen': {},
-                            'sample': {}                        
-                        }
-                    if row.get('participant_id')[0] and row.get('submitter_id')[0]:
-                        update_id_mapping_with_check_duplicate(row.get('participant_id')[0].lower(), row.get('submitter_id')[0], 'pcawg', 'tcga', id_mapping, 'donor', project)
-                        
-                        update_id_mapping_with_check_duplicate(row.get('submitter_id')[0], row.get('participant_id')[0].lower(), 'tcga', 'pcawg', id_mapping_gdc, 'donor', project)
-                        
-                    if row.get('sample_ids') and row.get('submitter_sample_ids'):
-                        if len(row.get('sample_ids')) == len(row.get('submitter_sample_ids')):
-                            for l in range(len(row.get('sample_ids'))):
-                                update_id_mapping_with_check_duplicate(row.get('sample_ids')[l].lower(), row.get('submitter_sample_ids')[l], 'pcawg', 'tcga', id_mapping, 'specimen', project)
-                    
-                                update_id_mapping_with_check_duplicate(row.get('submitter_sample_ids')[l], row.get('sample_ids')[l].lower(), 'tcga', 'pcawg', id_mapping_gdc, 'specimen', project)
+    logger.info('Processing id_mapping file: {}'.format(id_mapping_file))
+    
+    fields_map = {
+        'pcawg':{
+            'donor': 'participant_id',
+            'specimen': 'sample_ids',
+            'sample': 'aliquot_ids'
+        },
+        'tcga':{
+            'donor': 'submitter_id',
+            'specimen': 'submitter_sample_ids',
+            'sample': 'submitter_aliquot_ids'
+        }
+    }
+    with open(id_mapping_file, 'r') as f:
+        for l in f:
+            row = json.loads(l)
+            if row.get('project.project_id')[0]:
+                project = str.split(row['project.project_id'][0], '-')[1] + '-US'
+                if not id_mapping.get(project):
+                    id_mapping[project] = {
+                        'donor': {},
+                        'specimen': {},
+                        'sample': {}
+                    }
                                 
-                        else: # specimen id mapping length are different
-                            logger.warning('The donor: {} has mismatch number of specimens: {}, in file: {}'.format(row.get('participant_id')[0].lower(), id_mapping_file))
-
-                    if row.get('aliquot_ids') and row.get('submitter_aliquot_ids'):
-                        if len(row.get('aliquot_ids')) == len(row.get('submitter_aliquot_ids')):
-                            for l in range(len(row.get('aliquot_ids'))):
-                                update_id_mapping_with_check_duplicate(row.get('aliquot_ids')[l].lower(), row.get('submitter_aliquot_ids')[l], 'pcawg', 'tcga', id_mapping, 'sample', project)
-                                
-                                update_id_mapping_with_check_duplicate(row.get('submitter_aliquot_ids')[l], row.get('aliquot_ids')[l].lower(), 'tcga', 'pcawg', id_mapping_gdc, 'sample', project)
+                for id_type in ['donor', 'specimen', 'sample']:
+                    if row.get(fields_map.get(source_type).get(id_type)) and row.get(fields_map.get(target_type).get(id_type)):
+                        if len(row.get(fields_map.get(source_type).get(id_type))) == len(row.get(fields_map.get(target_type).get(id_type))):
+                            for l in range(len(row.get(fields_map.get(source_type).get(id_type)))):
+                                id_source = row.get(fields_map.get(source_type).get(id_type))[l].lower() if source_type == 'pcawg' else row.get(fields_map.get(source_type).get(id_type))[l]
+                                id_target = row.get(fields_map.get(target_type).get(id_type))[l] if target_type == 'tcga' else row.get(fields_map.get(source_type).get(id_type))[l].lower()
+                                update_id_mapping_with_check_duplicate(id_source, id_target, source_type, target_type, id_mapping, id_type, project)
                                 
                         else: # sample id mapping length are different
-                            logger.warning('The donor: {} has mismatch number of samples: {}, in file: {}'.format(row.get('participant_id')[0].lower(), id_mapping_file))
+                            logger.warning('Donor: {} has mismatch number of mapping for {} from source to target, in file: {}' \
+                                .format(row.get(fields_map.get(source_type).get('donor')[0]), id_type, id_mapping_file))
 
 
-                else:
-                    logger.warning('The project_code information is missing in the row: {}, in file: {}'.format(row, id_mapping_file))
+            else:
+                logger.warning('The project_code information is missing in the row: {}, in file: {}'.format(row, id_mapping_file))
 
 
 def update_id_mapping_with_check_duplicate(id_source, id_target, source_type, target_type, id_mapping, id_type, project):
@@ -480,20 +470,17 @@ def main(argv=None):
     id_mapping_gdc = {} # generate the mapping dict between tcga_barcode(key) with pcawg_id(value) {tcga_barcode: pcawg_id}
     if not webservice:
         # read the id_mapping file into dict, the sequence for reading files are important.
-        generate_id_mapping('gdc_id_mapping.jsonl', id_mapping, id_mapping_gdc)
+        generate_id_mapping_from_json('gdc_id_mapping.jsonl', id_mapping, 'pcawg', 'tcga')
+        generate_id_mapping_from_json('gdc_id_mapping.jsonl', id_mapping_gdc, 'tcga', 'pcawg')
 
-        with open('id_mapping_gdc.json', 'w') as f:
-            json.dump(id_mapping_gdc, f, indent=4)
-
-        generate_id_mapping('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc)
-        
+        generate_id_mapping_from_tsv('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc, 'pcawg', 'icgc')
     
     # write id_mapping to text file for use in parse_gnos_xml.py
     with open('id_mapping.json', 'w') as f:
         json.dump(id_mapping, f, indent=4)
 
 
-    #update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
+    update_gnos_repo(metadata_dir, conf, repo, exclude_gnos_id_lists, id_mapping)
 
     return 0
 
