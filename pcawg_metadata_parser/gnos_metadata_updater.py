@@ -110,7 +110,7 @@ def generate_id_mapping_from_tsv(id_mapping_file, id_mapping, id_mapping_gdc, so
                                 update_id_mapping_with_check_duplicate(id_source, id_target, source_type, target_type, id_mapping, id_type, row.get('project_code'))   
                             
                             else:
-                                logger.warning('No PCAWG_id mapped to TCGA_id: {} '.format(row.get('submitted_' + id_type + '_id')))
+                                logger.warning('No PCAWG_id mapped to TCGA_id: {} in project {} '.format(row.get('submitted_' + id_type + '_id'), row.get('project_code')))
 
                         else:
                             logger.warning('No id_mapping information for {} in project: {} '.format(id_type, row.get('project_code')))
