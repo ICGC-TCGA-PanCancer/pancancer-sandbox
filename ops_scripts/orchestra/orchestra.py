@@ -91,7 +91,8 @@ def HostList():
             # Try to get the donor name
             try:
                 donor = urllib2.urlopen("http://%s:9009/lastini" % ip, timeout=TIMEOUT).read().strip()
-                if len(donor) == 0:
+                #donor = ""
+		if len(donor) == 0:
                     donor = "Unknown"
             except:
                 donor = "Unknown"
@@ -149,9 +150,9 @@ def SuccessContainers(ip):
     try:
         data = urllib2.urlopen("http://%s:9009/success" % ip, timeout=TIMEOUT).read().strip()
     except:
-        data = "No successful workflow runs yet!"
+        data = "CID FILE NOT FOUND!"
     if len(data.strip()) == 0:
-        data = "No successful workflow runs yet!"
+        data = "CID FILE NOT FOUND!"
     return data.split('\n')
 
 def HasFailed(ip):
@@ -159,8 +160,8 @@ def HasFailed(ip):
     success = SuccessContainers(ip)
     last = LastContainer(ip)
     if last in success:
-        return True
-    return False
+        return False
+    return True
 
 def Schedule(ip):
     """ Processes the schedule command """
