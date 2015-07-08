@@ -158,7 +158,7 @@ def generate_id_mapping_from_json(id_mapping_file, id_mapping, source_type, targ
                         if len(row.get(fields_map.get(source_type).get(id_type))) == len(row.get(fields_map.get(target_type).get(id_type))):
                             for l in range(len(row.get(fields_map.get(source_type).get(id_type)))):
                                 id_source = row.get(fields_map.get(source_type).get(id_type))[l].lower() if source_type == 'pcawg' else row.get(fields_map.get(source_type).get(id_type))[l]
-                                id_target = row.get(fields_map.get(target_type).get(id_type))[l] if target_type == 'tcga' else row.get(fields_map.get(source_type).get(id_type))[l].lower()
+                                id_target = row.get(fields_map.get(target_type).get(id_type))[l] if target_type == 'tcga' else row.get(fields_map.get(target_type).get(id_type))[l].lower()
                                 update_id_mapping_with_check_duplicate(id_source, id_target, source_type, target_type, id_mapping, id_type, project)
                                 
                         else: # sample id mapping length are different
@@ -476,6 +476,9 @@ def main(argv=None):
         generate_id_mapping_from_tsv('pc_id_mapping-icgc.tsv', id_mapping, id_mapping_gdc, 'pcawg', 'icgc')
     
     # write id_mapping to text file for use in parse_gnos_xml.py
+    with open('id_mapping_gdc.json', 'w') as f:
+        json.dump(id_mapping_gdc, f, indent=4)
+
     with open('id_mapping.json', 'w') as f:
         json.dump(id_mapping, f, indent=4)
 
