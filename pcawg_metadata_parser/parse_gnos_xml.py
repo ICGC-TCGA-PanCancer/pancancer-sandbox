@@ -1341,8 +1341,19 @@ def add_alignment_status_to_donor(donor, aggregated_bam_info):
                     )
         elif 'tumour' in alignment_status.get('dcc_specimen_type').lower(): # tumour specimen
             if not donor.get('tumor_alignment_status'):
-                donor['tumor_alignment_status'] = []
+                donor['tumor_alignment_status'] = []             
+                _tmp_sample_id = []
             donor['tumor_alignment_status'].append(reorganize_unaligned_bam_info(alignment_status))
+
+            if alignment_status.get('submitter_sample_id') not in _tmp_sample_id:               
+                _tmp_sample_id.append(alignment_status.get('submitter_sample_id'))
+            else:
+                index = _tmp_sample_id.index(alignment_status.get('submitter_sample_id'))
+                logger.warning('donor: {} has more than one aliquot_ids in tumour with the same submitter_sample_id: {}, one aliquot_id: {}, additional aliquot_id found: {}'
+                        .format(donor.get('donor_unique_id'),
+                                alignment_status.get('submitter_sample_id'),
+                                donor.get('tumor_alignment_status')[index].get('aliquot_id'),
+                                aliquot_id))
         else:
             logger.warning('invalid specimen type: {} in donor: {} with aliquot_id: {}'
                     .format(alignment_status.get('dcc_specimen_type'), donor.get('donor_unique_id'), aliquot_id)
