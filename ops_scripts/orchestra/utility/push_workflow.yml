@@ -39,11 +39,11 @@
     file: dest=/workflows mode=755 owner={{ user }} group={{ user }} state=directory
 
   - name: Copy workflow data to remote machine from launcher (Download to your launcher first!)
-    sudo: {{ user }}
+    sudo: "{{ user }}"
     copy: src=../workflows/{{ workflow_name }}.zip dest=/workflows/{{ workflow_name }}.zip owner={{ user }} group={{ user }} mode=0700
 
   - name: Download Seqware support jar
-    sudo: {{ user }}
+    sudo: "{{ user }}"
     get_url: url=https://seqwaremaven.oicr.on.ca/artifactory/seqware-release/com/github/seqware/seqware-distribution/1.1.1/seqware-distribution-1.1.1-full.jar dest=/workflows/seqware-distribution-1.1.1-full.jar mode=0770
 
   - name: Install Java
@@ -53,5 +53,5 @@
       - openjdk-7-jre-headless
 
   - name: Install Workflow
-    sudo: {{ user }}
+    sudo: "{{ user }}"
     command: chdir=/workflows  java -cp seqware-distribution-1.1.1-full.jar net.sourceforge.seqware.pipeline.tools.UnZip --input-zip {{ workflow_name }}.zip --output-dir  {{ workflow_name }}
