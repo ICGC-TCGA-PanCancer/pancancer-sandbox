@@ -31,7 +31,7 @@
 
   - name: Don't bother installing if the workflow is already present on the remote machine
     fail: msg="The workflow is already present on this host."
-    when: workflow_folder.exists == True
+    when: workflow_folder.stat.exists == True
 
   - name: Create remote workflows folder
     sudo: True
