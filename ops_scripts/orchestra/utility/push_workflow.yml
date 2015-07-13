@@ -18,7 +18,7 @@
   - stat: path=/media/large_volume/tabix/data
     register: tabix_media
 
-  - state: path=/workflows/{{ workflow_name }}
+  - stat: path=/workflows/{{ workflow_name }}
     register: workflow_folder
 
   - name: Do not install on a launcher machine -- don't schedule workflows
