@@ -54,5 +54,4 @@
 
   - name: Install Workflow
     sudo: {{ user }}
-    command: chdir=/workflows
-    java -cp seqware-distribution-1.1.1-full.jar net.sourceforge.seqware.pipeline.tools.UnZip --input-zip {{ workflow_name }}.zip --output-dir  {{ workflow_name }}
+    command: chdir=/workflows  java -cp seqware-distribution-1.1.1-full.jar net.sourceforge.seqware.pipeline.tools.UnZip --input-zip {{ workflow_name }}.zip --output-dir  {{ workflow_name }}
