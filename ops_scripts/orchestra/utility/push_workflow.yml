@@ -18,6 +18,9 @@
   - stat: path=/media/large_volume/tabix/data
     register: tabix_media
 
+  - state: path=/workflows/{{ workflow_name }}
+    register: workflow_folder
+
   - name: Do not install on a launcher machine -- don't schedule workflows
     fail: msg="This is machine is an orchestra manager, not installing the webservice."
     when: orchestra_symlink.stat.exists == True
@@ -25,6 +28,10 @@
   - name: Do not install on a tabix server -- don't schedule workflows
     fail: msg="This is machine is a tabix server, not installing the webservice."
     when: tabix_media.stat.exists == True
+
+  - name: Don't bother installing if the workflow is already present on the remote machine
+    fail: msg="The workflow is already present on this host."
+    when: workflow_folder.exists == True
 
   - name: Create remote workflows folder
     sudo: True
