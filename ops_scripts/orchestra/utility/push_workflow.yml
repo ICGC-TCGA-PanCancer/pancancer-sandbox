@@ -1,0 +1,51 @@
+---
+
+- hosts: all
+  tasks:
+
+  - name: Set playbook variables
+  - set_fact:
+      workflow_name: "Workflow_Bundle_DEWrapperWorkflow_1.0.2_SeqWare_1.1.0"
+      user: "ubuntu"
+
+  - name: Confirm docker is installed
+    sudo: True
+    command: docker ps
+
+  - stat: path=/bin/orchestra
+    register: orchestra_symlink
+
+  - stat: path=/media/large_volume/tabix/data
+    register: tabix_media
+
+  - name: Do not install on a launcher machine -- don't schedule workflows
+    fail: msg="This is machine is an orchestra manager, not installing the webservice."
+    when: orchestra_symlink.stat.exists == True
+
+  - name: Do not install on a tabix server -- don't schedule workflows
+    fail: msg="This is machine is a tabix server, not installing the webservice."
+    when: tabix_media.stat.exists == True
+
+  - name: Create remote workflows folder
+    sudo: True
+    ignore_errors: yes
+    file: dest=/workflows mode=755 owner={{ user }} group={{ user }} state=directory
+
+  - name: Copy workflow data to remote machine from launcher (Download to your launcher first!)
+    sudo: {{ user }}
+    copy: src=../workflows/{{ workflow_name }}.zip dest=/workflows/{{ workflow_name }}.zip owner={{ user }} group={{ user }} mode=0700
+
+  - name: Download Seqware support jar
+    sudo: {{ user }}
+    get_url: url=https://seqwaremaven.oicr.on.ca/artifactory/seqware-release/com/github/seqware/seqware-distribution/1.1.1/seqware-distribution-1.1.1-full.jar dest=/workflows/seqware-distribution-1.1.1-full.jar mode=0770
+
+  - name: Install Java
+    sudo: True
+    apt: name={{ item }} state=latest update_cache=yes
+    with_items:
+      - openjdk-7-jre-headless
+
+  - name: Install Workflow
+    sudo: {{ user }}
+    command: chdir=/workflows
+    java -cp seqware-distribution-1.1.1-full.jar net.sourceforge.seqware.pipeline.tools.UnZip --input-zip {{ workflow_name }}.zip --output-dir  {{ workflow_name }}
