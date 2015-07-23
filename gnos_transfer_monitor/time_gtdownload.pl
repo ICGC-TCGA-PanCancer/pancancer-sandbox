@@ -174,12 +174,12 @@ sub merge_with_s3 {
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime();
   $mon++;
   $year+=1900;
-   #my $date = "$year$mon$mday.$hour:$min:$sec";
+  #my $date = "$year$mon$mday.$hour:$min:$sec";
    my $date = $year;
 
    $date .= ($mon < 10)? "0$mon":$mon;
-   $date .= ($mday < 10)? "0$mday":$mday;
-   $date .= '.';
+   $date .= ($nday < 10)? "0$nday":$nday;
+   $date . = '.';
    $date .= ($hour < 10)? "0$hour:":"$hour:";
    $date .= ($min < 10)? "0$min:":"$min:";
    $date .= ($sec < 10)? "0$sec":$sec;
@@ -189,7 +189,6 @@ sub merge_with_s3 {
   my $old = read_json("old.transfer_timing.json");
   merge_json($old, $d, $date, $test_region, "new.transfer_timing.json");
   system("s3cmd put --force new.transfer_timing.json s3://pancancer-site-data/transfer_timing.json");
-  system("s3cmd setacl -P s3://pancancer-site-data/transfer_timing.json");
 }
 
 sub merge_json {

@@ -7,13 +7,15 @@
         <meta http-equiv="content-type" content="text/html;charset=utf-8" />
         <meta name="generator" content="Geany 1.23.1" />
         <meta charset="utf-8" http-equiv="refresh" content="600">
-        <script src="http://d3js.org/d3.v3.min.js"></script>
-        <script src="http://d3js.org/topojson.v1.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="http://pancancer.info/style1.css">
-        <!-- I recommend you host this file on your own, since this will change without warning -->
-        <script src="http://datamaps.github.io/scripts/datamaps.world.min.js?v=1"></script>
-        <link rel="stylesheet" type="text/css" href="http://bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-        <meta charset="utf-8" http-equiv="refresh" content="600">
+	<link rel="shortcut icon" href="https://icgc.org/files/org_sys/pan.png">
+        <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
+        <script type="text/javascript" src="http://datamaps.github.io/scripts/datamaps.all.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript" src="http://bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="style2.css">
+        <link rel="stylesheet" type="text/css" href="http://bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">	
 </head>
 <style>
         #headere{
@@ -40,20 +42,10 @@
 </script>
 <center>
 
-                 <div id="headere">
-                         <h1 style="float:left;margin-left:10px;font-size:25px;">PANCANCER.INFO</h1>
-                         <div id="inside">
-                 <ul class="tab-links">
-        <li><a href="data_freeze">Data Freeze</a></li>
-                                <li><a href="uploads.html">Uploads</a></li>
-                                <li><a href="index.html">Alignments</a></li>
-        <li><a href="qc">QC Metrics</a></li>
-        <li><a href="trajectory">Trajectory</a></li>
-        <li><a href="transfers.html">Transfers</a></li>
-                 </ul>
-                 </div>
-                 </div>
-
+  <div id="pancancer-header"></div>
+  <script type="text/javascript">
+    $("#pancancer-header").load("header.html");
+  </script>
 
 
   <h2>GNOS Transfer Speeds</h2>
@@ -252,7 +244,7 @@
 
 
 <p>
-<table name ="x1" id="rounded-corner" summary="">
+<br><table name ="x1" id="rounded-corner" summary="">
 <thead>
 <tr>
 <th>Site</th>
@@ -326,11 +318,219 @@
 
 </table>
 </p>
+<!--
+<div id ="chart[% region FILTER ucfirst %]">
+	<h3>[% region FILTER ucfirst %] MB/s</h3>
+</div>
+-->
 </div>
 
 [%  END %]
 [%  END %]
 
+<script type="text/javascript">
+                        function charts(data,label,popup,spot,maxnum,num){
+                        //creates the line chart
+                          var margin = {top: 20, right: 55, bottom: 160, left: 40},
+                                  width  = 800,
+                                  height = 250;
+
+                          var x = d3.scale.ordinal()
+                                  .rangeRoundBands([0, width], .1);
+
+                          var y = d3.scale.linear()
+                                  .rangeRound([height, 0]);
+
+                          var xAxis = d3.svg.axis()
+                                  .scale(x)
+                                  .ticks(20)
+                                  .orient("bottom");
+
+                          var yAxis = d3.svg.axis()
+                                  .scale(y)
+                                  .orient("left");
+
+                          var line = d3.svg.line()
+                                  .interpolate("linear")
+                                  .x(function (d) { return x(d.label) + x.rangeBand() / 2; })
+                                  .y(function (d) { return y(d.value); });
+
+                          var color = d3.scale.ordinal()
+                                  .range(["#001c9c","#7F5217","#475003","#9c8305","#d3c47c","#800000","#6C007D","#63AFD0","#FF0000","#FF00F7","#FAF569","#00FF66","#009891"]);
+
+                          var svg = d3.select("#chart"+spot).append("svg")
+                                  .attr("id","svg"+num)
+                                  .attr("width",  width  + margin.left + margin.right)
+                                  .attr("height", height + margin.top  + margin.bottom)
+                                  .append("g")
+                                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                          //reading in the data
+                          d3.csv(""+data, function (error, data) {
+
+                                var labelVar = 'quarter';
+                                var varNames = d3.keys(data[0]).filter(function (key) { return key !== labelVar;});
+                                color.domain(varNames);
+
+                                var seriesData = varNames.map(function (name) {
+                                  return {
+                                        name: name,
+                                        values: data.map(function (d) {
+                                          return {name: name, label: d[labelVar], value: +d[name]};
+                                        })
+                                  };
+                                });
+
+                                x.domain(data.map(function (d) { return d.quarter; }));
+
+                                //if (maxnum == 1){
+                                //      y.domain([0,100]);
+                                //      }
+                                //else {
+                                //y.domain([0,d3.max(seriesData, function (c) {
+                                //      return d3.max(c.values, function (d) { return d.value; });
+                                //      })
+                                //  ]);
+                                //}
+                                y.domain([0,
+
+                                    d3.max(seriesData, function (c) {
+                                      return d3.max(c.values, function (d) { return d.value; });
+                                    })
+                                ]);
+
+                                //var threshold = 4150;
+
+                                //var target = svg.append("line")
+                                  //      .attr("x1", 0)
+                                    //    .attr("y1", y(threshold))
+                                      //  .attr("x2", width)
+                                       // .attr("y2", y(threshold))
+                                        //.attr("stroke-width", 2)
+                                       //.style("stroke-dasharray", ("3, 3"))
+                                        //.attr("stroke", "red");
+
+                                svg.append("g")
+                                        .attr("class", "x axis")
+                                        .attr("transform", "translate(0," + height + ")")
+                                        .call(xAxis)
+                                        .selectAll("text")
+                                //.call(wrap, x.rangeBand())
+                                        .style("text-anchor", "end")
+                                        .attr("dx", "-.8em")
+                                        .attr("dy", ".15em")
+                                        .attr("transform", function(d) {
+                                                return "rotate(-70)"
+                                                });
+
+                                svg.append("g")
+                                        .attr("class", "y axis")
+                                        .call(yAxis)
+                                        .append("text")
+                                        .attr("transform", "rotate(-90)")
+                                        .attr("y", 6)
+                                       .attr("dy", ".71em")
+                                        .style("text-anchor", "end")
+                                        .text(""+label);
+
+                                var series = svg.selectAll(".series")
+                                        .data(seriesData)
+                                        .enter().append("g")
+                                        .attr("class", "series");
+
+                                series.append("path")
+                                  .attr("class", "line")
+                                  .attr("d", function (d) { return line(d.values); })
+                                  .style("stroke", function (d) { return color(d.name); })
+                                  .style("stroke-width", "4px")
+                                  .style("fill", "none")
+
+                                series.selectAll(".point")
+                                  .data(function (d) { return d.values; })
+                                  .enter().append("circle")
+                                   .attr("class", "point")
+                                   .attr("cx", function (d) { return x(d.label) + x.rangeBand()/2; })
+                                   .attr("cy", function (d) { return y(d.value); })
+                                   .attr("r", "5px")
+                                   .style("fill", function (d) { return color(d.name); })
+                                   .style("stroke", "grey")
+                                   .style("stroke-width", "2px")
+                                   .on("mouseover", function (d) { showPopover.call(this, d); })
+                                   .on("mouseout",  function (d) { removePopovers(); })
+
+                                var legend = svg.selectAll(".legend")
+                                        .data(varNames.slice().reverse())
+                                  .enter().append("g")
+                                        .attr("class", "legend")
+                                        .attr("transform", function (d, i) { return "translate(55," + i * 20 + ")"; });
+
+                                legend.append("rect")
+                                        .attr("x", width - 10)
+                                        .attr("width", 10)
+                                        .attr("height", 10)
+                                        .style("fill", color)
+                                        .style("stroke", "grey");
+
+                                legend.append("text")
+                                        .attr("x", width - 12)
+                                        .attr("y", 6)
+                                        .attr("dy", ".35em")
+                                        .style("text-anchor", "end")
+                                        .text(function (d) { return d; });
+
+                                //handles the hover aspect
+                                function removePopovers () {
+                                  $('.popover').each(function() {
+                                        $(this).remove();
+                                  });
+                                }
+
+                                function showPopover (d) {
+                                  $(this).popover({
+                                        title: d.name,
+                                        placement: 'auto top',
+                                        container: 'body',
+                                        trigger: 'manual',
+                                        html : true,
+                                        content: function() {
+                                          return "Date: " + d.label +
+                                                         "<br/>"+popup+ ": " + d3.format(",")(d.value ? d.value: d.y1 - d.y0); }
+                                  });
+                                  $(this).popover('show')
+                                }
+
+                                //rotates the x-axis label
+                                function wrap(text, width) {
+                                  text.each(function() {
+                                        var text = d3.select(this),
+                                                words = text.text().split(/\s+/).reverse(),
+                                                word,
+                                                line = [],
+                                                lineNumber = 0,
+                                                lineHeight = 1.1, // ems
+                                                y = text.attr("y"),
+                                                dy = parseFloat(text.attr("dy")),
+                                                tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+while (word = words.pop()) {
+                                          line.push(word);
+                                          tspan.text(line.join(" "));
+
+                                          if (tspan.node().getComputedTextLength() > width) {
+                                                line.pop();
+                                                tspan.text(line.join(" "));
+
+                                                line = [word];
+                                                tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                                  }
+                                 }
+                                });
+                           }
+                          });
+                  }
+charts("tokyo_mbs.csv","MB/s","MB/s","Tokyo",1,1);
+charts("ireland_mbs.csv","MB/s","MB/s","Ireland",1,1);
+charts("virginia_mbs.csv","MB/s","MB/s","Virginia",1,1);
+</script>
 </center>
 
 <!--

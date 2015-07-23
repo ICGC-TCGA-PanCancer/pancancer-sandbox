@@ -1,0 +1,46 @@
+# YAML for settings
+
+output_dir: gnos_metadata
+
+gnos_repos:
+  - 
+    repo_location: Seoul
+    repo_code: etri
+    base_url: https://gtrepo-etri.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: London
+    repo_code: ebi
+    base_url: https://gtrepo-ebi.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: Barcelona
+    repo_code: bsc
+    base_url: https://gtrepo-bsc.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: Heidelberg
+    repo_code: dkfz
+    base_url: https://gtrepo-dkfz.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: Tokyo
+    repo_code: riken
+    base_url: https://gtrepo-riken.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: Chicago (ICGC)
+    repo_code: osdc-icgc
+    base_url: https://gtrepo-osdc-icgc.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: Chicago (TCGA)
+    repo_code: osdc-tcga
+    base_url: https://gtrepo-osdc-tcga.annailabs.com/
+    cgquery_para: study=*
+  - 
+    repo_location: Santa Cruz
+    repo_code: cghub
+    base_url: https://cghub.ucsc.edu/
+    cgquery_para: study=PCAWG\ 2.0
+

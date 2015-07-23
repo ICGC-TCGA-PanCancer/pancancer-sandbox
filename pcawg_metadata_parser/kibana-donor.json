@@ -1,0 +1,633 @@
+{
+  "index": {
+    "default": "p_150103030642/donor",
+    "pattern": "[logstash-]YYYY.MM.DD",
+    "warm_fields": false,
+    "interval": "none"
+  },
+  "style": "light",
+  "rows": [
+    {
+      "notice": false,
+      "collapsable": true,
+      "collapse": false,
+      "title": "Graph",
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 20,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 3,
+          "title": "Original GNOS Repo Assignment",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "original_gnos_assignment",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "count"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 10,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 4,
+          "title": "GNOS repos with complete alignment set available",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "gnos_repos_with_complete_alignment_set",
+          "other": true,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "error": false,
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "order": "count"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 80,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 5,
+          "title": "Project",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "dcc_project_code",
+          "other": true,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "count"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 15,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Normal specimen aligned",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_normal_specimen_aligned",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Tumor specimens aligned",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.are_all_tumor_specimens_aligned",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is Train2 Pilot",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_train2_pilot",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is Train2 Donor",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_train2_donor",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is donor blacklisted",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_donor_blacklisted",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 30,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Is manual QC failed",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "flags.is_manual_qc_failed",
+          "other": false,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "bar",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 20,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 3,
+          "title": "Sequencing center",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "sequencing_center",
+          "other": true,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "pie",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": true,
+          "error": false,
+          "order": "count"
+        },
+        {
+          "labels": true,
+          "tmode": "terms",
+          "valuefield": "",
+          "exclude": [],
+          "spyable": true,
+          "size": 10,
+          "style": {
+            "font-size": "10pt"
+          },
+          "span": 2,
+          "title": "Aligned tumor specimen counts",
+          "tilt": false,
+          "arrangement": "horizontal",
+          "field": "aligned_tumor_specimen_aliquot_counts",
+          "other": true,
+          "loadingEditor": false,
+          "type": "terms",
+          "missing": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "editable": true,
+          "chart": "table",
+          "counter_pos": "above",
+          "tstat": "total",
+          "donut": false,
+          "error": false,
+          "order": "term"
+        },
+        {
+          "value_name": "Value",
+          "style": {
+            "font-size": "24pt"
+          },
+          "sort_field": "",
+          "span": 3,
+          "spyable": true,
+          "title": "Normal aligned BAM size stats",
+          "format": "number",
+          "display_breakdown": "yes",
+          "editable": true,
+          "field": "normal_specimen.bam_file_size",
+          "label_name": "Query",
+          "mode": "count",
+          "error": false,
+          "show": {
+            "count": true,
+            "min": true,
+            "sum_of_squares": false,
+            "max": true,
+            "std_deviation": false,
+            "variance": false,
+            "total": true,
+            "mean": true
+          },
+          "sort_reverse": false,
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "type": "stats"
+        }
+      ]
+    },
+    {
+      "notice": false,
+      "collapsable": true,
+      "collapse": false,
+      "title": "Events",
+      "editable": true,
+      "height": "650px",
+      "panels": [
+        {
+          "sort": [
+            "gnos_study",
+            "asc"
+          ],
+          "header": true,
+          "trimFactor": 300,
+          "spyable": true,
+          "field_list": true,
+          "size": 20,
+          "all_fields": false,
+          "style": {
+            "font-size": "9pt"
+          },
+          "span": 12,
+          "title": "Documents",
+          "pages": 5,
+          "type": "table",
+          "status": "Stable",
+          "error": false,
+          "editable": true,
+          "offset": 0,
+          "group": [
+            "default"
+          ],
+          "overflow": "min-height",
+          "normTimes": true,
+          "localTime": false,
+          "sortable": true,
+          "fields": [
+            "donor_unique_id",
+            "gnos_study",
+            "normal_specimen.aliquot_id",
+            "sequencing_center",
+            "all_tumor_specimen_aliquots",
+            "gnos_repos_with_complete_alignment_set"
+          ],
+          "paging": true,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ]
+          },
+          "timeField": "@timestamp",
+          "highlight": []
+        }
+      ]
+    }
+  ],
+  "title": "PCAWG Donors (beta)",
+  "failover": false,
+  "editable": true,
+  "refresh": false,
+  "loader": {
+    "load_gist": true,
+    "hide": false,
+    "save_temp": true,
+    "load_elasticsearch_size": 20,
+    "load_local": true,
+    "save_temp_ttl": "30d",
+    "load_elasticsearch": true,
+    "save_local": true,
+    "save_temp_ttl_enable": true,
+    "save_elasticsearch": true,
+    "save_gist": false,
+    "save_default": true
+  },
+  "pulldowns": [
+    {
+      "notice": false,
+      "enable": true,
+      "collapse": true,
+      "pinned": true,
+      "query": "*",
+      "history": [],
+      "type": "query",
+      "remember": 10
+    },
+    {
+      "notice": true,
+      "enable": true,
+      "type": "filtering",
+      "collapse": false
+    }
+  ],
+  "nav": [
+    {
+      "status": "Stable",
+      "notice": false,
+      "enable": true,
+      "collapse": false,
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "filter_id": 4,
+      "timefield": "@timestamp",
+      "now": true,
+      "type": "timepicker"
+    }
+  ],
+  "services": {
+    "filter": {
+      "list": {
+        "0": {
+          "type": "terms",
+          "field": "flags.is_train2_pilot",
+          "value": "T",
+          "mandate": "must",
+          "active": false,
+          "alias": "",
+          "id": 0
+        },
+        "1": {
+          "field": "flags.is_normal_specimen_aligned",
+          "value": "T",
+          "alias": "",
+          "mandate": "must",
+          "active": true,
+          "type": "terms",
+          "id": 1
+        },
+        "2": {
+          "type": "terms",
+          "field": "flags.is_train2_donor",
+          "value": "T",
+          "mandate": "must",
+          "active": false,
+          "alias": "",
+          "id": 2
+        },
+        "3": {
+          "field": "flags.are_all_tumor_specimens_aligned",
+          "value": "T",
+          "alias": "",
+          "mandate": "must",
+          "active": true,
+          "type": "terms",
+          "id": 3
+        },
+        "4": {
+          "type": "terms",
+          "field": "flags.is_manual_qc_failed",
+          "value": "T",
+          "mandate": "mustNot",
+          "active": false,
+          "alias": "",
+          "id": 4
+        },
+        "5": {
+          "type": "terms",
+          "field": "flags.is_donor_blacklisted",
+          "value": "T",
+          "mandate": "mustNot",
+          "active": false,
+          "alias": "",
+          "id": 5
+        }
+      },
+      "ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "query": {
+      "list": {
+        "0": {
+          "enable": true,
+          "pin": false,
+          "color": "#7EB26D",
+          "alias": "",
+          "query": "*",
+          "type": "lucene",
+          "id": 0
+        }
+      },
+      "ids": [
+        0
+      ]
+    }
+  },
+  "panel_hints": true
+}
