@@ -13,7 +13,7 @@ use Template;
 #   USAGE   #
 #############
 
-if (scalar(@ARGV) < 0 || scalar(@ARGV) > 16) {
+if (scalar(@ARGV) < 1 || scalar(@ARGV) > 16) {
   die "USAGE: perl $0 --template <template_toolkit_template> --output <output_html> [--s3-url <url_to_json_report_for_input>]\n";
 }
 
@@ -41,8 +41,36 @@ GetOptions(
 # download the JSON input report
 my $d = download_url($s3);
 
+my %month = (
+    '01' => 'Jan',
+    '02' => 'Feb',
+    '03' => 'Mar',
+    '04' => 'Apr',
+    '05' => 'May',
+    '06' => 'Jun',
+    '07' => 'Jul',
+    '08' => 'Aug',
+    '09' => 'Sep',
+    '10' => 'Oct',
+    '11' => 'Nov',
+    '12' => 'Dec'
+    );
+
 # parse the JSON
 $d = parse_json($d);
+for my $key (keys %$d) {
+    unless ($key eq 'virginia') {
+	delete $d->{$key};
+	next;
+    }
+    for my $date (keys %{$d->{$key}}) {
+	my $data = $d->{$key}->{$date};
+	delete  $d->{$key}->{$date};
+	my ($year,$month,$day,$time) = $date =~ /^(\d{4})(\d{2})(\d{2})\.(\S+)$/;
+	$date = "$month{$month} $day, 2015, $time UTC";
+	$d->{$key}->{$date} = $data;
+    }
+}
 my $text = JSON->new->utf8->encode($d);
 
 # fill in the template
