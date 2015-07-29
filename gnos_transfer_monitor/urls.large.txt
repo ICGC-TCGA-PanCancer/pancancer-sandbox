@@ -1,3 +1,5 @@
+# Tokyo - RIKEN 8GB
+https://gtrepo-riken.annailabs.com/cghub/data/analysis/download/c121e03d-a0c6-4a8b-abae-31cd6294c299 
 # Chicago - OSDC - ICGC 787MB
 https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/0127e2de-9937-431f-b741-2b854d542c17
 # London - EBI 610MB... leave this as small since transfer is slow at 3MB/s
@@ -8,7 +10,5 @@ https://gtrepo-bsc.annailabs.com/cghub/data/analysis/download/00ab406b-96f7-4432
 https://gtrepo-dkfz.annailabs.com/cghub/data/analysis/download/104a93f4-02b2-11e4-a424-379bc49f5d8e
 # Seoul - ETRI 9GB
 https://gtrepo-etri.annailabs.com/cghub/data/analysis/download/c41e0aa0-5a03-437a-9303-14abe9350d4e
-# Tokyo - RIKEN 8GB
-https://gtrepo-riken.annailabs.com/cghub/data/analysis/download/0225be3e-da58-11e3-95bb-e787058fb7ba
 # Santa Cruz - CGHub ~30GB
 https://cghub.ucsc.edu/cghub/data/analysis/download/eaa56631-c802-47ff-8118-3ed40d10302b
