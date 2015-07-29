@@ -178,8 +178,8 @@ sub merge_with_s3 {
    my $date = $year;
 
    $date .= ($mon < 10)? "0$mon":$mon;
-   $date .= ($nday < 10)? "0$nday":$nday;
-   $date . = '.';
+   $date .= ($mday < 10)? "0$mday":$mday;
+   $date .= '.';
    $date .= ($hour < 10)? "0$hour:":"$hour:";
    $date .= ($min < 10)? "0$min:":"$min:";
    $date .= ($sec < 10)? "0$sec":$sec;

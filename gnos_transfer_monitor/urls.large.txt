@@ -3,7 +3,7 @@ https://gtrepo-osdc-icgc.annailabs.com/cghub/data/analysis/download/0127e2de-993
 # London - EBI 610MB... leave this as small since transfer is slow at 3MB/s
 https://gtrepo-ebi.annailabs.com/cghub/data/analysis/download/3226d744-c16c-11e3-aab4-5ee6a8b7bef3
 # Barcelona - BSC 852MB
-#https://gtrepo-bsc.annailabs.com/cghub/data/analysis/download/00ab406b-96f7-4432-b8be-2cbbcc75e633
+https://gtrepo-bsc.annailabs.com/cghub/data/analysis/download/00ab406b-96f7-4432-b8be-2cbbcc75e633
 # Heidelberg - DKFZ 8GB
 https://gtrepo-dkfz.annailabs.com/cghub/data/analysis/download/104a93f4-02b2-11e4-a424-379bc49f5d8e
 # Seoul - ETRI 9GB
