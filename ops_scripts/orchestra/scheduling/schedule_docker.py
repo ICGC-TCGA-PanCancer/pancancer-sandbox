@@ -186,7 +186,7 @@ for f in $files; do
         "[[ ! -e /datastore/.worker/success.cid ]] && touch /datastore/.worker/success.cid\n"
         "[[ -e /datastore/.worker/lastrun.cid ]] && rm /datastore/.worker/lastrun.cid\n"
         "sudo rm -rf /datastore/oozie*\n"
-        "date +%s >> /datastore/.worker/start.time\n"
+        "date +%%s >> /datastore/.worker/start.time\n"
         "docker run --cidfile=\"/datastore/.worker/lastrun.cid\" -d -h master -it "
         "-v /var/run/docker.sock:/var/run/docker.sock "
         "-v /datastore:/datastore "
