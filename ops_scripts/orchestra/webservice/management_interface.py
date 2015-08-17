@@ -197,6 +197,25 @@ def route_busy(path, req):
         req.wfile.write("TRUE\n")
     return
 
+def route_runtime(path, req):
+    """ HTTP route
+    Args:
+        path:   The request path being made.
+        req:    The request object from the server module.
+    Returns:
+        Nothing, handles all communication
+    """
+    headers(req)
+    fname = "/datastore/.worker/start.time"
+    if not os.path.exists(fname):
+        req.wfile.write("UNKNOWN\n")
+    else:
+        with open(fname) as f:
+            runtime = float(f.read().strip())
+            runtime = round(time.time() - runtime)
+        req.wfile.write("%d\n" % runtime)
+    return
+
 def route(path, req):
     """ HTTP request router.
     Args:
@@ -219,6 +238,8 @@ def route(path, req):
         route_busy(path, req)
     elif path == "/lastini":
         route_lastini(path, req)
+    elif path == "/runtime":
+        route_runtime(path, req)
     else:
         req.send_response(404)
         req.send_header("Content-type", "text/plain")
