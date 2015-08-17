@@ -5,7 +5,7 @@
 
   - name: Set playbook variables
     set_fact:
-      workflow_name: "Workflow_Bundle_DEWrapperWorkflow_1.0.2_SeqWare_1.1.0"
+      workflow_name: "Workflow_Bundle_DEWrapperWorkflow_1.0.6_SeqWare_1.1.1"
       user: "ubuntu"
 
   - name: Confirm docker is installed
@@ -42,9 +42,9 @@
     sudo: "{{ user }}"
     copy: src=../workflows/{{ workflow_name }}.zip dest=/workflows/{{ workflow_name }}.zip owner={{ user }} group={{ user }} mode=0700
 
-  - name: Download Seqware support jar
+  - name: Copy Seqware jar to remote machine (Download to launcher first!)
     sudo: "{{ user }}"
-    get_url: url=https://seqwaremaven.oicr.on.ca/artifactory/seqware-release/com/github/seqware/seqware-distribution/1.1.1/seqware-distribution-1.1.1-full.jar dest=/workflows/seqware-distribution-1.1.1-full.jar mode=0770
+    copy: src=../workflows/seqware-distribution-1.1.1-full.jar dest=/workflows/seqware-distribution-1.1.1-full.jar mode=0770
 
   - name: Install Java
     sudo: True
@@ -55,3 +55,4 @@
   - name: Install Workflow
     sudo: "{{ user }}"
     command: chdir=/workflows  java -cp seqware-distribution-1.1.1-full.jar net.sourceforge.seqware.pipeline.tools.UnZip --input-zip {{ workflow_name }}.zip --output-dir  {{ workflow_name }}
+
