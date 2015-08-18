@@ -16,9 +16,9 @@ GNOSKEY_LOCATION = "/home/ubuntu/.ssh/gnos.pem"
 INIFILE_LOCATION = "/home/ubuntu/central-decider-client/ini"
 
 # Workflow Selection, uncomment the workflow you want to run
-# WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
+WORKFLOW_REGEX = "(Workflow_Bundle_DEWrapperWorkflow_.*_SeqWare.*)"
 # WORKFLOW_REGEX = "(Workflow_Bundle_BWA_.*_SeqWare.*)"
-WORKFLOW_REGEX = "(Workflow_Bundle_HelloWorld_.*_SeqWare.*)"
+# WORKFLOW_REGEX = "(Workflow_Bundle_HelloWorld_.*_SeqWare.*)"
 # WORKFLOW_REGEX = "(Workflow_Bundle_SangerPancancerCgpCnIndelSnvStr_.*_SeqWare.*)"
 
 # Import Modules
@@ -84,13 +84,13 @@ def RunCommand(cmd):
     return out, err, errcode
 
 def DoubleSchedulingCheck(ini):
-    """ Avoid double scheduling samples. """
+    """ Avoid double scheduling samples. Useful for decider re-runs."""
     # Check for redundant scheduling - VERY HACKY
     all_files = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(INIFILE_LOCATION):
         for name in files:
             all_files.append(name)
-    if all_files.count(ini) > 1:
+    if all_files.count(os.path.basename(ini)) > 1:
         print "SKIPPING: %s has already been scheduled." % ini
         print "\t(Move this file out of it's ip-address folder to schedule it again.)"
         return True
@@ -179,12 +179,14 @@ for f in $files; do
    fi
    done
 
-# Launch the workflow
+# Launch the workflow run
 """
     content += (
         "[[ ! -e /datastore/.worker ]] && mkdir /datastore/.worker\n"
         "[[ ! -e /datastore/.worker/success.cid ]] && touch /datastore/.worker/success.cid\n"
         "[[ -e /datastore/.worker/lastrun.cid ]] && rm /datastore/.worker/lastrun.cid\n"
+        "sudo rm -rf /datastore/oozie*\n"
+        "date +%%s > /datastore/.worker/start.time\n"
         "docker run --cidfile=\"/datastore/.worker/lastrun.cid\" -d -h master -it "
         "-v /var/run/docker.sock:/var/run/docker.sock "
         "-v /datastore:/datastore "
@@ -192,16 +194,17 @@ for f in $files; do
         "-v /home/ubuntu/ini/%s:/workflow.ini "
         "-v /home/ubuntu/ini/gnostest.pem:/home/ubuntu/.ssh/gnos.pem "
         "seqware/seqware_whitestar_pancancer:1.1.1 "
-        "bash -c \"seqware bundle launch "
+        "bash -c \"sed 's/OOZIE_RETRY_MAX=5/OOZIE_RETRY_MAX=0/g' -i ~/.seqware/settings; seqware bundle launch "
         "--dir /workflows/${workflow} "
         "--engine whitestar --no-metadata --ini /workflow.ini && "
-        "cat /datastore/.worker/lastrun.cid >> /datastore/.worker/success.cid"
-        "\"\n" % ini
+        "cat /datastore/.worker/lastrun.cid >> /datastore/.worker/success.cid && echo \"\" >> /datastore/.worker/success.cid"
+        "\"\n" % os.path.basename(ini)
     )
     content += """
 # Copy the monitor script to the home folder for easy access
 cp ~/ini/monitor.sh ~/monitor
 """
+    content += "echo \"%s\" > /datastore/.worker/lastrun.ini" % os.path.basename(ini)
     WriteFile(os.path.join(directory, "runner.sh"), content)
     WriteFile(os.path.join(directory, "gnostest.pem"), gnoskey)
 
@@ -209,46 +212,55 @@ def FeedMachines(ips, ini_files, key=SSHKEY_LOCATION):
     """ Send an ini file to a machine and execute it. """
 
     if len(ini_files) == 0:
-        print "There are no more ini files available for scheduling."
+        print >> sys.stderr, "There are no more ini files available for scheduling."
         sys.exit(1)
-
-    print ini_files
 
     for ip in ips:
         # Check if the Machine is Busy
         if MachineBusy(ip):
             logging.warn("Machine %s reports being busy with a workflow." % ip)
-            print "WARNING: Machine %s reports being busy with a workflow." % ip
+            print >> sys.stderr, "WARNING: Machine %s reports being busy with a workflow." % ip
             continue
 
-        # Select a workflow, avoid doublescheduling things
+        # Select a workflow, avoid double scheduling things
         ini = ini_files.pop()
         while DoubleSchedulingCheck(ini):
             logging.warn("Scheduling conflict: %s was previously scheduled." % ini)
+            if len(ini_files) == 0:
+                print >> sys.stderr, "There are no more ini files available for scheduling."
+                sys.exit(1)
             ini = ini_files.pop()
 
         # Create the scheduling content for this machine
-        schedulingfolder="/home/ubuntu/scheduling"
-        CreateSchedulingContent(schedulingfolder, ini)
+        schedulingfolder="/home/ubuntu/.scheduling"
+        CreateSchedulingContent(ip, schedulingfolder, ini)
 
         # Create a single host ansible inventory file
-        content = "%s ansible_ssh_private_key_file%s\n" % (ip, key)
-        WriteFile(os.path.join(schedulingfolder, "inventory", content))
+        content = "%s ansible_ssh_private_key_file=%s\n" % (ip, key)
+        WriteFile(os.path.join(schedulingfolder, "inventory"), content)
 
         # Call ansible to execute the install
         print "Scheduling %s on %s" % (ini, ip)
         logging.info("Scheduling %s on %s" % (ini, ip))
-        shutil.copy(ini, os.path.join(schedulingfolder, ini))
-        shutil.copy(schedulingfolder, "schedule.yml")
-        mypath =  os.getcwd()
+        shutil.copy(ini, os.path.join(schedulingfolder, os.path.basename(ini)))
+        shutil.copy("schedule.yml", os.path.join(schedulingfolder, "schedule.yml"))
+        mypath = os.getcwd()
         os.chdir(schedulingfolder)
-        our, err, errcode = RunCommand("ansible-playbook -i inventory schedule.yml ")
+        out, err, errcode = RunCommand("ansible-playbook -i inventory schedule.yml ")
         os.chdir(mypath)
         if errcode:
             logging.error("Unable to schedule %s to %s." % (ini, ip))
-            print "ERROR: scheduling %s to %s" % (ini, ip)
+            print >> sys.stderr, "ERROR: scheduling %s to %s" % (ini, ip)
+            print out, err
             continue
-        shutil.move(ini, os.path.join(ip, ini))
+        # Create local ip folder and move content inside
+        ipfolder = os.path.join(INIFILE_LOCATION, ip)
+        try:
+            os.mkdir(ipfolder)
+        except OSError as e:
+            pass
+        shutil.move(os.path.join(ini), os.path.join(ipfolder, os.path.basename(ini)))
+        print >> sys.stderr, "Moved %s -> %s" % (os.path.join(ini), os.path.join(ipfolder, os.path.basename(ini)))
         logging.info("Success scheduling %s to %s." % (ini, ip))
         print "SUCCESS: scheduling %s to %s" % (ini, ip)
 
