@@ -1,4 +1,6 @@
-use strict;
+#!/usr/bin/perl
+use common::sense;
+
 use Data::Dumper;
 use Getopt::Long;
 use Data::UUID;
@@ -25,7 +27,7 @@ if (scalar(@ARGV) < 1 || scalar(@ARGV) > 16) {
 my $template;
 my $output;
 my $s3 = "s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json";
-
+#my $s3 = "s3://pancancer-site-data/transfer_timing.new.json old.transfer_timing.json";
 GetOptions(
      "template=s" => \$template,
      "output=s" => \$output,
@@ -83,10 +85,24 @@ fill_template($d, $template, $output);
 ###############
 
 sub download_url {
-  my $r = system("s3cmd get --force s3://pancancer-site-data/transfer_timing.json old.transfer_timing.json > /dev/null");
-  if ($r) { system("echo '{}' > old.transfer_timing.json"); }
-  my $old = read_json("old.transfer_timing.json");
-  return($old);
+    say STDERR "s3cmd get --force $s3";
+    my $json = 'old.transfer_timing.json';
+
+    # Take a backup of json, in case S3 download goes sideways.
+    system "cp $json /tmp/$json.$$";
+    my $r = system("s3cmd get --force $s3 > /dev/null");
+
+    # Use backup if we encounter failure
+    if ($r || -z $json) { 
+	say STDERR "s3 problem; Falling back to earlier version of JSON";
+	system("cp /tmp/$json.$$ $json");
+	if (-z $json) {
+	    system("echo '{}' > $json"); 
+	}
+    }
+
+    my $old = read_json("$json");
+    return($old);
 }
 
 sub parse_json {

@@ -6,5 +6,5 @@ cd /home/ubuntu/gitroot/pancancer-sandbox/gnos_transfer_monitor/
 
 export PATH=$PATH:/usr/local/bin
 
+perl generate_html_report.pl --template map.tt > /var/www/dev/transfers.html
 perl generate_html_report.pl --template map.tt > /var/www/transfers.html
-

@@ -45,8 +45,8 @@
 <b style="color:red">Red</b> means download is disabled or &lt; 1MB/s in this location, <b style="color:#FFC200">Amber</b> means &lt; 10 MB/s, and <b style="color:green">Green</b> means &gt; 10 MB/s.</p>
 
 <div>
-<!-- style="position:relative; width:800px; height:500px" -->
-<div id="container_[% region %]" style="width:800px; height:500px"></div>
+
+<div id="container_virginia" style="width:800px; height:500px; position:relative;"></div>
      <script>
       var colors = d3.scale.category10();
        //basic map config with custom fills, mercator projection
