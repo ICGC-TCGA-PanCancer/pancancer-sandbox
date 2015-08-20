@@ -60,48 +60,100 @@ def add_timepoint(timing,thing,repo,day,value):
         timing[thing][day][repo] = [];
     timing[thing][day][repo].append(value)
 
+def add_project_count(counts,pclass,proj):
+    """Counts files counts by project"""
+    if pclass not in counts.keys():
+        counts[pclass] = {}
+    if proj not in counts[pclass].keys():
+        counts[pclass][proj] = 0
+    counts[pclass][proj] += 1
+
+def add_item(projects,project):
+    """Keeps track of master project list"""
+    if project not in projects.keys():
+        projects[project] = 1
+
+
+
 # Once a day
 if os.path.exists(today_path):
     shutil.rmtree(today_path, ignore_errors=True)
+os.unlink(reports+'/latest')
+call_and_check("ls -al "+reports)
 os.makedirs(today_path)
 
 # Update data from github
 print "Updating s3 transfer data..."
 cwd = os.getcwd()
 os.chdir(git_path)
+call_and_check("git checkout master")
 call_and_check("git pull")
+#call_and_check("git checkout 'master@{"+today+" 23:59:59}'")
 
-print "Mapping GNOS repos and project IDs..."
+print "Mapping GNOS repos and IDs..."
 gnos_id_to_repo = {}
-gnos_id_to_project = {}
+all_repos = {}
 json_files = glob('*/*.json')
 for jfile in json_files:
-    jfile = jfile.strip()
-
     with open(jfile) as json_file:
         json_data = json.load(json_file)
         gnos_id   = json_data.get('gnos_id')
         gnos_url  = json_data.get('gnos_repo')
-        proj_code = json_data.get('project_code')
         if gnos_id:
             gnos_url  = str(gnos_url[0])
             gnos_repo = gnos_url.replace('https://gtrepo-','')
             gnos_repo = gnos_repo.replace('.annailabs.com/','')
             gnos_id_to_repo[gnos_id] = gnos_repo
-            gnos_id_to_project[gnos_id] = proj_code
+            add_item(all_repos,gnos_repo)
 
 # Get the count for each queueing category
 print "Getting file counts..."
+total_file_count = {}
 file_count = {}
+all_projects = {}
 jobs = glob('*jobs')
 for status in jobs:
     files = glob(status+'/*.json')
     count = len(files)
-    file_count[status] = count
+    total_file_count[status] = count
+    for file in files:
+        pcode = file.split('.')[1]
+        add_item(all_projects,pcode)
+        add_project_count(file_count,status,pcode)
+        
+save_json('counts.json',total_file_count)
 
-save_json('counts.json',file_count)
+# Get/save project and repo lists
+hist_json = []
+yest_json = yesterday_path + '/projects.json'
+if os.path.isfile(yest_json):
+    with open(yest_json) as json_file:
+        hist_json = json.load(json_file)
 
-# Get/save history data
+if len(hist_json) > 0:
+    for proj in hist_json:
+        add_item(all_projects,proj)
+        
+projects = all_projects.keys()
+projects.sort()
+save_json('projects.json',projects)
+
+hist_json = []
+yest_json = yesterday_path + '/repos.json'
+if os.path.isfile(yest_json):
+    with open(yest_json) as json_file:
+        hist_json = json.load(json_file)
+
+if len(hist_json) > 0:
+    for proj in hist_json:
+        add_item(all_repos,proj)
+
+repos = all_repos.keys()
+repos.sort()
+save_json('repos.json',repos)
+
+
+# Get/save count history data
 print "Getting count history..."
 hist_json = {}
 yest_json = yesterday_path + '/hist_counts.json'
