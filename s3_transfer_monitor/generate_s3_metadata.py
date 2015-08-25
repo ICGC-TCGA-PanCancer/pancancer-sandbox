@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import csv
 import json
 import shutil
@@ -17,8 +18,12 @@ def day(delta):
     else:
         return datetime.datetime.today().strftime('%Y-%m-%d')
 
-today     = day(0)
-yesterday = day(1)
+num1 = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else 0
+num2 = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 1
+
+today     = day(int(num1))
+yesterday = day(int(num2))
+print "Today is "+today
 git_base       = '/mnt/data/s3-transfer-operations/'
 git_path       = git_base + 's3-transfer-jobs'
 timing_path    = git_base + 'timing-information'
@@ -78,17 +83,22 @@ def add_item(projects,project):
 # Once a day
 if os.path.exists(today_path):
     shutil.rmtree(today_path, ignore_errors=True)
-os.unlink(reports+'/latest')
-call_and_check("ls -al "+reports)
+try:
+    os.unlink(reports+'/latest')
+except:
+    sys.stderr.write("I seem to have a problem getting rid of symlink "+reports+"/latest")
+#call_and_check("ls -al "+reports)
 os.makedirs(today_path)
 
 # Update data from github
 print "Updating s3 transfer data..."
 cwd = os.getcwd()
 os.chdir(git_path)
-call_and_check("git checkout master")
-call_and_check("git pull")
-#call_and_check("git checkout 'master@{"+today+" 23:59:59}'")
+if int(num1) == 0:
+    call_and_check("git checkout master")
+    call_and_check("git pull")
+else:
+    call_and_check("git checkout 'master@{"+today+" 23:59:59}'")
 
 print "Mapping GNOS repos and IDs..."
 gnos_id_to_repo = {}
@@ -96,7 +106,11 @@ all_repos = {}
 json_files = glob('*/*.json')
 for jfile in json_files:
     with open(jfile) as json_file:
-        json_data = json.load(json_file)
+        try:
+            json_data = json.load(json_file)
+        except:
+            sys.stderr.write("problem parsing "+git_path+"/"+jfile+"!\n")
+            continue
         gnos_id   = json_data.get('gnos_id')
         gnos_url  = json_data.get('gnos_repo')
         if gnos_id:
@@ -121,7 +135,7 @@ for status in jobs:
         add_item(all_projects,pcode)
         add_project_count(file_count,status,pcode)
         
-save_json('counts.json',total_file_count)
+save_json('counts.json',file_count)
 
 # Get/save project and repo lists
 hist_json = []
@@ -161,7 +175,8 @@ if os.path.isfile(yest_json):
     with open(yest_json) as json_file:
         hist_json = json.load(json_file)
 
-hist_json[today] = file_count
+hist_json[today] = total_file_count
+#Dumper(hist_json)
 save_json('hist_counts.json',hist_json)
 
 # Get timing information
