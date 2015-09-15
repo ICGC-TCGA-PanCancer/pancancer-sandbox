@@ -26,12 +26,6 @@ today = day(int(num1))
 yesterday = day(int(num2))
 print "Today is "+today
 
-def add_count(counts,category,pcode,count):
-    """Adds donor counts by p[roject and category"""
-    if category not in counts.keys():
-        counts[category] = {}
-    counts[category][pcode] = count
-
 def call_and_check(command):
     """wraps system call with retval check"""
     assert len(command) > 0, "command must not be empty!"
@@ -246,60 +240,6 @@ for path in clusters:
     right_now = [datetime.datetime.today().strftime('%H:%M UTC %A, %B %d')]
     Dumper(right_now)
     save_json('timestamp.json',right_now)
-
-    os.chdir('/var/www/gnos_metadata/latest/reports/s3_transfer_summary/')
-    files = glob('*.txt')
-
-    counts = {}
-    pcodes = {}
-    for file in files:
-        columns = file.split('.')
-        pcode = columns[0]
-        category = columns[1]
-        donors = sum(1 for line in open(file)) - 1
-        add_count(counts,category,pcode,donors)
-        pcodes[pcode] = 1
-        
-    projects = pcodes.keys()
-    projects.sort()
-    columns = counts.keys()
-    columns.sort()
-        
-    rows = []
-    header = []
-    header.append('Project')
-    for category in columns:
-        column = category.replace('_', ' ')
-        column = column.replace('transferred ', 'transferred, ')
-        header.append(column)
-    header.append('Total')
-    rows.append(header)
-            
-    column_total = {'Total':0}
-    for project in projects:
-        row = [project]
-        row_total = 0
-        for category in columns:
-            count_hash = counts[category]
-            if project not in count_hash.keys():
-                count_hash[project] = 0
-            row.append(count_hash[project])
-            row_total += count_hash[project]
-            if category not in column_total.keys():
-                column_total[category] = 0
-            column_total[category] += count_hash[project]
-        row.append(row_total)
-        column_total['Total'] += row_total
-        rows.append(row)
-
-    row = ['Total']
-    columns.append('Total');
-    for category in columns:
-        row.append(column_total[category])
-        print "Appending "+category+" "+str(column_total[category]);
-    rows.append(row)
-
-    save_json('s3_transfer_status.json',rows)
 
     os.chdir(reports)
     call_and_check("ln -sf "+today+" latest")
