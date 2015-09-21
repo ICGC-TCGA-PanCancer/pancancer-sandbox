@@ -1,0 +1,9 @@
+#!/bin/bash
+
+source /home/ubuntu/perl5/perlbrew/etc/bashrc
+
+cd /home/ubuntu/gitroot/pancancer-sandbox/gnos_transfer_monitor/
+
+export PATH=$PATH:/usr/local/bin
+
+perl check_outages.pl > outage_check.log 2>&1

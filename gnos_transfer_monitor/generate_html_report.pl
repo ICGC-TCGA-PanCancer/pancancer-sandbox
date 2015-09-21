@@ -79,7 +79,6 @@ my $text = JSON->new->utf8->encode($d);
 fill_template($d, $template, $output);
 
 
-
 ###############
 # SUBROUTINES #
 ###############
@@ -109,7 +108,6 @@ sub parse_json {
   my ($d) = @_;
   my $n = {};
   foreach my $site (keys %{$d}) {
-    # TODO: add averaging of max x number of previous results
     foreach my $date (sort_dates(%{$d->{$site}})) {
       $n->{$site}{$date} = $d->{$site}{$date};
       last;
@@ -193,3 +191,4 @@ sub read_json {
   my $d = $json->decode( $json_text );
   return($d);
 }
+
