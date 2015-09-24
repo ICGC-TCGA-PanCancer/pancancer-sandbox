@@ -7,7 +7,7 @@ use Data::UUID;
 use JSON;
 use Template;
 
-use constant CUTOFF => 5;
+use constant CUTOFF => 20;
 
 
 my $d = read_json('old.transfer_timing.json');
