@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 import sys
 import csv
 import json
@@ -85,14 +86,15 @@ if int(num1) == 0:
 else:
     call_and_check("git checkout 'master@{"+today+" 23:59:59}'")
 
-# More than one cluster (currently no)?
-clusters = ['/s3-transfer-jobs']
-# clusters.append ['/s3-transfer-jobs-2']
 
-for path in clusters:
-    git_path       = git_base + path
-    reports        = git_path.replace('transfer-jobs','metadata')
-    timing_path    = git_base + '/timing-information'
+types = ['Sanger-VCF','WGS-BWA']
+
+git_path       = git_base
+timing_path    = git_base + '/timing-information'
+
+for workflow_type in types:
+    type = workflow_type.replace('WGS-','')
+    reports        = git_path + '/s3-metadata/'+type
     today_path     = reports  + '/' + today
     yesterday_path = reports  + '/' + yesterday
 
@@ -106,7 +108,7 @@ for path in clusters:
         except:
             sys.stderr.write("I seem to have a problem getting rid of symlink "+reports+"/latest")
         
-    call_and_check("ls -al "+reports)
+    #call_and_check("ls -al "+reports)
 
     os.makedirs(today_path)
 
@@ -114,8 +116,12 @@ for path in clusters:
     os.chdir(git_path)
     gnos_id_to_repo = {}
     all_repos = {}
-    json_files = glob('*/*.json')
+    json_files = glob('s3-transfer-jobs-prod*/*jobs/*.json')
+    #json_files = glob('s3-transfer-jobs/*jobs/*.json')
     for jfile in json_files:
+        if not jfile.find(workflow_type) > 0:
+            continue
+
         with open(jfile) as json_file:
             try:
                 json_data = json.load(json_file)
@@ -137,12 +143,30 @@ for path in clusters:
     file_count_project = {}
     file_count_repo = {}
     all_projects = {}
-    jobs = glob('*jobs')
-    for status in jobs:
-        files = glob(status+'/*.json')
+    jobs = glob('s3-transfer-jobs-prod*/*jobs')
+    #jobs = glob('s3-transfer-jobs/*jobs')
+    regex = re.compile('s3-transfer-jobs-prod\d/');
+    #regex = re.compile('s3-transfer-jobs/');
+    global_total = 0;
+    for status_type in jobs:
+        status = regex.sub('',status_type)
+
+        all_files = glob(status_type+'/*.json')
+        files = [];
+        for jfile in all_files:
+            if jfile.find(workflow_type) > 0:
+                files.append(jfile)
+
         count = len(files)
-        total_file_count[status] = count
-        for file in files:
+        global_total += count;
+        if status not in total_file_count.keys():
+            total_file_count[status] = 0
+        total_file_count[status] += count
+        print status + " File count=" + str(count) + " running total="+str(global_total);
+        for file_path in files:
+            #print "FILEPATH "+file_path
+            file = regex.sub('',file_path);
+            #print "FILE HERE "+file
             pcode = file.split('.')[1]
             gnos_id = file.split('.')[0]
             gnos_id = gnos_id.split('/')[1]
@@ -194,8 +218,10 @@ for path in clusters:
             hist_json = json.load(json_file)
 
     hist_json[today] = total_file_count
-    #Dumper(hist_json)
+    Dumper(hist_json)
     save_json('hist_counts.json',hist_json)
+
+    Dumper(gnos_id_to_repo)
 
     # Get timing information
     print "Getting timing data..."
@@ -236,6 +262,7 @@ for path in clusters:
 
 
     save_json('timing.json',timing)
+    Dumper(timing)
 
     right_now = [datetime.datetime.today().strftime('%H:%M UTC %A, %B %d')]
     Dumper(right_now)
