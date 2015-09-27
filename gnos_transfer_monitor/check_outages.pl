@@ -7,8 +7,7 @@ use Data::UUID;
 use JSON;
 use Template;
 
-use constant CUTOFF => 20;
-
+use constant CUTOFF => 1;
 
 my $d = read_json('old.transfer_timing.json');
 my ($zeros,$slow) = check_zeros($d);
@@ -33,13 +32,13 @@ for my $zero (sort keys %$zeros) {
     $msg .= join("\n",@z) . "\n";
     my $last_date = $last_json->{$zero};
     if ($last_date) {
-	my $epoch = localtime();
-	my $elapsed = ($epoch - $last_epoch)/3600;
+	my $epoch = time;
+	my $elapsed = sprintf '%.2f', ($epoch - $last_epoch)/3600;
 	$msg .= "A previous notication for $zero was sent $elapsed hours ago at $last_date.\n";
     }
 
     $new_last_json->{$zero} = timestamp();
-    $new_last_json->{epoch} ||= localtime();
+    $new_last_json->{epoch} ||= time;
     $msg .= "\n";
 }
 
@@ -50,13 +49,14 @@ Junjun.Zhang@oicr.on.ca
 Linda.Xiang@oicr.on.ca
 Christina.Yung@oicr.on.ca
 Brian.OConnor@oicr.on.ca
+mainsworth@annaisystems.com
 /;
     open MSG, ">message.txt";
-    print MSG "This is an auto-generated email, please do not reply directly.\nContact sheldon.mckay\@gmail.com for information.\n";
+    print MSG "This is an auto-generated email, please do not reply directly.\nContact sheldon.mckay\@gmail.com for information.\n\n";
     print MSG $msg;
     close MSG;
     for my $email (@emails) {
-#	system "cat message.txt | mail -s 'GNOS slowdown TEST' $email";  
+	#system "cat message.txt | mail -s 'GNOS slowdown' $email";  
     }
     say $msg;
 }
@@ -165,7 +165,7 @@ sub check_zeros {
 	my @repos = sort keys %$nums;
 	for my $repo (@repos) {
 	    my $rate = $nums->{$repo}->{'MB/s'};
-	    $slow{$repo}++ if $rate < CUTOFF;
+	    $slow{$repo}++ if $rate <= CUTOFF;
 	    push @{$zeros->{$repo}}, "$date\t$rate MB/s";
 	}
     }
