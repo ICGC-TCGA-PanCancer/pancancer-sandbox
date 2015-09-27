@@ -84,11 +84,13 @@ if int(num1) == 0:
     call_and_check("git checkout master")
     call_and_check("git pull")
 else:
-    call_and_check("git checkout 'master@{"+today+" 23:59:59}'")
+    cmd = "git checkout `git rev-list -n 1 --before='"+today+" 23:59:59' master`"
+    call_and_check(cmd)
 
+# history for Sanger-VCF only goes back to Sept 18
+#types = ['Sanger-VCF','WGS-BWA']
 
-types = ['Sanger-VCF','WGS-BWA']
-
+types = ['Sanger-VCF']
 git_path       = git_base
 timing_path    = git_base + '/timing-information'
 
@@ -116,8 +118,14 @@ for workflow_type in types:
     os.chdir(git_path)
     gnos_id_to_repo = {}
     all_repos = {}
-    json_files = glob('s3-transfer-jobs-prod*/*jobs/*.json')
-    #json_files = glob('s3-transfer-jobs/*jobs/*.json')
+    json_files = []
+
+    new_paths = os.path.exists('s3-transfer-jobs-prod1')
+    if new_paths:
+        json_files = glob('s3-transfer-jobs-prod*/*jobs/*.json')
+    else:
+        json_files = glob('s3-transfer-jobs/*jobs/*.json')
+
     for jfile in json_files:
         if not jfile.find(workflow_type) > 0:
             continue
@@ -143,10 +151,15 @@ for workflow_type in types:
     file_count_project = {}
     file_count_repo = {}
     all_projects = {}
-    jobs = glob('s3-transfer-jobs-prod*/*jobs')
-    #jobs = glob('s3-transfer-jobs/*jobs')
-    regex = re.compile('s3-transfer-jobs-prod\d/');
-    #regex = re.compile('s3-transfer-jobs/');
+    jobs = []
+    regex = re.compile('')
+    if new_paths:
+        jobs = glob('s3-transfer-jobs-prod*/*jobs')
+        regex = re.compile('s3-transfer-jobs-prod\d/')
+    else:
+        jobs = glob('s3-transfer-jobs/*jobs')
+        regex = re.compile('s3-transfer-jobs/')
+
     global_total = 0;
     for status_type in jobs:
         status = regex.sub('',status_type)
@@ -221,8 +234,6 @@ for workflow_type in types:
     Dumper(hist_json)
     save_json('hist_counts.json',hist_json)
 
-    Dumper(gnos_id_to_repo)
-
     # Get timing information
     print "Getting timing data..."
     timing = {'download':{},'upload':{}}
@@ -262,7 +273,7 @@ for workflow_type in types:
 
 
     save_json('timing.json',timing)
-    Dumper(timing)
+    #Dumper(timing)
 
     right_now = [datetime.datetime.today().strftime('%H:%M UTC %A, %B %d')]
     Dumper(right_now)
