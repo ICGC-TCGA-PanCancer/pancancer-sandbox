@@ -88,9 +88,9 @@ else:
     call_and_check(cmd)
 
 # history for Sanger-VCF only goes back to Sept 18
-#types = ['Sanger-VCF','WGS-BWA']
+types = ['Sanger-VCF','WGS-BWA']
 
-types = ['Sanger-VCF']
+
 git_path       = git_base
 timing_path    = git_base + '/timing-information'
 

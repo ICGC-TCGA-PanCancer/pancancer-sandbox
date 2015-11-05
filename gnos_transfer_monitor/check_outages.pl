@@ -5,7 +5,8 @@ use Data::Dumper;
 use Getopt::Long;
 use Data::UUID;
 use JSON;
-use Template;
+use Email::MIME;
+use Email::Sender::Simple qw(sendmail);
 
 use constant CUTOFF => 1;
 
@@ -45,20 +46,31 @@ for my $zero (sort keys %$zeros) {
 if ($msg) {
     my @emails = qw/
 sheldon.mckay@gmail.com
+briandoconnor@gmail.com
+Brian.OConnor@oicr.on.ca
 Junjun.Zhang@oicr.on.ca
 Linda.Xiang@oicr.on.ca
 Christina.Yung@oicr.on.ca
-Brian.OConnor@oicr.on.ca
 mainsworth@annaisystems.com
 /;
-    open MSG, ">message.txt";
-    print MSG "This is an auto-generated email, please do not reply directly.\nContact sheldon.mckay\@gmail.com for information.\n\n";
-    print MSG $msg;
-    close MSG;
     for my $email (@emails) {
-	#system "cat message.txt | mail -s 'GNOS slowdown' $email";  
+	my $message = Email::MIME->create(
+	    header_str => [
+		From    => 'sheldon.mckay@gmail.com',
+		To      => $email,
+		Subject => 'GNOS slowdown',
+	    ],
+	    attributes => {
+		encoding => 'quoted-printable',
+		charset  => 'ISO-8859-1',
+	    },
+	    body_str => $msg,
+	    );
+
+
+	sendmail($message);
+	say $msg;
     }
-    say $msg;
 }
 
 
