@@ -54,6 +54,7 @@ GetOptions(
 # find all the URLs
 my $urls_hash = read_urls($url_file, \@urls);
 
+
 # run the individual URLs and report individual results
 my $url_runtimes = download_urls($urls_hash);
 
