@@ -88,7 +88,7 @@ else:
     call_and_check(cmd)
 
 # history for Sanger-VCF only goes back to Sept 18
-types = ['Sanger-VCF','WGS-BWA']
+types = ['Sanger-VCF','Dkfz_embl-VCF', 'WGS-BWA']
 
 
 git_path       = git_base
