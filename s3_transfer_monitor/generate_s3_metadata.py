@@ -87,9 +87,7 @@ else:
     cmd = "git checkout `git rev-list -n 1 --before='"+today+" 23:59:59' master`"
     call_and_check(cmd)
 
-# history for Sanger-VCF only goes back to Sept 18
-types = ['Sanger-VCF','Dkfz_embl-VCF', 'WGS-BWA']
-
+types = ['Sanger-VCF','Dkfz_embl-VCF','WGS-BWA','Muse-VCF','Broad-VCF']
 
 git_path       = git_base
 timing_path    = git_base + '/timing-information'
@@ -105,6 +103,8 @@ for workflow_type in types:
             shutil.rmtree(today_path)
         except:
             sys.stderr.write("I seem to have a problem removing "+today_path)
+
+    if os.path.islink(reports+"/latest"):
         try:
             os.unlink(reports+'/latest')
         except:
@@ -118,18 +118,21 @@ for workflow_type in types:
     os.chdir(git_path)
     gnos_id_to_repo = {}
     all_repos = {}
-    json_files = []
 
-    new_paths = os.path.exists('s3-transfer-jobs-prod1')
-    if new_paths:
-        json_files = glob('s3-transfer-jobs-prod*/*jobs/*.json')
+    json_files = glob('s3-transfer-jobs-bwa')
+    json_files.extend(glob('s3-transfer-jobs-vcf-v3/*jobs/*.json'))
+
+    if not workflow_type == 'Sanger-VCF':
+        print "I will use v1 for "+workflow_type
+        json_files.extend(glob('s3-transfer-jobs-vcf-v1/*jobs/*.json'))
     else:
-        json_files = glob('s3-transfer-jobs/*jobs/*.json')
+        print "I will ignore v1 for Sanger! (type is "+workflow_type+")"
+
 
     for jfile in json_files:
         if not jfile.find(workflow_type) > 0:
             continue
-
+        
         with open(jfile) as json_file:
             try:
                 json_data = json.load(json_file)
@@ -153,22 +156,32 @@ for workflow_type in types:
     all_projects = {}
     jobs = []
     regex = re.compile('')
-    if new_paths:
-        jobs = glob('s3-transfer-jobs-prod*/*jobs')
-        regex = re.compile('s3-transfer-jobs-prod\d/')
+
+    jobs = glob('s3-transfer-jobs-vcf-v3/*jobs')
+    jobs.extend(glob('s3-transfer-jobs-bwa/*jobs'))
+
+    if not workflow_type == 'Sanger-VCF':
+        print "I will use v1 for "+workflow_type
+        jobs.extend(glob('s3-transfer-jobs-vcf-v1/*jobs'))
     else:
-        jobs = glob('s3-transfer-jobs/*jobs')
-        regex = re.compile('s3-transfer-jobs/')
+        print "I will ignore v1 for Sanger! (type is "+workflow_type+")"
+
+    regex = re.compile('s3-transfer-jobs-\S+/')
 
     global_total = 0;
     for status_type in jobs:
+        print "JOB: "+status_type+" WORKFLOW: "+workflow_type
         status = regex.sub('',status_type)
 
         all_files = glob(status_type+'/*.json')
         files = [];
-        for jfile in all_files:
-            if jfile.find(workflow_type) > 0:
-                files.append(jfile)
+
+        if workflow_type == 'Sanger-VCF' and status_type.find('v1') > 0:
+            print "skipping Sanger "+status_type
+        else:
+            for jfile in all_files:
+                if jfile.find(workflow_type) > 0:
+                    files.append(jfile)
 
         count = len(files)
         global_total += count;
@@ -182,7 +195,9 @@ for workflow_type in types:
             #print "FILE HERE "+file
             pcode = file.split('.')[1]
             gnos_id = file.split('.')[0]
-            gnos_id = gnos_id.split('/')[1]
+            print "FILE NAME: "+file
+            print "GNOS ID: "+gnos_id
+            #gnos_id = gnos_id.split('/')[1]
             #print "GNOS ID is "+gnos_id
             gnos_repo = gnos_id_to_repo.get(gnos_id)
             add_item(all_projects,pcode)
@@ -233,47 +248,6 @@ for workflow_type in types:
     hist_json[today] = total_file_count
     Dumper(hist_json)
     save_json('hist_counts.json',hist_json)
-
-    # Get timing information
-    print "Getting timing data..."
-    timing = {'download':{},'upload':{}}
-    os.chdir(timing_path)
-    files = glob('*.json.timing')
-    for timing_file in files:
-        with open(timing_file) as infile:
-            csv_rows = csv.reader(infile)
-            for row in csv_rows:
-                if row[0] == 'gnos-id':
-                    continue
-
-                gnos_id = row[0]
-                gnos_repo = gnos_id_to_repo.get(gnos_id)
-                if not gnos_repo:
-                    break
-
-                nums = [float(t) for t in list(row)[1:12]]
-                (download_start,
-                 download_stop,
-                 download_delta,
-                 upload_start,
-                 upload_stop,
-                 upload_delta,
-                 workflow_start,
-                 workflow_stop,
-                 workflow_delta,
-                 download_size,
-                 upload_size) = nums
-
-                download_day = datetime.datetime.fromtimestamp(download_start).strftime('%Y-%m-%d')
-                download_rate = (download_size/download_delta)/1024
-                add_timepoint(timing,'download',gnos_repo,download_day,download_rate)
-                upload_day = datetime.datetime.fromtimestamp(upload_start).strftime('%Y-%m-%d')
-                upload_rate = (upload_size/upload_delta)/1024
-                add_timepoint(timing,'upload',gnos_repo,upload_day,upload_rate)
-
-
-    save_json('timing.json',timing)
-    #Dumper(timing)
 
     right_now = [datetime.datetime.today().strftime('%H:%M UTC %A, %B %d')]
     Dumper(right_now)

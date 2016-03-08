@@ -93,7 +93,10 @@ types = ['aws','collab','ucsc']
 
 for workflow in types:
     file_type = workflow
-    workflow = "oxog-"+workflow+"-jobs-test"
+    if workflow == 'collab':
+        workflow = "oxog-"+workflow+"-jobs"
+    else :
+        workflow = "oxog-"+workflow+"-jobs-test"
 
     reports        = git_path + '/oxog-metadata/' + file_type
     today_path     = reports  + '/' + today
@@ -104,6 +107,8 @@ for workflow in types:
             shutil.rmtree(today_path)
         except:
             sys.stderr.write("I seem to have a problem removing "+today_path)
+
+    if os.path.islink(reports+'/latest'):
         try:
             os.unlink(reports+'/latest')
         except:

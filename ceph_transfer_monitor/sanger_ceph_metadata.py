@@ -94,7 +94,7 @@ git_path       = git_base
 for workflow_type in types:
     file_type = 'Sanger-VCF'
 
-    reports        = git_path + '/ceph-metadata/'+file_type
+    reports        = git_path + '/ceph-metadata2/'+file_type
     today_path     = reports  + '/' + today
     yesterday_path = reports  + '/' + yesterday
 
