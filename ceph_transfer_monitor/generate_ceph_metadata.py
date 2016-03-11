@@ -73,10 +73,11 @@ def add_item(projects,project):
     if project not in projects.keys():
         projects[project] = 1
 
-git_base       = '/mnt/data/oxog-ops'
+
+git_base       = '/mnt/data/ceph_transfer_ops'
 
 # Update data from github
-print "Updating oxog data..."
+print "Updating ceph transfer data..."
 cwd = os.getcwd()
 os.chdir(git_base)
 if int(num1) == 0:
@@ -86,20 +87,14 @@ else:
     cmd = "git checkout `git rev-list -n 1 --before='"+today+" 23:59:59' master`"
     call_and_check(cmd)
 
+types = ['Sanger-VCF','Dkfz_embl-VCF','WGS-BWA','Muse-VCF','Broad-VCF']
 
-git_path = '/mnt/data/oxog-ops'
+git_path       = git_base
+timing_path    = git_base + '/timing-information'
 
-types = ['aws','collab','ucsc']
-
-for workflow in types:
-    file_type = workflow
-    if workflow == 'collab' or workflow == 'aws':
-        workflow = "oxog-"+workflow+"-jobs"
-    else :
-        workflow = "oxog-"+workflow+"-jobs-test"
-
-
-    reports        = git_path + '/oxog-metadata/' + file_type
+for workflow_type in types:
+    type = workflow_type.replace('WGS-','')
+    reports        = git_path + '/ceph-metadata/'+type
     today_path     = reports  + '/' + today
     yesterday_path = reports  + '/' + yesterday
 
@@ -109,55 +104,104 @@ for workflow in types:
         except:
             sys.stderr.write("I seem to have a problem removing "+today_path)
 
-    if os.path.islink(reports+'/latest'):
-        try:
-            os.unlink(reports+'/latest')
-        except:
-            sys.stderr.write("I seem to have a problem getting rid of symlink "+reports+"/latest")
+        if os.path.islink(reports+"/latest"):
+            try:
+                os.unlink(reports+'/latest')
+            except:
+                sys.stderr.write("I seem to have a problem getting rid of symlink "+reports+"/latest")
         
+    #call_and_check("ls -al "+reports)
+
     os.makedirs(today_path)
 
+    print "Mapping GNOS repos and IDs..."
     os.chdir(git_path)
+    gnos_id_to_repo = {}
+    all_repos = {}
 
+    json_files = glob('ceph-transfer-jobs-vcf-v3/*jobs/*Broad-VCF.json')
+    json_files.extend(glob('ceph-transfer-jobs-bwa*/*jobs/*.json'))
+
+    if not workflow_type == 'Sanger-VCF':
+        print "I will use v1 for "+workflow_type
+        json_files.extend(glob('ceph-transfer-jobs-vcf-v1/*jobs/*.json'))
+    else:
+        print "I will ignore v1 for Sanger! (type is "+workflow_type+")"
+
+    for jfile in json_files:
+        if not jfile.find(workflow_type) > 0:
+            continue
+
+        with open(jfile) as json_file:
+            try:
+                json_data = json.load(json_file)
+            except:
+                sys.stderr.write("problem parsing "+git_path+"/"+jfile+"!\n")
+                continue
+        gnos_id   = json_data.get('gnos_id')
+        gnos_url  = json_data.get('gnos_repo')
+        if gnos_id:
+            gnos_url  = str(gnos_url[0])
+            gnos_repo = gnos_url.replace('https://gtrepo-','')
+            gnos_repo = gnos_repo.replace('.annailabs.com/','')
+            gnos_id_to_repo[gnos_id] = gnos_repo
+            add_item(all_repos,gnos_repo)
+                
     # Get the count for each queueing category
     print "Getting file counts..."
     total_file_count = {}
     file_count_project = {}
+    file_count_repo = {}
     all_projects = {}
     jobs = []
-    regex = re.compile('')
 
-    jobs = glob(workflow+'/*jobs')
-    Dumper(jobs)
+    jobs = glob('ceph-transfer-jobs-bwa*/*jobs')
+    jobs.extend(glob('ceph-transfer-jobs-vcf-v3/*jobs'))
+
+    if not workflow_type == 'Sanger-VCF':
+        print "I will use v1 for "+workflow_type
+        jobs.extend(glob('ceph-transfer-jobs-vcf-v1/*jobs'))
+    else:
+        print "I will ignore v1 for Sanger"
+
+    regex = re.compile('ceph-transfer-jobs-\S+/')
 
     global_total = 0;
     for status_type in jobs:
-        print "STATUS TYPE "+status_type+" WORKFLOW "+workflow
-        all_files = glob(status_type+'/*.json')
-        status_type = status_type.split('/')[1]
+        print "JOB IS "+status_type
+        status = regex.sub('',status_type)
 
+        all_files = glob(status_type+'/*.json')
         files = [];
         for jfile in all_files:
-            jfile = jfile.replace(workflow+'/','')
-            files.append(jfile)
+            if jfile.find(workflow_type) > 0:
+                print "JFILE KEPT: "+jfile
+                print "WORKFLOW: "+workflow_type
+                files.append(jfile)
 
         count = len(files)
         global_total += count;
-        if status_type not in total_file_count.keys():
-            total_file_count[status_type] = 0
-        total_file_count[status_type] += count
-
+        if status not in total_file_count.keys():
+            total_file_count[status] = 0
+        total_file_count[status] += count
+        print status + " File count=" + str(count) + " running total="+str(global_total);
         for file_path in files:
+            #print "FILEPATH "+file_path
             file = regex.sub('',file_path);
-            root = file.split('.')[0]
-            pcode = root.split('/')[-1]
-            donor_id = file.split('.')[1]
-            print "PROJECT is "+pcode
-            print "DONOR is "+donor_id
+            #print "FILE HERE "+file
+            pcode = file.split('.')[1]
+            gnos_id = file.split('.')[0]
+            print "FILE NAME: "+file
+            print "GNOS ID: "+gnos_id
+            #gnos_id = gnos_id.split('/')[1]
+            #print "GNOS ID is "+gnos_id
+            gnos_repo = gnos_id_to_repo.get(gnos_id)
             add_item(all_projects,pcode)
-            add_type_count(file_count_project,status_type,pcode)
+            add_type_count(file_count_project,status,pcode)
+            add_type_count(file_count_repo,status,gnos_repo)
 
     save_json('project_counts.json',file_count_project)
+    save_json('repo_counts.json',file_count_repo)
 
     # Get/save project and repo lists
     hist_json = []
@@ -174,6 +218,21 @@ for workflow in types:
     projects.sort()
     save_json('projects.json',projects)
 
+    hist_json = []
+    yest_json = yesterday_path + '/repos.json'
+    if os.path.isfile(yest_json):
+        with open(yest_json) as json_file:
+            hist_json = json.load(json_file)
+
+    if len(hist_json) > 0:
+        for proj in hist_json:
+            add_item(all_repos,proj)
+
+    repos = all_repos.keys()
+    repos.sort()
+    save_json('repos.json',repos)
+
+
     # Get/save count history data
     print "Getting count history..."
     hist_json = {}
@@ -183,13 +242,12 @@ for workflow in types:
             hist_json = json.load(json_file)
 
     hist_json[today] = total_file_count
-
+    Dumper(hist_json)
     save_json('hist_counts.json',hist_json)
 
     right_now = [datetime.datetime.today().strftime('%H:%M UTC %A, %B %d')]
-
+    Dumper(right_now)
     save_json('timestamp.json',right_now)
 
     os.chdir(reports)
-    print "I am in directory"+os.getcwd()
     call_and_check("ln -sf "+today+" latest")
