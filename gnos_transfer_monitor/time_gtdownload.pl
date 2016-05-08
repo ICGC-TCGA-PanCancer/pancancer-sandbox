@@ -45,8 +45,6 @@ GetOptions(
      "use-s3" => \$s3,
   );
 
-
-
 ##############
 # MAIN STEPS #
 ##############
@@ -72,7 +70,7 @@ if($s3) {
   merge_with_s3($url_consol_runtimes, $test_region);
 }
 
-# TODO: write another tool that then plots one or more of these .json files
+system "rm -fr /mnt/tmp/*";
 
 
 ###############
