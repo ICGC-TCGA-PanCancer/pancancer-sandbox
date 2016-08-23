@@ -22,6 +22,7 @@ def day(delta):
 # Shh, don't tell anyone -- for reconstructing history, to retrofit JSON changes
 num1 = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else 0
 num2 = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 1
+thing = sys.argv[2] if len(sys.argv) > 3 and sys.argv[3] else None
 
 today = day(int(num1))
 yesterday = day(int(num2))
@@ -89,15 +90,15 @@ else:
 
 git_path = '/mnt/data/oxog-ops'
 
-types = ['aws','collab','ucsc']
+types = ['aws','collab','tcga','gtdownload']
+
+# If we are only asked for one
+if thing:
+    types = [thing]
 
 for workflow in types:
     file_type = workflow
-    if workflow == 'collab' or workflow == 'aws':
-        workflow = "oxog-"+workflow+"-jobs"
-    else :
-        workflow = "oxog-"+workflow+"-jobs-test"
-
+    workflow = "oxog-"+file_type+"-jobs"
 
     reports        = git_path + '/oxog-metadata/' + file_type
     today_path     = reports  + '/' + today

@@ -7,3 +7,4 @@ cd /home/ubuntu/gitroot/pancancer-sandbox/gnos_transfer_monitor/
 #export PATH=$PATH:/usr/local/bin
 
 ./check_outages.pl >> outage_check.log 2>&1
+
