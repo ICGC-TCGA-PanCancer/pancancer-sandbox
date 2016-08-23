@@ -25,6 +25,7 @@ unlink $last_json_file;
 
 my $msg;
 my $new_last_json = {};
+
 for my $zero (sort keys %$zeros) {
     my @z = @{$zeros->{$zero}};
     my $zcount = $slow->{$zero};
@@ -44,21 +45,23 @@ for my $zero (sort keys %$zeros) {
 }
 
 if ($msg) {
-    my @emails = qw/
-sheldon.mckay@gmail.com
-briandoconnor@gmail.com
-Brian.OConnor@oicr.on.ca
-Junjun.Zhang@oicr.on.ca
-Linda.Xiang@oicr.on.ca
-Christina.Yung@oicr.on.ca
-mainsworth@annaisystems.com
-/;
+    my @emails = (
+'sheldon.mckay@gmail.com',
+#'briandoconnor@gmail.com',
+#'Brian.OConnor@oicr.on.ca',
+'Junjun.Zhang@oicr.on.ca',
+'Linda.Xiang@oicr.on.ca',
+'Christina.Yung@oicr.on.ca',
+'mainsworth@annaisystems.com',
+);
+    my @zeros = grep {s/\.\S+//} keys %$zeros;
+    my $slow_repos = join(", ", @zeros);
     for my $email (@emails) {
 	my $message = Email::MIME->create(
 	    header_str => [
 		From    => 'sheldon.mckay@gmail.com',
 		To      => $email,
-		Subject => 'GNOS slowdown',
+		Subject => "GNOS slowdown for $slow_repos",
 	    ],
 	    attributes => {
 		encoding => 'quoted-printable',
